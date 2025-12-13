@@ -58,6 +58,98 @@ and type_of_primitive = function
   | Pintoffloat -> Ref I31
   | Pfloatofint -> F64
   | Pidentity -> Ref Any
+  (* Phase 2: Blocks/records *)
+  | Pmakeblock (tag, _) -> Ref (Struct (block_type_name tag 0))  (* Size unknown *)
+  | Pfield _ -> Ref Any  (* Field access - type depends on block *)
+  | Psetfield _ -> Ref (Struct "$unit")  (* Set returns unit *)
+  (* Phase 2: Arrays *)
+  | Pmakearray _ -> Ref (Array "$genarray")
+  | Parraylength _ -> Ref I31
+  | Parrayrefu _ -> Ref Any
+  | Parraysetu _ -> Ref (Struct "$unit")
+  | Parrayrefs _ -> Ref Any
+  | Parraysets _ -> Ref (Struct "$unit")
+
+(** Generate block struct type name for a given tag and size *)
+and block_type_name tag size =
+  Printf.sprintf "$block_%d_%d" tag size
+
+(** Generate or retrieve block struct type *)
+and ensure_block_type env tag size =
+  let name = block_type_name tag size in
+  match lookup_struct env name with
+  | Some _ -> env
+  | None ->
+      let fields = List.init size (fun i -> {
+        field_name = Printf.sprintf "f%d" i;
+        field_type = Ref Any;  (* Generic field type *)
+        field_mutable = true;  (* Allow mutation for now *)
+      }) in
+      let struct_type = {
+        struct_name = name;
+        struct_fields = fields;
+        struct_supertype = None;
+      } in
+      add_struct_type env struct_type
+
+(** Generate or retrieve generic array type *)
+and ensure_genarray_type env =
+  let name = "$genarray" in
+  match lookup_array env name with
+  | Some _ -> env
+  | None ->
+      let array_type = {
+        array_name = name;
+        array_elem_type = Ref Any;
+        array_elem_mutable = true;
+      } in
+      add_array_type env array_type
+
+(** {1 Phase 3: Closure Support} *)
+
+(** Closure counter for generating unique names *)
+let closure_counter = ref 0
+
+(** Generate unique closure type name *)
+let fresh_closure_name () =
+  let n = !closure_counter in
+  incr closure_counter;
+  Printf.sprintf "$closure_%d" n
+
+(** Generate closure struct type with funcref + captured variables *)
+let ensure_closure_type env num_captures =
+  let name = Printf.sprintf "$closure_env_%d" num_captures in
+  match lookup_struct env name with
+  | Some _ -> (env, name)
+  | None ->
+      (* Closure struct: first field is funcref, rest are captured values *)
+      let func_field = {
+        field_name = "fn";
+        field_type = Ref Any;  (* Will hold funcref *)
+        field_mutable = false;
+      } in
+      let capture_fields = List.init num_captures (fun i -> {
+        field_name = Printf.sprintf "cap%d" i;
+        field_type = Ref Any;  (* Captured values are boxed *)
+        field_mutable = false;
+      }) in
+      let struct_type = {
+        struct_name = name;
+        struct_fields = func_field :: capture_fields;
+        struct_supertype = None;
+      } in
+      (add_struct_type env struct_type, name)
+
+(** Generate function type for closure wrapper *)
+let closure_func_type num_params _num_captures =
+  (* Closure function takes: closure env, then regular params *)
+  (* _num_captures reserved for future optimization of closure types *)
+  let env_param = Ref Any in  (* The closure struct *)
+  let regular_params = List.init num_params (fun _ -> Ref I31) in
+  {
+    ft_params = env_param :: regular_params;
+    ft_results = [Ref Any];  (* Generic return *)
+  }
 
 (** {1 Constant Compilation} *)
 
@@ -196,6 +288,104 @@ let rec compile_prim env prim args =
       | _ -> error "identity expects 1 argument"
       end
 
+  (* Phase 2: Records/blocks *)
+  | Pmakeblock (tag, _mutability) ->
+      let size = List.length args in
+      let env = ensure_block_type env tag size in
+      let type_name = block_type_name tag size in
+      let env, compiled_args = List.fold_left_map (fun env arg ->
+        compile_expr env arg
+      ) env args in
+      (env, StructNew (type_name, compiled_args))
+
+  | Pfield n ->
+      begin match args with
+      | [record] ->
+          let env, crecord = compile_expr env record in
+          (* Use generic field access - actual type depends on block type *)
+          let field_name = Printf.sprintf "f%d" n in
+          (* We need to determine the struct type from the record *)
+          (* For now, assume block_0 (tuple) types - could be improved with type info *)
+          (env, StructGet ("$block_0_0", field_name, crecord))
+      | _ -> error "field access expects 1 argument"
+      end
+
+  | Psetfield (n, _mutability) ->
+      begin match args with
+      | [record; value] ->
+          let env, crecord = compile_expr env record in
+          let env, cvalue = compile_expr env value in
+          let field_name = Printf.sprintf "f%d" n in
+          (env, Seq [
+            StructSet ("$block_0_0", field_name, crecord, cvalue);
+            StructNew ("$unit", [])
+          ])
+      | _ -> error "setfield expects 2 arguments"
+      end
+
+  (* Phase 2: Arrays *)
+  | Pmakearray (_kind, _mutability) ->
+      let env = ensure_genarray_type env in
+      let env, compiled_args = List.fold_left_map (fun env arg ->
+        compile_expr env arg
+      ) env args in
+      (env, ArrayNewFixed ("$genarray", compiled_args))
+
+  | Parraylength _kind ->
+      begin match args with
+      | [arr] ->
+          let env, carr = compile_expr env arr in
+          (env, RefI31 (ArrayLen carr))
+      | _ -> error "array length expects 1 argument"
+      end
+
+  | Parrayrefu _kind ->
+      begin match args with
+      | [arr; idx] ->
+          let env, carr = compile_expr env arr in
+          let env, cidx = compile_expr env idx in
+          (* Index is i31ref, need to unwrap to i32 *)
+          (env, ArrayGet ("$genarray", carr, I31GetS cidx))
+      | _ -> error "array get expects 2 arguments"
+      end
+
+  | Parraysetu _kind ->
+      begin match args with
+      | [arr; idx; value] ->
+          let env, carr = compile_expr env arr in
+          let env, cidx = compile_expr env idx in
+          let env, cvalue = compile_expr env value in
+          (env, Seq [
+            ArraySet ("$genarray", carr, I31GetS cidx, cvalue);
+            StructNew ("$unit", [])
+          ])
+      | _ -> error "array set expects 3 arguments"
+      end
+
+  | Parrayrefs _kind ->
+      (* Safe array access - for now same as unsafe, could add bounds check *)
+      begin match args with
+      | [arr; idx] ->
+          let env, carr = compile_expr env arr in
+          let env, cidx = compile_expr env idx in
+          (env, ArrayGet ("$genarray", carr, I31GetS cidx))
+      | _ -> error "array get expects 2 arguments"
+      end
+
+  | Parraysets _kind ->
+      (* Safe array set - for now same as unsafe, could add bounds check *)
+      begin match args with
+      | [arr; idx; value] ->
+          let env, carr = compile_expr env arr in
+          let env, cidx = compile_expr env idx in
+          let env, cvalue = compile_expr env value in
+          (env, Seq [
+            ArraySet ("$genarray", carr, I31GetS cidx, cvalue);
+            StructNew ("$unit", [])
+          ])
+      | _ -> error "array set expects 3 arguments"
+      end
+
 (** {1 Expression Compilation} *)
 
 and compile_expr env expr =
@@ -258,22 +448,123 @@ and compile_expr env expr =
   | Lapply (fn, args) ->
       begin match fn with
       | Lvar id ->
-          (* Direct function call *)
+          (* Check if it's a known direct function *)
+          if lookup_global env id.name then
+            (* Direct global function call *)
+            let env, cargs = List.fold_left_map (fun env arg ->
+              compile_expr env arg
+            ) env args in
+            (env, Call ("$" ^ id.name, cargs))
+          else begin
+            (* Could be a closure in a local variable *)
+            match lookup_local env id with
+            | Some idx ->
+                (* Closure call: extract funcref and call with closure as first arg *)
+                let env, cargs = List.fold_left_map (fun env arg ->
+                  compile_expr env arg
+                ) env args in
+                let closure_val = LocalGet idx in
+                (* For closure call, we need: closure env, then args *)
+                (* Using call_ref requires knowing the type - use generic for now *)
+                let num_args = List.length args in
+                let func_type = closure_func_type num_args 0 in
+                let closure_type_name = Printf.sprintf "$closure_env_%d" num_args in
+                (env, CallRef (func_type,
+                  StructGet (closure_type_name, "fn", closure_val),
+                  closure_val :: cargs))
+            | None ->
+                (* Try as direct function call *)
+                let env, cargs = List.fold_left_map (fun env arg ->
+                  compile_expr env arg
+                ) env args in
+                (env, Call ("$" ^ id.name, cargs))
+          end
+      | _ ->
+          (* Indirect call through arbitrary expression *)
+          let env, cfn = compile_expr env fn in
           let env, cargs = List.fold_left_map (fun env arg ->
             compile_expr env arg
           ) env args in
-          (env, Call ("$" ^ id.name, cargs))
-      | _ ->
-          (* Indirect call - not fully supported in Phase 1 *)
-          error "Indirect function calls not supported in Phase 1"
+          (* Assume the expression evaluates to a closure *)
+          let num_args = List.length args in
+          let func_type = closure_func_type num_args 0 in
+          (* The function expression should evaluate to a closure struct *)
+          (env, CallRef (func_type,
+            StructGet ("$closure_env_0", "fn", cfn),
+            cfn :: cargs))
       end
 
   | Lfunction (repr, body) ->
-      (* Create a function and return a reference to it *)
-      let env, func_name = fresh_func_name env "lambda" in
-      let env, func = compile_function env func_name repr.params body in
-      let env = add_function env func in
-      (env, RefFunc func_name)
+      (* Check for free variables *)
+      let fvs = free_vars body in
+      let bound_params = List.map (fun p -> p.stamp) repr.params in
+      let captured = List.filter (fun fv ->
+        not (List.mem fv.stamp bound_params)
+      ) fvs in
+
+      if captured = [] then
+        (* No free variables - simple function, no closure needed *)
+        let env, func_name = fresh_func_name env "lambda" in
+        let env, func = compile_function env func_name repr.params body in
+        let env = add_function env func in
+        (env, RefFunc func_name)
+      else
+        (* Has free variables - create a closure *)
+        let num_params = List.length repr.params in
+        let num_captures = List.length captured in
+        let closure_name = fresh_closure_name () in
+
+        (* Ensure closure struct type exists *)
+        let env, closure_type_name = ensure_closure_type env num_captures in
+
+        (* Generate the closure wrapper function *)
+        let env = enter_scope env in
+
+        (* First param is the closure env struct *)
+        let closure_env_id = make_ident "$env" in
+        let env, closure_env_idx = alloc_local env closure_env_id (Ref Any) in
+
+        (* Then regular params *)
+        let env, _ = List.fold_left (fun (env, _) param ->
+          let env, idx = alloc_local env param (Ref I31) in
+          (env, idx)
+        ) (env, 0) repr.params in
+
+        (* Extract captured variables from closure struct *)
+        let env, extract_instrs = List.fold_left (fun (env, instrs) (i, cap_id) ->
+          let cap_local_id = make_ident ("$cap_" ^ cap_id.name) in
+          let env, cap_idx = alloc_local env cap_local_id (Ref Any) in
+          (* Also add the original id mapping so body can access it *)
+          let env = bind_local env cap_id cap_idx (Ref Any) in
+          let field_name = Printf.sprintf "cap%d" i in
+          let extract = LocalSet (cap_idx,
+            StructGet (closure_type_name, field_name, LocalGet closure_env_idx)) in
+          (env, instrs @ [extract])
+        ) (env, []) (List.mapi (fun i c -> (i, c)) captured) in
+
+        (* Compile the body with captured vars available *)
+        let env, cbody = compile_expr env body in
+
+        let func = {
+          func_name = closure_name;
+          func_type = closure_func_type num_params num_captures;
+          func_locals = get_locals env;
+          func_body = Seq (extract_instrs @ [cbody]);
+          func_export = None;
+        } in
+        let env = exit_scope env in
+        let env = add_function env func in
+
+        (* Create the closure struct: funcref + captured values *)
+        let env, capture_instrs = List.fold_left_map (fun env cap_id ->
+          match lookup_local env cap_id with
+          | Some idx -> (env, LocalGet idx)
+          | None -> (env, RefNull Any)  (* Fallback - shouldn't happen *)
+        ) env captured in
+
+        let closure_instr = StructNew (closure_type_name,
+          RefFunc closure_name :: capture_instrs) in
+        (env, closure_instr)
 
   | Lwhile (cond, body) ->
       let env, ccond = compile_expr env cond in

@@ -54,6 +54,11 @@ let lookup_local_exn env id =
   | Some idx -> idx
   | None -> failwith (Printf.sprintf "Unbound local variable: %s" id.name)
 
+(** Bind an identifier to an existing local index (for closure captures) *)
+let bind_local env id idx typ =
+  Hashtbl.add env.locals id.stamp (idx, typ);
+  env
+
 let get_locals env = !(env.local_list)
 let num_locals env = !(env.next_local)
 

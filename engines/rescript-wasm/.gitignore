@@ -34,3 +34,16 @@ _build/
 
 # opam
 _opam/
+
+# Environment and secrets (NEVER commit)
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+secrets.json
+
+# Coverage reports
+_coverage/
+coverage/
+*.coverage

@@ -21,14 +21,35 @@ type constant =
 
 type comparison = Ceq | Cne | Clt | Cle | Cgt | Cge
 
+(** Mutability flag for record fields and array elements *)
+type mutable_flag = Immutable | Mutable
+
+(** Array kind for typed arrays *)
+type array_kind = Pgenarray | Paddrarray | Pintarray | Pfloatarray
+
 type primitive =
+  (* Integer arithmetic *)
   | Paddint | Psubint | Pmulint | Pdivint | Pmodint | Pnegint
   | Pandint | Porint | Pxorint | Plslint | Pasrint
   | Pintcomp of comparison
+  (* Float arithmetic *)
   | Paddfloat | Psubfloat | Pmulfloat | Pdivfloat | Pnegfloat
   | Pfloatcomp of comparison
+  (* Conversions *)
   | Pintoffloat | Pfloatofint
+  (* Identity *)
   | Pidentity
+  (* Records/blocks (Phase 2) *)
+  | Pmakeblock of int * mutable_flag  (** Create block with tag *)
+  | Pfield of int                      (** Get field at index *)
+  | Psetfield of int * mutable_flag    (** Set field at index *)
+  (* Arrays (Phase 2) *)
+  | Pmakearray of array_kind * mutable_flag  (** Create array *)
+  | Parraylength of array_kind         (** Array length *)
+  | Parrayrefu of array_kind           (** Array get (unsafe) *)
+  | Parraysetu of array_kind           (** Array set (unsafe) *)
+  | Parrayrefs of array_kind           (** Array get (safe/bounds checked) *)
+  | Parraysets of array_kind           (** Array set (safe/bounds checked) *)
 
 type let_kind = Strict | Alias | Variable
 
@@ -90,6 +111,23 @@ let add a b = Lprim (Paddint, [a; b])
 let sub a b = Lprim (Psubint, [a; b])
 let mul a b = Lprim (Pmulint, [a; b])
 let div a b = Lprim (Pdivint, [a; b])
+
+(* Record/tuple constructors *)
+let makeblock tag fields = Lprim (Pmakeblock (tag, Immutable), fields)
+let makeblock_mut tag fields = Lprim (Pmakeblock (tag, Mutable), fields)
+let field n record = Lprim (Pfield n, [record])
+let setfield n record value = Lprim (Psetfield (n, Mutable), [record; value])
+
+(* Tuple constructors (tag 0) *)
+let tuple fields = makeblock 0 fields
+let tuple2 a b = tuple [a; b]
+let tuple3 a b c = tuple [a; b; c]
+
+(* Array constructors *)
+let makearray elements = Lprim (Pmakearray (Pgenarray, Mutable), elements)
+let arraylength arr = Lprim (Parraylength Pgenarray, [arr])
+let arrayget arr idx = Lprim (Parrayrefu Pgenarray, [arr; idx])
+let arrayset arr idx value = Lprim (Parraysetu Pgenarray, [arr; idx; value])
 
 let if_ cond then_ else_ = Lifthenelse (cond, then_, else_)
 let seq e1 e2 = Lsequence (e1, e2)
@@ -169,6 +207,17 @@ let pp_primitive fmt = function
   | Pintoffloat -> Format.fprintf fmt "int_of_float"
   | Pfloatofint -> Format.fprintf fmt "float_of_int"
   | Pidentity -> Format.fprintf fmt "identity"
+  (* Records/blocks *)
+  | Pmakeblock (tag, _) -> Format.fprintf fmt "makeblock[%d]" tag
+  | Pfield n -> Format.fprintf fmt "field[%d]" n
+  | Psetfield (n, _) -> Format.fprintf fmt "setfield[%d]" n
+  (* Arrays *)
+  | Pmakearray _ -> Format.fprintf fmt "makearray"
+  | Parraylength _ -> Format.fprintf fmt "arraylength"
+  | Parrayrefu _ -> Format.fprintf fmt "array.get"
+  | Parraysetu _ -> Format.fprintf fmt "array.set"
+  | Parrayrefs _ -> Format.fprintf fmt "array.get_safe"
+  | Parraysets _ -> Format.fprintf fmt "array.set_safe"
 
 let rec pp_lambda fmt = function
   | Lconst (Const_int n) -> Format.fprintf fmt "%d" n

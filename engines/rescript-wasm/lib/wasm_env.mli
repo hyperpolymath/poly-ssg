@@ -9,6 +9,7 @@ val empty : unit -> t
 val alloc_local : t -> ident -> wasm_val_type -> t * int
 val lookup_local : t -> ident -> int option
 val lookup_local_exn : t -> ident -> int
+val bind_local : t -> ident -> int -> wasm_val_type -> t
 val get_locals : t -> (string * wasm_val_type) list
 val num_locals : t -> int
 
