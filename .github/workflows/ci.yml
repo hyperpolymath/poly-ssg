@@ -9,6 +9,8 @@ on:
   pull_request:
     branches: [main]
 
+permissions: read-all
+
 env:
   OCAML_VERSION: "4.14.x"
   # Treat warnings as errors
@@ -19,6 +21,8 @@ jobs:
   rescript-wasm:
     name: ReScript WASM-GC Backend
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
 
     strategy:
       fail-fast: true  # Fail immediately on first error
@@ -31,7 +35,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up OCaml ${{ matrix.ocaml-version }}
-        uses: ocaml/setup-ocaml@v3
+        uses: ocaml/setup-ocaml@7c185f622998a008ba1b296d2d7c64e235629c23 # v3.6.1
         with:
           ocaml-compiler: ${{ matrix.ocaml-version }}
           dune-cache: true
@@ -87,6 +91,8 @@ jobs:
   forth-estate:
     name: Forth Estate SSG
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -106,13 +112,15 @@ jobs:
   lint:
     name: Lint & Format (Strict)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up OCaml
-        uses: ocaml/setup-ocaml@v3
+        uses: ocaml/setup-ocaml@7c185f622998a008ba1b296d2d7c64e235629c23 # v3.6.1
         with:
           ocaml-compiler: "4.14.x"
 
@@ -220,6 +228,8 @@ jobs:
   validate:
     name: Final Validation
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     needs: [rescript-wasm, forth-estate, lint, security]
 
     steps:

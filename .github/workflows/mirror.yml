@@ -13,6 +13,8 @@ permissions: read-all
 jobs:
   mirror-gitlab:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: ${{ vars.GITLAB_MIRROR_ENABLED == 'true' }}
     steps:
       - name: Checkout
@@ -31,6 +33,8 @@ jobs:
 
   mirror-bitbucket:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     if: ${{ vars.BITBUCKET_MIRROR_ENABLED == 'true' }}
     steps:
       - name: Checkout
