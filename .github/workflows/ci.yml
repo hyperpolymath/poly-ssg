@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 # Continuous Integration - Strict Mode
 # All warnings treated as errors, all tests must pass
 name: CI
@@ -27,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up OCaml ${{ matrix.ocaml-version }}
         uses: ocaml/setup-ocaml@v3
@@ -77,7 +78,7 @@ jobs:
         working-directory: engines/rescript-wasm
 
       - name: Upload WAT artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: wat-output-${{ matrix.os }}-${{ matrix.ocaml-version }}
           path: engines/rescript-wasm/*.wat
@@ -89,7 +90,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Install Gforth
         run: sudo apt-get update && sudo apt-get install -y gforth
@@ -108,7 +109,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up OCaml
         uses: ocaml/setup-ocaml@v3
@@ -179,7 +180,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up OCaml
         uses: ocaml/setup-ocaml@v3
