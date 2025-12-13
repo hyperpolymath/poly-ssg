@@ -191,7 +191,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up OCaml
-        uses: ocaml/setup-ocaml@v3
+        uses: ocaml/setup-ocaml@7c185f622998a008ba1b296d2d7c64e235629c23 # v3.6.1
         with:
           ocaml-compiler: "4.14.x"
 
