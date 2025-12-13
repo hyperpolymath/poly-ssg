@@ -1,0 +1,101 @@
+# CodeQL Security Analysis
+# https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors
+
+name: "CodeQL Security Analysis"
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run weekly on Monday at 00:00 UTC
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # CodeQL supports: javascript, python, ruby, go, java, csharp, cpp
+        # OCaml is not directly supported, but we can scan JS interop code
+        language: [javascript]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # Custom queries for additional security checks
+          queries: +security-extended,security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  # OCaml-specific security checks
+  ocaml-security:
+    name: OCaml Security Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up OCaml
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "4.14.x"
+
+      - name: Install dependencies
+        run: |
+          opam install . --deps-only --with-test -y
+        working-directory: engines/rescript-wasm
+
+      - name: Build with warnings as errors
+        run: |
+          opam exec -- dune build @all --force
+        working-directory: engines/rescript-wasm
+
+      - name: Run tests
+        run: |
+          opam exec -- dune test
+        working-directory: engines/rescript-wasm
+
+      - name: Check for common security issues
+        run: |
+          # Check for unsafe string operations
+          echo "Checking for unsafe patterns..."
+
+          # Check for Obj.magic usage (type safety bypass)
+          if grep -r "Obj\.magic" engines/rescript-wasm/lib/; then
+            echo "::warning::Found Obj.magic usage - review for type safety"
+          fi
+
+          # Check for Marshal usage (potential code execution)
+          if grep -r "Marshal\." engines/rescript-wasm/lib/; then
+            echo "::warning::Found Marshal usage - potential security risk"
+          fi
+
+          # Check for shell command execution
+          if grep -r "Sys\.command\|Unix\.system\|Unix\.open_process" engines/rescript-wasm/lib/; then
+            echo "::warning::Found shell command execution - review for injection"
+          fi
+
+          echo "Security check complete"

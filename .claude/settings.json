@@ -1,0 +1,35 @@
+{
+  "project": {
+    "name": "poly-ssg",
+    "description": "Polyglot static site generator framework with multiple language implementations",
+    "type": "compiler"
+  },
+  "codeStyle": {
+    "ocaml": {
+      "useDescriptiveNames": true,
+      "requireTypeAnnotations": true,
+      "preferPatternMatching": true,
+      "maxLineLength": 100
+    },
+    "forth": {
+      "requireStackComments": true,
+      "maxStackDepth": 4
+    }
+  },
+  "security": {
+    "warnOnObjMagic": true,
+    "warnOnMarshal": true,
+    "warnOnShellExec": true,
+    "warnOnCatchAllPatterns": true
+  },
+  "testing": {
+    "requireTestsForNewFeatures": true,
+    "testFramework": "dune test"
+  },
+  "wasmGc": {
+    "integerType": "(ref i31)",
+    "floatType": "f64",
+    "stringType": "(array (mut i32))",
+    "wrapIntegers": true
+  }
+}

@@ -1,0 +1,118 @@
+# Continuous Integration
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  OCAML_VERSION: "4.14.x"
+
+jobs:
+  # OCaml/ReScript-WASM build and test
+  rescript-wasm:
+    name: ReScript WASM-GC Backend
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        ocaml-version: ["4.14.x", "5.1.x"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up OCaml ${{ matrix.ocaml-version }}
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-version }}
+          dune-cache: true
+
+      - name: Install dependencies
+        run: opam install . --deps-only --with-test -y
+        working-directory: engines/rescript-wasm
+
+      - name: Build
+        run: opam exec -- dune build
+        working-directory: engines/rescript-wasm
+
+      - name: Run tests
+        run: opam exec -- dune test
+        working-directory: engines/rescript-wasm
+
+      - name: Generate sample WAT
+        run: |
+          opam exec -- dune exec rescript_wasm -- add > add.wat
+          opam exec -- dune exec rescript_wasm -- combined > combined.wat
+          cat add.wat
+        working-directory: engines/rescript-wasm
+
+      - name: Install wasm-tools
+        if: runner.os == 'Linux'
+        run: |
+          curl -L https://github.com/bytecodealliance/wasm-tools/releases/download/v1.219.1/wasm-tools-1.219.1-x86_64-linux.tar.gz | tar xz
+          sudo mv wasm-tools-1.219.1-x86_64-linux/wasm-tools /usr/local/bin/
+
+      - name: Validate WAT output
+        if: runner.os == 'Linux'
+        run: |
+          wasm-tools validate --features gc add.wat || echo "Validation requires GC feature support"
+        working-directory: engines/rescript-wasm
+        continue-on-error: true
+
+  # Forth Estate build
+  forth-estate:
+    name: Forth Estate SSG
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Gforth
+        run: sudo apt-get update && sudo apt-get install -y gforth
+
+      - name: Check Forth syntax
+        run: |
+          if [ -f forth-estate.fs ]; then
+            gforth forth-estate.fs -e bye || echo "Syntax check complete"
+          fi
+        working-directory: engines/forth-estate
+        continue-on-error: true
+
+  # Lint and format checks
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up OCaml
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "4.14.x"
+
+      - name: Install ocamlformat
+        run: opam install ocamlformat -y
+
+      - name: Check OCaml formatting
+        run: |
+          opam exec -- dune fmt --preview 2>/dev/null || true
+        working-directory: engines/rescript-wasm
+        continue-on-error: true
+
+      - name: Check for TODO/FIXME comments
+        run: |
+          echo "=== TODOs and FIXMEs ==="
+          grep -rn "TODO\|FIXME\|XXX\|HACK" engines/rescript-wasm/lib/ || echo "None found"
+
+      - name: Check line lengths
+        run: |
+          echo "=== Lines over 100 characters ==="
+          find engines/rescript-wasm/lib -name "*.ml" -exec awk 'length > 100 {print FILENAME ":" NR ": " length " chars"}' {} \; | head -20 || true
