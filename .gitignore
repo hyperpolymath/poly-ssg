@@ -1,0 +1,37 @@
+# Output directories
+test-corpus/output/
+output/
+_site/
+public/
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.o
+*.a
+*.so
+*.dylib
+
+# Gforth
+*.fi
+
+# Node (for any JS-based tools)
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs
+*.log
