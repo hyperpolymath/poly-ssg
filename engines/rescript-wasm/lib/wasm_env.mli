@@ -30,6 +30,8 @@ val lookup_array : t -> string -> wasm_array_type option
 
 val add_import : t -> wasm_import -> t
 val get_imports : t -> wasm_import list
+val ensure_js_import : t -> string -> string -> string -> int -> t
+val clear_import_cache : unit -> unit
 
 val enter_scope : t -> t
 val exit_scope : t -> t
@@ -38,3 +40,4 @@ val to_module : t -> wasm_module
 val with_standard_types : t -> t
 val string_type_name : string
 val unit_type_name : string
+val variant_type_name : string

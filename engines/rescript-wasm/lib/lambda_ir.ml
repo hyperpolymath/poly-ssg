@@ -50,6 +50,20 @@ type primitive =
   | Parraysetu of array_kind           (** Array set (unsafe) *)
   | Parrayrefs of array_kind           (** Array get (safe/bounds checked) *)
   | Parraysets of array_kind           (** Array set (safe/bounds checked) *)
+  (* Variants (Phase 4) *)
+  | Pisint                             (** Check if value is immediate int *)
+  | Pisout                             (** Check if tag is out of range *)
+  | Pgettag                            (** Get tag of a block *)
+  (* JS Interop (Phase 5) *)
+  | Pccall of external_call            (** Call external JS function *)
+  | Pjs_unsafe_downgrade               (** Unsafe cast from JS *)
+
+(** External function call description *)
+and external_call = {
+  prim_name : string;                  (** JS function name *)
+  prim_arity : int;                    (** Number of arguments *)
+  prim_native_name : string;           (** Native/import name *)
+}
 
 type let_kind = Strict | Alias | Variable
 
@@ -61,7 +75,17 @@ type function_repr = {
 and lambda_type =
   | Tint | Tfloat | Tstring | Tunit | Tbool
   | Tfunc of lambda_type list * lambda_type
+  | Tvariant of string                 (** Named variant type *)
   | Tany
+
+(** Switch case for pattern matching *)
+and switch_case = {
+  sw_numconsts : int;                  (** Number of constant constructors *)
+  sw_consts : (int * lambda) list;     (** Constant cases: tag -> action *)
+  sw_numblocks : int;                  (** Number of block constructors *)
+  sw_blocks : (int * lambda) list;     (** Block cases: tag -> action *)
+  sw_failaction : lambda option;       (** Default case *)
+}
 
 and lambda =
   | Lconst of constant
@@ -75,6 +99,11 @@ and lambda =
   | Lsequence of lambda * lambda
   | Lwhile of lambda * lambda
   | Lfor of ident * lambda * lambda * bool * lambda
+  (* Phase 4: Pattern matching *)
+  | Lswitch of lambda * switch_case    (** Switch on variant tag *)
+  | Lstaticraise of int * lambda list  (** Raise static exception *)
+  | Lstaticcatch of lambda * (int * ident list) * lambda  (** Catch static exception *)
+  | Ltrywith of lambda * ident * lambda  (** Try-with exception handling *)
 
 let const_int n = Lconst (Const_int n)
 let const_float f = Lconst (Const_float f)
@@ -137,6 +166,29 @@ let rec seqs = function
   | [e] -> e
   | e :: es -> Lsequence (e, seqs es)
 
+(* Phase 4: Variant helpers *)
+let isint value = Lprim (Pisint, [value])
+let gettag value = Lprim (Pgettag, [value])
+
+let switch scrutinee ~consts ~blocks ~default =
+  Lswitch (scrutinee, {
+    sw_numconsts = List.length consts;
+    sw_consts = consts;
+    sw_numblocks = List.length blocks;
+    sw_blocks = blocks;
+    sw_failaction = default;
+  })
+
+let staticraise n args = Lstaticraise (n, args)
+let staticcatch body n ids handler = Lstaticcatch (body, (n, ids), handler)
+let trywith body id handler = Ltrywith (body, id, handler)
+
+(* Phase 5: JS Interop helpers *)
+let ccall name arity native_name args =
+  Lprim (Pccall { prim_name = name; prim_arity = arity; prim_native_name = native_name }, args)
+
+let js_call name args = ccall name (List.length args) name args
+
 module IdentSet = Set.Make(struct
   type t = ident
   let compare a b = compare a.stamp b.stamp
@@ -173,6 +225,28 @@ let rec free_vars_set expr =
   | Lfor (id, lo, hi, _, body) ->
       IdentSet.union (free_vars_set lo)
         (IdentSet.union (free_vars_set hi) (IdentSet.remove id (free_vars_set body)))
+  (* Phase 4: Pattern matching *)
+  | Lswitch (scrutinee, sw) ->
+      let scrutinee_fvs = free_vars_set scrutinee in
+      let const_fvs = List.fold_left (fun acc (_, action) ->
+        IdentSet.union acc (free_vars_set action)) IdentSet.empty sw.sw_consts in
+      let block_fvs = List.fold_left (fun acc (_, action) ->
+        IdentSet.union acc (free_vars_set action)) IdentSet.empty sw.sw_blocks in
+      let default_fvs = match sw.sw_failaction with
+        | Some action -> free_vars_set action
+        | None -> IdentSet.empty in
+      IdentSet.union scrutinee_fvs
+        (IdentSet.union const_fvs (IdentSet.union block_fvs default_fvs))
+  | Lstaticraise (_, args) ->
+      List.fold_left (fun acc arg -> IdentSet.union acc (free_vars_set arg))
+        IdentSet.empty args
+  | Lstaticcatch (body, (_, ids), handler) ->
+      let bound = IdentSet.of_list ids in
+      IdentSet.union (free_vars_set body)
+        (IdentSet.diff (free_vars_set handler) bound)
+  | Ltrywith (body, id, handler) ->
+      IdentSet.union (free_vars_set body)
+        (IdentSet.remove id (free_vars_set handler))
 
 let free_vars expr = IdentSet.elements (free_vars_set expr)
 let is_closed expr = IdentSet.is_empty (free_vars_set expr)
@@ -218,6 +292,13 @@ let pp_primitive fmt = function
   | Parraysetu _ -> Format.fprintf fmt "array.set"
   | Parrayrefs _ -> Format.fprintf fmt "array.get_safe"
   | Parraysets _ -> Format.fprintf fmt "array.set_safe"
+  (* Variants *)
+  | Pisint -> Format.fprintf fmt "isint"
+  | Pisout -> Format.fprintf fmt "isout"
+  | Pgettag -> Format.fprintf fmt "gettag"
+  (* JS Interop *)
+  | Pccall ext -> Format.fprintf fmt "ccall[%s]" ext.prim_name
+  | Pjs_unsafe_downgrade -> Format.fprintf fmt "js_unsafe_downgrade"
 
 let rec pp_lambda fmt = function
   | Lconst (Const_int n) -> Format.fprintf fmt "%d" n
@@ -255,6 +336,30 @@ let rec pp_lambda fmt = function
   | Lfor (id, lo, hi, up, body) ->
       Format.fprintf fmt "@[<v>(for %s = @[%a@] %s @[%a@]@ @[%a@])@]"
         id.name pp_lambda lo (if up then "to" else "downto") pp_lambda hi pp_lambda body
+  | Lswitch (scrutinee, sw) ->
+      Format.fprintf fmt "@[<v>(switch @[%a@]@ consts: [%a]@ blocks: [%a]@ default: %a)@]"
+        pp_lambda scrutinee
+        (Format.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+          (fun fmt (tag, action) -> Format.fprintf fmt "%d -> @[%a@]" tag pp_lambda action))
+        sw.sw_consts
+        (Format.pp_print_list ~pp_sep:(fun fmt () -> Format.fprintf fmt ", ")
+          (fun fmt (tag, action) -> Format.fprintf fmt "%d -> @[%a@]" tag pp_lambda action))
+        sw.sw_blocks
+        (fun fmt opt -> match opt with
+          | Some action -> pp_lambda fmt action
+          | None -> Format.fprintf fmt "_") sw.sw_failaction
+  | Lstaticraise (n, args) ->
+      Format.fprintf fmt "(staticraise %d @[%a@])" n
+        (Format.pp_print_list ~pp_sep:Format.pp_print_space pp_lambda) args
+  | Lstaticcatch (body, (n, ids), handler) ->
+      Format.fprintf fmt "@[<v>(staticcatch@ @[%a@]@ with (%d %a)@ @[%a@])@]"
+        pp_lambda body n
+        (Format.pp_print_list ~pp_sep:Format.pp_print_space
+          (fun fmt id -> Format.fprintf fmt "%s" id.name)) ids
+        pp_lambda handler
+  | Ltrywith (body, id, handler) ->
+      Format.fprintf fmt "@[<v>(try@ @[%a@]@ with %s ->@ @[%a@])@]"
+        pp_lambda body id.name pp_lambda handler
 
 let lambda_to_string expr = Format.asprintf "%a" pp_lambda expr
 

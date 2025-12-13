@@ -145,6 +145,30 @@ let to_module env = {
 
 let string_type_name = "$string"
 let unit_type_name = "$unit"
+let variant_type_name = "$variant"
+
+(** Track which imports have been registered to avoid duplicates *)
+let registered_imports : (string, bool) Hashtbl.t = Hashtbl.create 16
+
+(** Ensure a JS import exists for an external function *)
+let ensure_js_import env module_name func_name local_name arity =
+  let key = Printf.sprintf "%s.%s" module_name func_name in
+  if not (Hashtbl.mem registered_imports key) then begin
+    Hashtbl.add registered_imports key true;
+    let param_types = List.init arity (fun _ -> Ref Any) in
+    let ft = { ft_params = param_types; ft_results = [Ref Any] } in
+    let imp = {
+      import_module = module_name;
+      import_name = func_name;
+      import_local_name = local_name;
+      import_desc = ImportFunc ft;
+    } in
+    add_import env imp
+  end else
+    env
+
+(** Clear registered imports (for testing) *)
+let clear_import_cache () = Hashtbl.clear registered_imports
 
 let with_standard_types env =
   let string_array = {
@@ -157,5 +181,15 @@ let with_standard_types env =
     struct_fields = [];
     struct_supertype = None;
   } in
+  (* Variant struct for tagged unions - tag + data *)
+  let variant_struct = {
+    struct_name = variant_type_name;
+    struct_fields = [
+      { field_name = "tag"; field_type = I32; field_mutable = false };
+      { field_name = "data"; field_type = Ref Any; field_mutable = false };
+    ];
+    struct_supertype = None;
+  } in
   env |> fun e -> add_array_type e string_array
       |> fun e -> add_struct_type e unit_struct
+      |> fun e -> add_struct_type e variant_struct

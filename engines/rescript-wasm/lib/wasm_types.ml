@@ -89,6 +89,10 @@ type wasm_instr =
   | I32LeS of wasm_instr * wasm_instr
   | I32GtS of wasm_instr * wasm_instr
   | I32GeS of wasm_instr * wasm_instr
+  | I32LtU of wasm_instr * wasm_instr
+  | I32LeU of wasm_instr * wasm_instr
+  | I32GtU of wasm_instr * wasm_instr
+  | I32GeU of wasm_instr * wasm_instr
   | I32Eqz of wasm_instr
 
   (* Float operations *)

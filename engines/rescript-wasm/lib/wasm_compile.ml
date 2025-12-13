@@ -20,6 +20,7 @@ let _type_of_lambda_type = function
   | Tunit -> Ref (Struct "$unit")
   | Tbool -> Ref I31
   | Tfunc _ -> Ref Any  (* Functions are boxed for now *)
+  | Tvariant _ -> Ref Any  (* Variants are boxed *)
   | Tany -> Ref Any
 
 (** Infer type from a constant *)
@@ -48,6 +49,22 @@ let rec infer_type env expr =
   | Lfunction _ -> Ref Any  (* Function values *)
   | Lwhile _ -> Ref (Struct "$unit")
   | Lfor _ -> Ref (Struct "$unit")
+  (* Phase 4: Pattern matching *)
+  | Lswitch (_, sw) ->
+      (* Type is determined by the branches *)
+      begin match sw.sw_consts with
+      | (_, branch) :: _ -> infer_type env branch
+      | [] -> begin match sw.sw_blocks with
+        | (_, branch) :: _ -> infer_type env branch
+        | [] -> begin match sw.sw_failaction with
+          | Some branch -> infer_type env branch
+          | None -> Ref Any
+          end
+        end
+      end
+  | Lstaticraise _ -> Ref Any  (* Never returns normally *)
+  | Lstaticcatch (_, _, handler) -> infer_type env handler
+  | Ltrywith (body, _, _) -> infer_type env body
 
 and type_of_primitive = function
   | Paddint | Psubint | Pmulint | Pdivint | Pmodint
@@ -69,6 +86,13 @@ and type_of_primitive = function
   | Parraysetu _ -> Ref (Struct "$unit")
   | Parrayrefs _ -> Ref Any
   | Parraysets _ -> Ref (Struct "$unit")
+  (* Phase 4: Variants *)
+  | Pisint -> Ref I31  (* Returns bool as i31 *)
+  | Pisout -> Ref I31  (* Returns bool as i31 *)
+  | Pgettag -> Ref I31  (* Returns tag as i31 *)
+  (* Phase 5: JS Interop *)
+  | Pccall _ -> Ref Any  (* External calls return boxed values *)
+  | Pjs_unsafe_downgrade -> Ref Any  (* Unsafe cast returns any *)
 
 (** Generate block struct type name for a given tag and size *)
 and block_type_name tag size =
@@ -386,6 +410,60 @@ let rec compile_prim env prim args =
       | _ -> error "array set expects 3 arguments"
       end
 
+  (* Phase 4: Variants *)
+  | Pisint ->
+      (* Check if value is an immediate integer (i31ref) vs a block *)
+      begin match args with
+      | [v] ->
+          let env, cv = compile_expr env v in
+          (* Use ref.test to check if it's an i31ref *)
+          (env, RefI31 (RefTest (I31, cv)))
+      | _ -> error "isint expects 1 argument"
+      end
+
+  | Pisout ->
+      (* Check if tag is out of range - used for exhaustiveness *)
+      begin match args with
+      | [tag; num_tags] ->
+          let env, ctag = compile_expr env tag in
+          let env, cnum = compile_expr env num_tags in
+          (* tag >= num_tags means out of range *)
+          (env, RefI31 (I32GeU (I31GetS ctag, I31GetS cnum)))
+      | _ -> error "isout expects 2 arguments"
+      end
+
+  | Pgettag ->
+      (* Get tag from a block (variant constructor) *)
+      begin match args with
+      | [block] ->
+          let env, cblock = compile_expr env block in
+          (* For now, assume tag is stored in first field or use struct info *)
+          (* In ReScript WASM-GC, we could use different struct types per tag *)
+          (* Simplified: extract tag from the variant struct *)
+          (env, RefI31 (StructGet ("$variant", "tag", cblock)))
+      | _ -> error "gettag expects 1 argument"
+      end
+
+  (* Phase 5: JS Interop *)
+  | Pccall { prim_name; prim_arity; prim_native_name } ->
+      (* Call external JavaScript function via import *)
+      let import_name = if prim_native_name <> "" then prim_native_name else prim_name in
+      let local_name = "$" ^ import_name in
+      (* Ensure the import is registered *)
+      let env = ensure_js_import env "js" import_name local_name prim_arity in
+      let env, cargs = List.fold_left_map (fun env arg ->
+        compile_expr env arg
+      ) env args in
+      (* Generate call to imported function *)
+      (env, Call (local_name, cargs))
+
+  | Pjs_unsafe_downgrade ->
+      (* Unsafe cast from JS value - identity at runtime *)
+      begin match args with
+      | [v] -> compile_expr env v
+      | _ -> error "js_unsafe_downgrade expects 1 argument"
+      end
+
 (** {1 Expression Compilation} *)
 
 and compile_expr env expr =
@@ -604,6 +682,113 @@ and compile_expr env expr =
           ])
         ])
       ])
+
+  (* Phase 4: Pattern Matching *)
+  | Lswitch (scrutinee, sw) ->
+      let env, cscrutinee = compile_expr env scrutinee in
+      (* Store scrutinee in a local for multiple accesses *)
+      let scrut_id = make_ident "$scrutinee" in
+      let env, scrut_idx = alloc_local env scrut_id (Ref Any) in
+
+      (* Compile constant cases (immediate integers) *)
+      let env, const_branches = List.fold_left_map (fun env (tag, body) ->
+        let env, cbody = compile_expr env body in
+        (env, (tag, cbody))
+      ) env sw.sw_consts in
+
+      (* Compile block cases (constructors with data) *)
+      let env, block_branches = List.fold_left_map (fun env (tag, body) ->
+        let env, cbody = compile_expr env body in
+        (env, (tag, cbody))
+      ) env sw.sw_blocks in
+
+      (* Compile fail action *)
+      let env, fail_instr = match sw.sw_failaction with
+        | Some fail ->
+            let env, cfail = compile_expr env fail in
+            (env, Some cfail)
+        | None -> (env, None)
+      in
+
+      (* Generate switch using br_table or nested ifs *)
+      let default_instr = match fail_instr with
+        | Some f -> f
+        | None -> Unreachable
+      in
+
+      (* Build the switch logic *)
+      let build_switch is_const branches =
+        if branches = [] then default_instr
+        else
+          let check_branch (tag, body) rest =
+            let cmp = if is_const then
+              (* For constants, compare directly *)
+              I32Eq (I31GetS (LocalGet scrut_idx), I32Const (Int32.of_int tag))
+            else
+              (* For blocks, compare the tag *)
+              let tag_instr = StructGet ("$variant", "tag", LocalGet scrut_idx) in
+              I32Eq (tag_instr, I32Const (Int32.of_int tag))
+            in
+            If (cmp, [body], [rest])
+          in
+          List.fold_right check_branch branches default_instr
+      in
+
+      (* Combine const and block cases *)
+      let body =
+        if const_branches <> [] && block_branches <> [] then
+          (* Check if int first, then dispatch *)
+          let is_int = RefTest (I31, LocalGet scrut_idx) in
+          If (is_int,
+            [build_switch true const_branches],
+            [build_switch false block_branches])
+        else if const_branches <> [] then
+          build_switch true const_branches
+        else
+          build_switch false block_branches
+      in
+
+      (env, Seq [LocalSet (scrut_idx, cscrutinee); body])
+
+  | Lstaticraise (exit_num, args) ->
+      (* Static raise - jump to a catch handler *)
+      let env, cargs = List.fold_left_map (fun env arg ->
+        compile_expr env arg
+      ) env args in
+      (* For now, use br with the exit number as label depth *)
+      (* In real impl, would need to track catch handlers *)
+      let _ = cargs in  (* Args would be passed via locals in full impl *)
+      (env, Br exit_num)
+
+  | Lstaticcatch (body, (exit_num, ids), handler) ->
+      (* Static catch - wraps body with a handler for staticraise *)
+      let _ = exit_num in
+      (* Allocate locals for the handler parameters *)
+      let env = List.fold_left (fun env id ->
+        let env, _ = alloc_local env id (Ref Any) in
+        env
+      ) env ids in
+      let env, cbody = compile_expr env body in
+      let env, chandler = compile_expr env handler in
+      (* Use block/br structure for static exception handling *)
+      (* The body can br to the handler block *)
+      (env, Block (Some (Printf.sprintf "$catch_%d" exit_num), [
+        cbody;
+        Br 1  (* Skip handler if body completes normally *)
+      ]))
+      (* Note: simplified - full impl needs block for handler too *)
+      |> fun (env, block_instr) ->
+        (env, Seq [block_instr; chandler])
+
+  | Ltrywith (body, exn_id, handler) ->
+      (* Try-with for dynamic exceptions *)
+      (* WASM-GC doesn't have native exception handling (yet) *)
+      (* For now, compile as just the body - exceptions would trap *)
+      let env, cbody = compile_expr env body in
+      let env, _ = alloc_local env exn_id (Ref Any) in
+      let env, _chandler = compile_expr env handler in
+      (* TODO: When WASM exceptions are available, use try-catch *)
+      (env, cbody)
 
 (** {1 Function Compilation} *)
 

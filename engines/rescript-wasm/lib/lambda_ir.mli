@@ -19,6 +19,13 @@ type mutable_flag = Immutable | Mutable
 (** Array kind for typed arrays *)
 type array_kind = Pgenarray | Paddrarray | Pintarray | Pfloatarray
 
+(** External function call description (Phase 5) *)
+type external_call = {
+  prim_name : string;
+  prim_arity : int;
+  prim_native_name : string;
+}
+
 type primitive =
   (* Integer arithmetic *)
   | Paddint | Psubint | Pmulint | Pdivint | Pmodint | Pnegint
@@ -42,6 +49,13 @@ type primitive =
   | Parraysetu of array_kind
   | Parrayrefs of array_kind
   | Parraysets of array_kind
+  (* Variants (Phase 4) *)
+  | Pisint
+  | Pisout
+  | Pgettag
+  (* JS Interop (Phase 5) *)
+  | Pccall of external_call
+  | Pjs_unsafe_downgrade
 
 type let_kind = Strict | Alias | Variable
 
@@ -53,7 +67,17 @@ type function_repr = {
 and lambda_type =
   | Tint | Tfloat | Tstring | Tunit | Tbool
   | Tfunc of lambda_type list * lambda_type
+  | Tvariant of string
   | Tany
+
+(** Switch case for pattern matching (Phase 4) *)
+and switch_case = {
+  sw_numconsts : int;
+  sw_consts : (int * lambda) list;
+  sw_numblocks : int;
+  sw_blocks : (int * lambda) list;
+  sw_failaction : lambda option;
+}
 
 and lambda =
   | Lconst of constant
@@ -67,6 +91,11 @@ and lambda =
   | Lsequence of lambda * lambda
   | Lwhile of lambda * lambda
   | Lfor of ident * lambda * lambda * bool * lambda
+  (* Phase 4: Pattern matching *)
+  | Lswitch of lambda * switch_case
+  | Lstaticraise of int * lambda list
+  | Lstaticcatch of lambda * (int * ident list) * lambda
+  | Ltrywith of lambda * ident * lambda
 
 (** {1 Constants} *)
 
@@ -118,6 +147,20 @@ val arrayset : lambda -> lambda -> lambda -> lambda
 val if_ : lambda -> lambda -> lambda -> lambda
 val seq : lambda -> lambda -> lambda
 val seqs : lambda list -> lambda
+
+(** {1 Variants (Phase 4)} *)
+
+val isint : lambda -> lambda
+val gettag : lambda -> lambda
+val switch : lambda -> consts:(int * lambda) list -> blocks:(int * lambda) list -> default:lambda option -> lambda
+val staticraise : int -> lambda list -> lambda
+val staticcatch : lambda -> int -> ident list -> lambda -> lambda
+val trywith : lambda -> ident -> lambda -> lambda
+
+(** {1 JS Interop (Phase 5)} *)
+
+val ccall : string -> int -> string -> lambda list -> lambda
+val js_call : string -> lambda list -> lambda
 
 (** {1 Analysis} *)
 

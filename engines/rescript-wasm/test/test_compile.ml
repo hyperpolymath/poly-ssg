@@ -326,6 +326,176 @@ let test_closure_compile () =
     assert_contains "captures variable" "struct.get" wat
   )
 
+(** {1 Phase 4: Variant Tests} *)
+
+let test_variant_compile () =
+  test "compile isint check" (fun () ->
+    let v = make_ident "v" in
+    let body = isint (Lvar v) in
+    let func = Lfunction ({ params = [v]; return_type = Some Tbool }, body) in
+    let m = compile_program [("is_int", func)] in
+    let wat = emit_module m in
+    assert_contains "ref.test in output" "ref.test" wat
+  );
+  test "compile gettag" (fun () ->
+    let v = make_ident "v" in
+    let body = gettag (Lvar v) in
+    let func = Lfunction ({ params = [v]; return_type = Some Tint }, body) in
+    let m = compile_program [("get_tag", func)] in
+    let wat = emit_module m in
+    assert_contains "struct.get in output" "struct.get" wat
+  );
+  test "compile simple switch (constants)" (fun () ->
+    let x = make_ident "x" in
+    let body = switch (Lvar x)
+      ~consts:[(0, const_int 100); (1, const_int 200)]
+      ~blocks:[]
+      ~default:(Some (const_int 0)) in
+    let func = Lfunction ({ params = [x]; return_type = Some Tint }, body) in
+    let m = compile_program [("sw", func)] in
+    let wat = emit_module m in
+    assert_contains "if instruction for switch" "(if" wat;
+    assert_contains "i32.eq for comparison" "i32.eq" wat
+  );
+  test "compile staticraise/staticcatch" (fun () ->
+    let x = make_ident "x" in
+    let body = staticcatch
+      (staticraise 0 [])
+      0 [] (const_int 42) in
+    let func = Lfunction ({ params = [x]; return_type = Some Tint }, body) in
+    let m = compile_program [("catch_test", func)] in
+    let wat = emit_module m in
+    assert_contains "block in output" "(block" wat
+  )
+
+(** {1 Phase 5: JS Interop Tests} *)
+
+let test_js_interop () =
+  test "compile external call (ccall)" (fun () ->
+    let args = [const_string "hello"] in
+    let body = ccall "console_log" 1 "console_log" args in
+    let m = compile_expr_as_module body in
+    let wat = emit_module m in
+    assert_contains "call in output" "(call" wat
+  );
+  test "compile js_call helper" (fun () ->
+    let body = js_call "alert" [const_string "test"] in
+    let m = compile_expr_as_module body in
+    let wat = emit_module m in
+    assert_contains "call instruction" "(call" wat
+  )
+
+(** {1 Phase 6: Binary Emission Tests} *)
+
+let test_binary_emission () =
+  test "LEB128 unsigned encoding" (fun () ->
+    let encoded = Wasm_binary.encode_uleb128 624485 in
+    (* 624485 = 0x98765 -> E5 8E 26 in LEB128 *)
+    if List.length encoded <> 3 then
+      failwith (Printf.sprintf "Expected 3 bytes, got %d" (List.length encoded))
+  );
+  test "LEB128 signed encoding" (fun () ->
+    let encoded = Wasm_binary.encode_sleb128 (-123456) in
+    if List.length encoded < 1 then
+      failwith "Expected at least 1 byte"
+  );
+  test "binary module has WASM magic" (fun () ->
+    let expr = const_int 42 in
+    let m = compile_expr_as_module expr in
+    let bytes = Wasm_binary.module_to_bytes m in
+    (* WASM magic: 0x00 0x61 0x73 0x6d *)
+    if Bytes.length bytes < 4 then failwith "Module too short";
+    if Bytes.get bytes 0 <> '\x00' then failwith "Bad magic byte 0";
+    if Bytes.get bytes 1 <> '\x61' then failwith "Bad magic byte 1";
+    if Bytes.get bytes 2 <> '\x73' then failwith "Bad magic byte 2";
+    if Bytes.get bytes 3 <> '\x6d' then failwith "Bad magic byte 3"
+  );
+  test "binary module has version 1" (fun () ->
+    let expr = const_int 42 in
+    let m = compile_expr_as_module expr in
+    let bytes = Wasm_binary.module_to_bytes m in
+    (* Version 1: 0x01 0x00 0x00 0x00 *)
+    if Bytes.length bytes < 8 then failwith "Module too short";
+    if Bytes.get bytes 4 <> '\x01' then failwith "Bad version byte 0"
+  )
+
+(** {1 Phase 6: Optimization Tests} *)
+
+let test_optimization () =
+  test "constant folding - integer add" (fun () ->
+    let instr = Wasm_types.I32Add (Wasm_types.I32Const 10l, Wasm_types.I32Const 20l) in
+    let optimized = Wasm_optimize.fold_const_int instr in
+    match optimized with
+    | Wasm_types.I32Const 30l -> ()
+    | _ -> failwith "Expected I32Const 30"
+  );
+  test "constant folding - integer mul" (fun () ->
+    let instr = Wasm_types.I32Mul (Wasm_types.I32Const 6l, Wasm_types.I32Const 7l) in
+    let optimized = Wasm_optimize.fold_const_int instr in
+    match optimized with
+    | Wasm_types.I32Const 42l -> ()
+    | _ -> failwith "Expected I32Const 42"
+  );
+  test "algebraic simplification - x + 0" (fun () ->
+    let instr = Wasm_types.I32Add (Wasm_types.LocalGet 0, Wasm_types.I32Const 0l) in
+    let optimized = Wasm_optimize.simplify_algebra instr in
+    match optimized with
+    | Wasm_types.LocalGet 0 -> ()
+    | _ -> failwith "Expected LocalGet 0"
+  );
+  test "algebraic simplification - x * 1" (fun () ->
+    let instr = Wasm_types.I32Mul (Wasm_types.LocalGet 0, Wasm_types.I32Const 1l) in
+    let optimized = Wasm_optimize.simplify_algebra instr in
+    match optimized with
+    | Wasm_types.LocalGet 0 -> ()
+    | _ -> failwith "Expected LocalGet 0"
+  );
+  test "dead code elimination" (fun () ->
+    let instrs = [
+      Wasm_types.I32Const 1l;
+      Wasm_types.Return (Some (Wasm_types.I32Const 42l));
+      Wasm_types.I32Const 2l;  (* dead *)
+      Wasm_types.I32Const 3l;  (* dead *)
+    ] in
+    let optimized = Wasm_optimize.eliminate_dead_code instrs in
+    if List.length optimized <> 2 then
+      failwith (Printf.sprintf "Expected 2 instructions after DCE, got %d" (List.length optimized))
+  )
+
+(** {1 Phase 6: Source Map Tests} *)
+
+let test_source_maps () =
+  test "empty source map" (fun () ->
+    let map = Wasm_sourcemap.empty_source_map in
+    if map.version <> 3 then failwith "Expected version 3"
+  );
+  test "add source file" (fun () ->
+    let map = Wasm_sourcemap.empty_source_map in
+    let map = Wasm_sourcemap.add_source map "test.res" in
+    if List.length map.sources <> 1 then failwith "Expected 1 source";
+    if List.hd map.sources <> "test.res" then failwith "Expected test.res"
+  );
+  test "add mapping" (fun () ->
+    let map = Wasm_sourcemap.empty_source_map in
+    let map = Wasm_sourcemap.add_mapping map ~wasm_offset:0 ~file:"test.res" ~line:1 ~column:0 in
+    if List.length map.mappings <> 1 then failwith "Expected 1 mapping"
+  );
+  test "source map to JSON" (fun () ->
+    let map = Wasm_sourcemap.empty_source_map in
+    let map = Wasm_sourcemap.add_source map "test.res" in
+    let json = Wasm_sourcemap.to_json map in
+    assert_contains "version in JSON" "\"version\": 3" json;
+    assert_contains "sources in JSON" "\"sources\":" json
+  );
+  test "source map builder" (fun () ->
+    let builder = Wasm_sourcemap.Builder.create () in
+    Wasm_sourcemap.Builder.set_file builder "main.res";
+    Wasm_sourcemap.Builder.set_line builder 10;
+    Wasm_sourcemap.Builder.add_instruction builder ~bytes_emitted:5;
+    let map = Wasm_sourcemap.Builder.finish builder in
+    if List.length map.mappings <> 1 then failwith "Expected 1 mapping from builder"
+  )
+
 (** {1 Run All Tests} *)
 
 let () =
@@ -379,6 +549,26 @@ let () =
 
   print_endline "-- Phase 3: Closures --";
   test_closure_compile ();
+  print_endline "";
+
+  print_endline "-- Phase 4: Variants --";
+  test_variant_compile ();
+  print_endline "";
+
+  print_endline "-- Phase 5: JS Interop --";
+  test_js_interop ();
+  print_endline "";
+
+  print_endline "-- Phase 6: Binary Emission --";
+  test_binary_emission ();
+  print_endline "";
+
+  print_endline "-- Phase 6: Optimization --";
+  test_optimization ();
+  print_endline "";
+
+  print_endline "-- Phase 6: Source Maps --";
+  test_source_maps ();
   print_endline "";
 
   print_endline "====================================";
