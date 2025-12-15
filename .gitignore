@@ -1,37 +1,79 @@
-# Output directories
-test-corpus/output/
-output/
-_site/
-public/
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# RSR-compliant .gitignore
 
-# Editor files
+# OS & Editor
+.DS_Store
+Thumbs.db
 *.swp
 *.swo
 *~
-.vscode/
 .idea/
+.vscode/
 
-# OS files
-.DS_Store
-Thumbs.db
+# Build
+/target/
+/_build/
+/build/
+/dist/
+/out/
 
-# Build artifacts
-*.o
-*.a
-*.so
-*.dylib
+# Dependencies
+/node_modules/
+/vendor/
+/deps/
+/.elixir_ls/
 
-# Gforth
-*.fi
+# Rust
+# Cargo.lock  # Keep for binaries
 
-# Node (for any JS-based tools)
-node_modules/
+# Elixir
+/cover/
+/doc/
+*.ez
+erl_crash.dump
 
-# Python
+# Julia
+*.jl.cov
+*.jl.mem
+/Manifest.toml
+
+# ReScript
+/lib/bs/
+/.bsb.lock
+
+# Python (SaltStack only)
 __pycache__/
-*.pyc
+*.py[cod]
 .venv/
-venv/
+
+# Ada/SPARK
+*.ali
+/obj/
+/bin/
+
+# Haskell
+/.stack-work/
+/dist-newstyle/
+
+# Chapel
+*.chpl.tmp.*
+
+# Secrets
+.env
+.env.*
+*.pem
+*.key
+secrets/
+
+# Test/Coverage
+/coverage/
+htmlcov/
 
 # Logs
 *.log
+/logs/
+
+# Temp
+/tmp/
+*.tmp
+*.bak
