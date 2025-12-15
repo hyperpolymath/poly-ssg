@@ -30,8 +30,9 @@ jobs:
     strategy:
       fail-fast: true  # Fail immediately on security issues
       matrix:
-        # CodeQL supports: javascript, python, ruby, go, java, csharp, cpp
-        language: [javascript]
+        include:
+          - language: actions
+            build-mode: none
 
     steps:
       - name: Checkout repository
