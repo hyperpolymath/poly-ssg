@@ -82,7 +82,7 @@ jobs:
         working-directory: engines/rescript-wasm
 
       - name: Upload WAT artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
         with:
           name: wat-output-${{ matrix.os }}-${{ matrix.ocaml-version }}
           path: engines/rescript-wasm/*.wat
