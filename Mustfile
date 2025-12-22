@@ -1,0 +1,145 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+# poly-ssg Mustfile — Mandatory project invariants
+#
+# This file defines MUST conditions that are always checked.
+# Unlike Justfile recipes, these are constraints, not tasks.
+# See: https://github.com/hyperpolymath/mustfile-spec
+
+# ============================================================
+# SECURITY INVARIANTS
+# ============================================================
+
+must "All GitHub Actions pinned to SHA" {
+    check = "grep -r 'uses:' .github/workflows/ | grep -v '@[a-f0-9]{40}' | wc -l"
+    expect = "0"
+    severity = "critical"
+}
+
+must "No Obj.magic in production code" {
+    check = "grep -rn 'Obj\\.magic' engines/rescript-wasm/lib/ | wc -l"
+    expect = "0"
+    severity = "critical"
+}
+
+must "No Marshal in production code" {
+    check = "grep -rn 'Marshal\\.' engines/rescript-wasm/lib/ | wc -l"
+    expect = "0"
+    severity = "critical"
+}
+
+must "No shell execution in library code" {
+    check = "grep -rn 'Sys\\.command\\|Unix\\.system' engines/rescript-wasm/lib/ | wc -l"
+    expect = "0"
+    severity = "critical"
+}
+
+must "No hardcoded secrets" {
+    check = "grep -rEn '(password|secret|api_key)\\s*=\\s*[\"'][^\"']+[\"']' engines/ | wc -l"
+    expect = "0"
+    severity = "critical"
+}
+
+# ============================================================
+# CODE QUALITY INVARIANTS
+# ============================================================
+
+must "All .ml files have SPDX headers" {
+    check = "find engines -name '*.ml' -exec sh -c 'head -3 {} | grep -q SPDX || echo {}' \\; | wc -l"
+    expect = "0"
+    severity = "high"
+}
+
+must "All .scm files have SPDX headers" {
+    check = "for f in *.scm; do head -3 $f | grep -q SPDX || echo $f; done | wc -l"
+    expect = "0"
+    severity = "high"
+}
+
+must "All workflow files have permissions" {
+    check = "for f in .github/workflows/*.yml; do grep -q 'permissions:' $f || echo $f; done | wc -l"
+    expect = "0"
+    severity = "high"
+}
+
+must "No catch-all exception handlers" {
+    check = "grep -rn 'try.*with.*_ ->' engines/rescript-wasm/lib/ | grep -v 'failwith\\|raise' | wc -l"
+    expect = "0"
+    severity = "medium"
+}
+
+# ============================================================
+# STRUCTURE INVARIANTS
+# ============================================================
+
+must "Engine manifests exist" {
+    check = "for d in engines/*/; do [ -f \"${d}manifest.json\" ] || [ -f \"${d}manifest.ncl\" ] || echo $d; done | wc -l"
+    expect = "0"
+    severity = "high"
+}
+
+must "SCM files present" {
+    check = "ls META.scm ECOSYSTEM.scm STATE.scm SATELLITES.scm 2>/dev/null | wc -l"
+    expect = "4"
+    severity = "high"
+}
+
+must "SECURITY.md exists" {
+    check = "test -f SECURITY.md && echo 1 || echo 0"
+    expect = "1"
+    severity = "critical"
+}
+
+# ============================================================
+# TEST INVARIANTS
+# ============================================================
+
+must "Test corpus categories complete" {
+    check = "ls -d test-corpus/*/ 2>/dev/null | wc -l"
+    expect-min = "5"
+    severity = "medium"
+}
+
+must "Tests pass" {
+    check = "cd engines/rescript-wasm && dune test 2>&1 | grep -c 'FAILED' || echo 0"
+    expect = "0"
+    severity = "critical"
+}
+
+# ============================================================
+# DOCUMENTATION INVARIANTS
+# ============================================================
+
+must "README exists" {
+    check = "test -f README.md && echo 1 || echo 0"
+    expect = "1"
+    severity = "high"
+}
+
+must "Cookbook exists" {
+    check = "test -f cookbook.adoc && echo 1 || echo 0"
+    expect = "1"
+    severity = "medium"
+}
+
+# ============================================================
+# INVARIANT CHECKING
+# ============================================================
+
+# Run all must checks
+check-all {
+    description = "Verify all project invariants"
+    on-failure = "exit 1"
+}
+
+# Run critical checks only
+check-critical {
+    description = "Verify critical invariants only"
+    filter = "severity == critical"
+}
+
+# Run security checks
+check-security {
+    description = "Verify security invariants"
+    filter = "category == security"
+}

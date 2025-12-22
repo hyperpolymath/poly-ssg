@@ -3,23 +3,32 @@
 ;; ECOSYSTEM.scm — poly-ssg
 
 (ecosystem
-  (version "1.0.0")
+  (version "1.1.0")
   (name "poly-ssg")
   (type "hub")
+  (updated "2025-12-22")
   (purpose "A polyglot static site generator hub coordinating 33 language-specific satellites via MCP. Each satellite IS the definitive SSG for its language.")
 
   (position-in-ecosystem
     "Central hub of the poly-ssg satellite network.
-     Part of hyperpolymath ecosystem. Follows RSR guidelines.")
+     Part of hyperpolymath ecosystem. Follows RSR guidelines.
+     Security-hardened with SHA-pinned actions and automated scanning.")
 
   (satellites
     ;; See SATELLITES.scm for full registry
-    (implemented 11)
-    (todo 22)
+    (implemented 12)  ; Updated: includes webforge-ssg
+    (todo 21)
     (total 33)
     (languages
-     "Haskell" "Idris 2" "Forth" "Chapel" "Prolog"
+     "Ada" "Haskell" "Idris 2" "Forth" "Chapel" "Prolog"
      "ReScript" "Zig" "Game of Life" "COW" "Logo" "WAT"))
+
+  (infrastructure
+    (build-system . ("Justfile" "Mustfile" "Nickel" "asdf"))
+    (ci-cd . ("GitHub Actions" "CodeQL" "Semgrep" "Dependabot"))
+    (security . ("SHA-pinned-actions" "least-privilege" "SECURITY.md"))
+    (scm-files . ("META" "ECOSYSTEM" "STATE" "SATELLITES" "PLAYBOOK" "AGENTIC" "NEUROSYM"))
+    (documentation . ("cookbook.adoc" "README.md" "SECURITY.md")))
 
   (related-projects
     (project (name "casket-ssg")

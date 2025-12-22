@@ -1,0 +1,513 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= poly-ssg Cookbook
+:toc: left
+:toclevels: 3
+:sectnums:
+:source-highlighter: rouge
+:icons: font
+
+== Overview
+
+This cookbook provides recipes for common poly-ssg operations. All commands can be combined and composed for ultracombinatoric workflows.
+
+[#cli]
+== CLI Commands
+
+=== Core Commands
+
+[source,bash]
+----
+# Build
+just build                    # Build all engines
+just build-rescript-wasm      # Build ReScript-WASM backend
+just clean                    # Clean all artifacts
+
+# Test
+just test                     # Run all tests
+just test-unit                # Unit tests only
+just test-corpus              # Test corpus validation
+just test-e2e                 # End-to-end tests
+just test-all                 # Everything including e2e
+just test-engine <name>       # Test specific engine
+
+# Lint
+just lint                     # All linting
+just lint-ocaml               # OCaml checks
+just lint-security            # Security patterns
+just lint-spdx                # SPDX header verification
+----
+
+=== Security Commands
+
+[source,bash]
+----
+just security                 # Full security audit
+just security-scan            # Run security scans
+just security-check-pins      # Verify action pinning
+just security-verify-spdx     # SPDX compliance
+just security-audit-ocaml     # OCaml dependency audit
+----
+
+=== Satellite Operations
+
+[source,bash]
+----
+just satellite-list           # List all satellites
+just satellite-validate       # Validate contracts
+just satellite-sync           # Sync all satellites
+just satellite-fetch-all      # Fetch updates
+just satellite-update-registry # Update SATELLITES.scm
+----
+
+=== Development Commands
+
+[source,bash]
+----
+just lsp                      # Start language server
+just compile <file>           # Compile specific file
+just wat <example>            # Generate WAT output
+just wasm <example>           # Generate binary WASM
+just docs                     # Generate documentation
+just docs-open                # Open docs in browser
+----
+
+=== CI/CD Commands
+
+[source,bash]
+----
+just ci                       # Run CI locally
+just ci-validate              # Validate workflows
+just hooks-install            # Install git hooks
+just hooks-pre-commit         # Pre-commit checks
+just hooks-pre-push           # Pre-push checks
+----
+
+[#nickel]
+== Nickel Formulae
+
+=== Configuration Schema
+
+[source,nickel]
+----
+# Engine manifest schema
+let EngineManifest = {
+  name | String,
+  language | String,
+  implementation | String | optional,
+  version | String | default = "0.1.0",
+  build_command | Array String,
+  features | Array String | default = ["markdown", "frontmatter"],
+}
+
+# Query with: nickel query config.ncl --field engines.forth-estate
+----
+
+=== Build Matrix
+
+[source,nickel]
+----
+# Generate all build combinations
+let build_matrix = {
+  engines = ["forth-estate", "webforge", "parallelpress"],
+  formats = ["html", "json", "xml"],
+  environments = ["development", "production", "testing"],
+
+  combinations =
+    std.array.flat_map
+      (fun engine =>
+        std.array.flat_map
+          (fun format =>
+            std.array.map
+              (fun env => { engine, format, environment = env })
+              environments)
+          formats)
+      engines,
+}
+
+# Export: nickel export config.ncl --field matrix.combinations
+----
+
+=== Environment Overrides
+
+[source,nickel]
+----
+# Environment-specific settings
+environments = {
+  development = {
+    build = { drafts = true, clean_before_build = false },
+    formats = { html = { minify = false, pretty = true } },
+  },
+  production = {
+    build = { drafts = false, clean_before_build = true },
+    formats = { html = { minify = true, pretty = false } },
+  },
+}
+
+# Query: nickel export config.ncl --field environments.production
+----
+
+=== Nickel CLI Usage
+
+[source,bash]
+----
+# Export full config
+nickel export config.ncl
+
+# Export specific field
+nickel export config.ncl --field site
+nickel export config.ncl --field engines.forth-estate
+
+# Type check
+nickel typecheck config.ncl
+
+# Query nested fields
+nickel query config.ncl --field build.parallel
+
+# Just integration
+just ncl-export               # Export full config
+just ncl-query site           # Query specific field
+just ncl-validate             # Type check
+just ncl-matrix               # Generate build matrix
+----
+
+[#just]
+== Just Recipes
+
+=== Recipe Categories
+
+==== Build Recipes
+
+|===
+| Recipe | Description | Usage
+
+| `build`
+| Build all engines
+| `just build`
+
+| `build-rescript-wasm`
+| Build ReScript-WASM backend
+| `just build-rescript-wasm`
+
+| `build-env`
+| Build with environment config
+| `just build-env production`
+
+| `build-matrix`
+| Build all combinations
+| `just build-matrix`
+|===
+
+==== Test Recipes
+
+|===
+| Recipe | Description | Usage
+
+| `test`
+| Run all tests
+| `just test`
+
+| `test-unit`
+| Unit tests only
+| `just test-unit`
+
+| `test-e2e`
+| End-to-end tests
+| `just test-e2e`
+
+| `test-engine`
+| Test specific engine
+| `just test-engine forth-estate`
+
+| `test-verbose`
+| Verbose test output
+| `just test-verbose`
+|===
+
+==== Security Recipes
+
+|===
+| Recipe | Description | Usage
+
+| `security`
+| Full security audit
+| `just security`
+
+| `security-scan`
+| Run security scans
+| `just security-scan`
+
+| `security-check-pins`
+| Verify action pinning
+| `just security-check-pins`
+|===
+
+=== Composition Examples
+
+[source,bash]
+----
+# Full CI pipeline
+just lint && just test && just security
+
+# Development workflow
+just deps && just build && just test-unit
+
+# Release preparation
+just test-all && just changelog && just version minor
+
+# Security hardening
+just security && just lint-spdx && just ci-validate
+----
+
+[#combinatorics]
+== Combinatorics & Permutations
+
+=== Engine × Format × Environment
+
+All valid combinations for builds:
+
+[source,bash]
+----
+# Generate all combinations
+just ncl-matrix
+
+# Produces 3 engines × 3 formats × 3 envs = 27 combinations
+# Example output:
+# { engine: "forth-estate", format: "html", environment: "development" }
+# { engine: "forth-estate", format: "html", environment: "production" }
+# ...
+----
+
+=== Test Matrix
+
+[source,bash]
+----
+# Run tests across matrix
+for engine in forth-estate webforge parallelpress; do
+  for category in valid edge-cases malformed unicode injection stress; do
+    just test-engine $engine --category $category
+  done
+done
+----
+
+=== Concatenation Patterns
+
+[source,bash]
+----
+# Pipeline concatenation
+just lint | just test | just security
+
+# Parallel execution (where independent)
+just test-unit & just lint-security & wait
+
+# Sequential with failure handling
+just lint && just test || echo "Pipeline failed"
+----
+
+[#hooks]
+== Hooks & Extensibility
+
+=== Git Hooks
+
+[source,bash]
+----
+# Install hooks
+just hooks-install
+
+# Pre-commit hook runs:
+# - just lint
+
+# Pre-push hook runs:
+# - just ci (lint + test + security)
+----
+
+=== Nickel Hooks
+
+[source,nickel]
+----
+# Extensibility hooks in config.ncl
+hooks = {
+  pre_build = ["validate-config", "clean-cache"],
+  post_build = ["generate-sitemap", "notify-deploy"],
+  pre_render = ["inject-metadata"],
+  post_render = ["minify-output"],
+  on_error = ["log-error", "notify-admin"],
+}
+----
+
+=== CI/CD Hooks
+
+GitHub Actions workflow hooks for poly-ssg:
+
+[source,yaml]
+----
+# Pre-build hook
+- name: Pre-build validation
+  run: just lint && just ncl-validate
+
+# Post-build hook
+- name: Post-build validation
+  run: just validate
+
+# Security hook (daily)
+- name: Security scan
+  run: just security
+  if: github.event_name == 'schedule'
+----
+
+[#workflows]
+== Common Workflows
+
+=== Daily Development
+
+[source,bash]
+----
+# Morning setup
+just deps
+just status
+
+# Development cycle
+just test-unit       # Quick feedback
+just build           # Full build
+just test            # Full tests
+
+# Before commit
+just hooks-pre-commit
+----
+
+=== Adding New Engine
+
+[source,bash]
+----
+# 1. Scaffold
+mkdir -p engines/new-ssg-ssg/{src,tests}
+
+# 2. Create manifest
+just ncl-query engines.forth-estate > engines/new-ssg-ssg/manifest.ncl
+# Edit manifest for new language
+
+# 3. Implement (see PLAYBOOK.scm runbooks)
+
+# 4. Test
+just test-engine new-ssg
+
+# 5. Register
+# Add to SATELLITES.scm
+
+# 6. Update SCM
+just scm-update
+----
+
+=== Security Hardening
+
+[source,bash]
+----
+# Full security audit
+just security
+
+# Fix any issues found, then verify
+just security-check-pins
+just security-verify-spdx
+just ci-validate
+
+# Update documentation
+# Edit SECURITY.md if needed
+----
+
+=== Release Process
+
+[source,bash]
+----
+# 1. Ensure everything passes
+just test-all
+just security
+
+# 2. Update version and changelog
+just version minor
+just changelog
+
+# 3. Create tag
+just tag 1.2.0
+
+# 4. Push and publish
+git push --tags
+just publish
+----
+
+[#reference]
+== Quick Reference
+
+=== Essential Commands
+
+[cols="1,2"]
+|===
+| Command | Purpose
+
+| `just`
+| List all recipes
+
+| `just build`
+| Build project
+
+| `just test`
+| Run tests
+
+| `just ci`
+| Run full CI locally
+
+| `just security`
+| Security audit
+
+| `just status`
+| Project status
+|===
+
+=== File Locations
+
+[cols="1,2"]
+|===
+| File | Purpose
+
+| `Justfile`
+| Task runner recipes
+
+| `Mustfile`
+| Project invariants
+
+| `config.ncl`
+| Nickel configuration
+
+| `*.scm`
+| SCM metadata files
+
+| `cookbook.adoc`
+| This cookbook
+|===
+
+=== SCM Files
+
+[cols="1,2"]
+|===
+| File | Content
+
+| `META.scm`
+| Architecture decisions, practices
+
+| `ECOSYSTEM.scm`
+| Project positioning, relationships
+
+| `STATE.scm`
+| Current status, blockers
+
+| `SATELLITES.scm`
+| Satellite registry
+
+| `PLAYBOOK.scm`
+| Operational procedures
+
+| `AGENTIC.scm`
+| AI agent integration
+
+| `NEUROSYM.scm`
+| Neurosymbolic patterns
+|===
