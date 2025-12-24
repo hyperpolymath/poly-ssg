@@ -1,0 +1,18 @@
+= Poly SSG
+:toc: auto
+
+Polyglot static site generator framework. One contract, many languages, unique paradigmatic strengths.
+
+== Overview
+
+Poly SSG enables building static sites using multiple programming languages, each contributing its unique strengths to the build process.
+
+== Features
+
+* Multi-language support
+* Unified contract across implementations
+* MCP integration
+
+== License
+
+AGPL-3.0-or-later
