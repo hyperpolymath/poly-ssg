@@ -1,0 +1,139 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= redshift-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |redshift-ssg
+|Verdict |*ENGINE*
+|Language |Red (Rebol derivative)
+|Paradigm |Full-stack, dialecting
+|===
+
+== Rationale
+
+=== Why ENGINE
+
+Red offers unique capabilities:
+
+1. **Tiny binaries**: Complete SSG in ~1MB standalone executable. No runtime dependencies.
+
+2. **Dialecting power**: Create domain-specific languages for site configuration, templates, routing.
+
+3. **Full-stack nature**: Red handles everything from GUI to systems programming. Could support both CLI and visual editor.
+
+4. **Red/System layer**: C-level performance for hot paths (file I/O, string processing).
+
+5. **Active development**: Red is actively maintained with a dedicated team.
+
+=== Paradigmatic Strength
+
+[cols="1,2"]
+|===
+|SSG Concept |Red Implementation
+
+|Content files
+|Parsed as Red data (code-as-data)
+
+|Templates
+|Custom dialect with `make template! [...]`
+
+|Build process
+|Reactive dataflow updates
+
+|Configuration
+|Red data literals (no YAML/TOML needed)
+|===
+
+== Architecture
+
+----
+┌─────────────────────────────────────────────────────────┐
+│                  shift-ssg (Red)                        │
+├─────────────────────────────────────────────────────────┤
+│  Site Dialect (high-level)                              │
+│  ┌──────────────────────────────────────────┐          │
+│  │ site [                                    │          │
+│  │   title: "My Site"                       │          │
+│  │   posts: read %content/                  │          │
+│  │   layout: %templates/base.red            │          │
+│  │ ]                                        │          │
+│  └──────────────────────────────────────────┘          │
+├─────────────────────────────────────────────────────────┤
+│  Template Dialect (templating)                          │
+│  ┌──────────────────────────────────────────┐          │
+│  │ template [                               │          │
+│  │   html [head [title @title] body [@body]]│          │
+│  │ ]                                        │          │
+│  └──────────────────────────────────────────┘          │
+├─────────────────────────────────────────────────────────┤
+│  Red/System Layer (performance)                         │
+│  - File I/O                                             │
+│  - String processing                                    │
+│  - Native binary output                                 │
+└─────────────────────────────────────────────────────────┘
+----
+
+== Naming Note
+
+The README file shows "shift-ssg" but the repo is "redshift-ssg". Recommend sticking with "redshift-ssg" to avoid confusion with the "shift" shell command.
+
+== Unique Features
+
+=== Code as Data
+
+Configuration *is* executable code:
+[source,red]
+----
+site: load %site.red
+build site
+----
+
+=== Reactive TUI
+
+Built-in reactive system enables real-time build monitoring without external tools.
+
+=== Single Binary Distribution
+
+Deploy as one file. Perfect for:
+- Docker scratch images
+- Edge devices
+- Minimal environments
+
+== Implementation Roadmap
+
+=== Phase 1: Core Dialects
+- [ ] Site dialect specification
+- [ ] Template dialect specification
+- [ ] Markdown parser in Red
+
+=== Phase 2: Build Pipeline
+- [ ] File watcher using Red's reactor system
+- [ ] Incremental builds via change detection
+- [ ] Asset processing
+
+=== Phase 3: MCP Integration
+- [ ] TCP server in Red
+- [ ] JSON parsing for MCP protocol
+- [ ] ReScript adapter
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Core dialects
+|3 weeks
+
+|Build pipeline
+|2 weeks
+
+|MCP integration
+|1 week
+
+|**Total**
+|**6 weeks**
+|===

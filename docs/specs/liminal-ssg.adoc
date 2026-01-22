@@ -1,0 +1,64 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= liminal-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |liminal-ssg
+|Verdict |*ARCHIVE*
+|Language |Janus (reversible computing)
+|Paradigm |Time-reversible, zero-entropy
+|===
+
+== Rationale
+
+=== Why ARCHIVE
+
+The reversible computing angle is intellectually fascinating but practically useless for SSG:
+
+1. **No Janus implementation**: The academic Janus papers exist, but there's no production-ready interpreter or compiler available.
+
+2. **Reversibility solves no SSG problem**: You don't need to "un-build" a site. Version control already provides this via `git checkout`.
+
+3. **Overlaps with undo-ssg**: Both claim reversible computing benefits. Having two reversible-language SSGs doubles effort for the same non-problem.
+
+4. **Thermodynamic claims are irrelevant**: The Landauer limit applies at the transistor level. Your SSG's energy footprint is dominated by disk I/O, not logical operations.
+
+=== The "January" Name Confusion
+
+The README uses "january-ssg" internally but the repo is "liminal-ssg". This naming inconsistency suggests incomplete planning.
+
+== Consolidation with undo-ssg
+
+If reversible computing research is genuinely interesting, consolidate:
+
+- **Keep ONE** reversible SSG project
+- **Archive the other**
+- Recommend keeping `undo-ssg` since Arrow has slightly more tooling than Janus
+
+== Alternative Disposition
+
+=== Option 1: Archive (Recommended)
+
+Reversible computing doesn't solve any real SSG problem.
+
+=== Option 2: Merge into undo-ssg
+
+Add Janus as an alternative backend if both languages need exploration.
+
+=== Option 3: Research Project
+
+Keep as academic exploration of reversible computing, not production SSG:
+- Conference paper material
+- Computer science education
+- Clearly labeled as "research, not production"
+
+== Recommendation
+
+Archive. If reversible computing is desired, focus on undo-ssg alone.
+
+== Effort Saved
+
+Archiving prevents 60+ hours of bootstrapping a second reversible language for the same unsolved problem.

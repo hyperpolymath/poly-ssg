@@ -1,0 +1,144 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= SSG Engine Design Specification Template
+:toc:
+
+== Engine Identity
+
+[cols="1,3"]
+|===
+|Name |{engine-name}-ssg
+|Language |{language}
+|Paradigm |{paradigm: functional/logic/stack-based/parallel/systems/etc}
+|One-liner |{What makes this SSG unique in one sentence}
+|===
+
+== Paradigmatic Strength
+
+_What does this language/paradigm bring to static site generation that others don't?_
+
+{Explain the unique value proposition - why would someone choose this SSG over others?}
+
+== Core Concepts
+
+=== How {paradigm} Maps to SSG
+
+[cols="1,2"]
+|===
+|SSG Concept |{Language} Implementation
+
+|Content files
+|{How content is represented}
+
+|Templates
+|{How templates work in this paradigm}
+
+|Build process
+|{How the build leverages the paradigm's strengths}
+
+|Configuration
+|{How config is handled idiomatically}
+|===
+
+== Architecture
+
+----
+{ASCII diagram of key components}
+----
+
+=== Key Modules
+
+[cols="1,2,1"]
+|===
+|Module |Purpose |Lines Est.
+
+|{module1}
+|{purpose}
+|{estimate}
+
+|{module2}
+|{purpose}
+|{estimate}
+|===
+
+== MCP Contract Compliance
+
+This engine implements the poly-ssg MCP contract:
+
+[cols="1,1,2"]
+|===
+|MCP Tool |Implemented |Notes
+
+|`ssg/build`
+|{yes/no/partial}
+|{notes}
+
+|`ssg/serve`
+|{yes/no/partial}
+|{notes}
+
+|`ssg/new`
+|{yes/no/partial}
+|{notes}
+
+|`ssg/config`
+|{yes/no/partial}
+|{notes}
+|===
+
+== Dependencies
+
+=== Build Dependencies
+- {dep1} - {purpose}
+- {dep2} - {purpose}
+
+=== Runtime Dependencies
+- {dep1} - {purpose}
+
+== Example Usage
+
+[source,{language}]
+----
+{Idiomatic code example showing the paradigm's strength}
+----
+
+== Verdict: Engine or Theme?
+
+[cols="1,3"]
+|===
+|Recommendation |{ENGINE / THEME / ARCHIVE}
+|Rationale |{Why this should be a standalone engine, a theme for another engine, or archived}
+|If Theme |{Which engine it should be a theme for}
+|===
+
+== Implementation Roadmap
+
+=== Phase 1: Core
+- [ ] {task1}
+- [ ] {task2}
+
+=== Phase 2: MCP Integration
+- [ ] {task1}
+- [ ] {task2}
+
+=== Phase 3: Polish
+- [ ] {task1}
+- [ ] {task2}
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Core implementation
+|{estimate}
+
+|MCP integration
+|{estimate}
+
+|Testing & docs
+|{estimate}
+
+|**Total**
+|**{total}**
+|===

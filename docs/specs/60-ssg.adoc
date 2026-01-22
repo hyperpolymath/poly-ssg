@@ -1,0 +1,48 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= 60-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |60-ssg
+|Verdict |*ARCHIVE*
+|Language |ALGOL 60
+|Paradigm |Block-structured imperative
+|===
+
+== Rationale
+
+=== Why ARCHIVE
+
+ALGOL 60 is historically significant as the ancestor of structured programming, but it presents insurmountable practical challenges:
+
+1. **No modern toolchain**: There is no actively maintained ALGOL 60 interpreter or compiler. The claim of using asdf is aspirational at best.
+
+2. **Zero ecosystem**: No package management, no libraries for HTTP, HTML generation, file watching, or any modern SSG requirements.
+
+3. **Academic curiosity only**: While the "block-structured purity" angle is philosophically interesting, it provides no practical value over any modern language.
+
+4. **Overlapping niche**: If the goal is historical/pedagogical, canon-ssg (Standard ML) provides similar "formal definition" appeal with actual tooling.
+
+=== What Could Be Salvaged
+
+The *name* "60" could be repurposed for something meaningful:
+- A "60-second site" generator (ultra-fast builds)
+- A minimalist "60 lines of code" SSG reference implementation
+- A "1960s aesthetic" theme for another engine
+
+== Recommendation
+
+Archive this repository. If the historical programming angle is desired, redirect effort to canon-ssg (Standard ML) which has similar formal-definition purity with actual working compilers (MLton, SML/NJ).
+
+== Alternative Disposition
+
+If preservation is preferred over archival:
+- Convert to a *THEME* for casket-ssg (Haskell) with 1960s computer-era aesthetic
+- Vintage monospace fonts, green-on-black terminal styling, paper-tape motifs
+
+== Effort Saved
+
+Archiving prevents 40+ hours of attempting to bootstrap a dead language ecosystem.

@@ -1,0 +1,94 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= dei-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |dei-ssg
+|Verdict |*INTEGRATION*
+|Language |WokeLang
+|Paradigm |Consent-aware, attribution-tracking
+|Integrates With |hyperpolymath/wokelang, poly-ssg-mcp
+|===
+
+== Rationale
+
+=== Why INTEGRATION (not ENGINE)
+
+DEI-SSG's value comes from WokeLang's unique constructs, not from being a standalone SSG:
+
+1. **Dependent on WokeLang**: This is a WokeLang application, not a standalone generator. It showcases WokeLang features.
+
+2. **Limited SSG scope**: The actual SSG functionality (markdown parsing, templates, output) is standard. The differentiation is entirely in WokeLang's consent and attribution primitives.
+
+3. **Better as library**: The consent gates and attribution tracking could be a *plugin* for any SSG rather than requiring users to learn a new language.
+
+=== What's Valuable
+
+The concepts are genuinely useful:
+
+- **Consent gates**: Explicit permission prompts before external embeds
+- **Attribution tracking**: Automated contributor credits
+- **Units of measure**: Type-safe dimensions for images/cache TTLs
+
+These should be extracted as poly-ssg plugins, not locked to WokeLang.
+
+== Recommended Integration Architecture
+
+----
+┌─────────────────────────────────────────────────────────┐
+│                poly-ssg-consent (plugin)                │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
+│  │ Consent  │  │ Attrib   │  │  Units   │              │
+│  │ Gates    │  │ Tracking │  │ Measure  │              │
+│  └──────────┘  └──────────┘  └──────────┘              │
+└───────────────────────┬─────────────────────────────────┘
+                        │ integrates with
+        ┌───────────────┼───────────────┐
+        ▼               ▼               ▼
+   casket-ssg      eclipse-ssg     chicxulub-ssg
+----
+
+== Implementation Roadmap
+
+=== Phase 1: Extract Core Concepts
+- [ ] Define consent gate protocol (language-agnostic)
+- [ ] Define attribution metadata schema
+- [ ] Define units-of-measure type system
+
+=== Phase 2: Plugin Architecture
+- [ ] poly-ssg-consent plugin for consent prompts
+- [ ] poly-ssg-credits plugin for attribution tracking
+- [ ] Integration points for existing engines
+
+=== Phase 3: WokeLang Showcase
+- [ ] DEI-SSG as reference implementation showing WokeLang
+- [ ] Example sites demonstrating consent/attribution
+
+== Relationship to WokeLang
+
+DEI-SSG should be:
+- In the `wokelang` org/ecosystem
+- A showcase application demonstrating WokeLang capabilities
+- Linked from poly-ssg as an example of consent-aware generation
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Plugin architecture
+|2 weeks
+
+|Cross-engine integration
+|1 week
+
+|WokeLang showcase
+|1 week
+
+|**Total**
+|**4 weeks**
+|===

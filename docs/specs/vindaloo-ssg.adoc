@@ -1,0 +1,154 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= vindaloo-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |vindaloo-ssg
+|Verdict |*ENGINE*
+|Language |Curry (functional-logic)
+|Paradigm |Constraint-satisfaction, non-deterministic
+|===
+
+== Rationale
+
+=== Why ENGINE
+
+Curry brings genuinely unique capabilities:
+
+1. **Real toolchains**: PAKCS (Prolog-based) and KiCS2 (Haskell-based) are actively maintained.
+
+2. **Functional-logic fusion**: Combines Haskell-style functional programming with Prolog-style logic programming.
+
+3. **Non-determinism as feature**: Generate multiple site variants from a single source definition (A/B testing, multi-language).
+
+4. **Constraint solving**: Define site constraints; let the engine find valid configurations.
+
+=== Paradigmatic Strength
+
+[cols="1,2"]
+|===
+|SSG Concept |Curry Implementation
+
+|Content files
+|Data terms with free variables
+
+|Templates
+|Functions with pattern matching
+
+|Build process
+|Constraint solving over site structure
+
+|Configuration
+|Constraint declarations
+|===
+
+== Unique Capabilities
+
+=== Constraint-Based Layouts
+
+Define requirements, not implementations:
+
+[source,curry]
+----
+-- Page must be adjacent to related image
+-- Total page weight < 200KB
+-- Navigation depth <= 3
+
+solve layout constraints
+----
+
+=== Non-Deterministic Generation
+
+Generate all valid site variants:
+
+[source,curry]
+----
+-- English and French versions
+-- Light and dark themes
+-- Mobile and desktop layouts
+
+variants = [english, french] × [light, dark] × [mobile, desktop]
+----
+
+=== Logic Variables in Routes
+
+Routes can be partially specified:
+
+[source,curry]
+----
+route :: Post -> URL
+route p = "/blog" ++ "/" ++ year ++ "/" ++ slug p
+  where year = ? -- Free variable, filled by constraint solving
+----
+
+== Architecture
+
+----
+┌─────────────────────────────────────────────────────────┐
+│                    vindaloo-ssg                         │
+├─────────────────────────────────────────────────────────┤
+│  Constraint Layer                                       │
+│  ┌──────────────────────────────────────────┐          │
+│  │ constraints [                            │          │
+│  │   pageWeight < 200kb,                    │          │
+│  │   navDepth <= 3,                         │          │
+│  │   hasRelatedImage post                   │          │
+│  │ ]                                        │          │
+│  └──────────────────────────────────────────┘          │
+├─────────────────────────────────────────────────────────┤
+│  Search Engine (PAKCS/KiCS2)                            │
+│  - Explores solution space                              │
+│  - Backtracks on constraint violation                   │
+│  - Yields all valid configurations                      │
+├─────────────────────────────────────────────────────────┤
+│  Render Layer                                           │
+│  - Generates HTML for each solution                     │
+│  - Emits variants or optimal choice                     │
+└─────────────────────────────────────────────────────────┘
+----
+
+== Implementation Roadmap
+
+=== Phase 1: Core Types
+- [ ] Site structure as Curry data types
+- [ ] Content parsing with free variables
+- [ ] Basic constraint definitions
+
+=== Phase 2: Search Integration
+- [ ] Constraint solver for site layout
+- [ ] Non-deterministic variant generation
+- [ ] Solution ranking
+
+=== Phase 3: MCP Integration
+- [ ] Process communication via sockets
+- [ ] JSON bridge
+- [ ] ReScript adapter
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Core types
+|3 weeks
+
+|Search integration
+|3 weeks
+
+|MCP integration
+|1 week
+
+|**Total**
+|**7 weeks**
+|===
+
+== Target Audience
+
+- Constraint programming enthusiasts
+- Those needing multi-variant site generation
+- Researchers exploring logic programming applications
+- NOT mainstream users seeking simple SSG

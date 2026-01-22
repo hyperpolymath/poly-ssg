@@ -1,0 +1,108 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= vladik-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |vladik-ssg
+|Verdict |*INTEGRATION*
+|Language |Anvomidav (choreographic DSL)
+|Paradigm |Sequence-driven, transition-based
+|Integrates With |hyperpolymath/anvomidav
+|===
+
+== Rationale
+
+=== Why INTEGRATION (not ENGINE)
+
+vladik-ssg is an Anvomidav showcase, not a standalone SSG:
+
+1. **Dependent on Anvomidav**: This exists to demonstrate Anvomidav capabilities.
+
+2. **Niche domain mapping**: Figure skating choreography -> site generation is creative but forced.
+
+3. **No practical advantage**: "Sequences" are just build order. "Transitions" are just links. The mapping adds conceptual overhead without benefit.
+
+4. **Better as demonstration**: Shows what Anvomidav can do for a non-obvious domain.
+
+=== What's Interesting
+
+The choreographic metaphor is creative:
+
+- **Elements as content types** (jumps = major pages, spins = persistent sections)
+- **Transitions as navigation** (flow between pages)
+- **Program as site** (rendered experience)
+
+But this is artistic metaphor, not technical advantage.
+
+== Recommended Position
+
+vladik-ssg should be:
+- In the Anvomidav ecosystem as a showcase
+- Clearly labeled as "artistic exploration"
+- Not recommended for actual site building
+
+== Alternative: THEME
+
+Repurpose the figure skating metaphor as visual design:
+
+- **Ice rink aesthetics** (white, blue, crystalline)
+- **Program flow visualizations** (sequence diagrams)
+- **Scoring-style content evaluation** (technical/artistic scores)
+- **Performance art galleries**
+
+This would be a *THEME* for casket-ssg or eclipse-ssg.
+
+== If Proceeding as INTEGRATION
+
+=== Scope
+- Demonstration of Anvomidav for unusual domains
+- Art project / creative coding
+- Conference talk material
+
+=== Non-Scope
+- Production SSG
+- General-purpose site generation
+- Performance-critical builds
+
+== Implementation Roadmap
+
+=== Phase 1: Anvomidav Integration
+- [ ] Depend on working Anvomidav compiler
+- [ ] Map choreographic concepts to SSG
+- [ ] Document the metaphor clearly
+
+=== Phase 2: Showcase Sites
+- [ ] Figure skating portfolio site
+- [ ] Dance company documentation
+- [ ] Performance art galleries
+
+=== Phase 3: Art Documentation
+- [ ] Write about the conceptual mapping
+- [ ] Create visual documentation
+- [ ] Prepare conference presentation
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Anvomidav integration
+|2 weeks (assumes working Anvomidav)
+
+|Showcase sites
+|2 weeks
+
+|Documentation
+|1 week
+
+|**Total**
+|**5 weeks**
+|===
+
+== Dependency
+
+vladik-ssg cannot proceed until Anvomidav itself is sufficiently developed. Check Anvomidav status first.

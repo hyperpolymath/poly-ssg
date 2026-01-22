@@ -1,0 +1,117 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= divisionone-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |divisionone-ssg
+|Verdict |*ENGINE*
+|Language |COBOL (GnuCOBOL)
+|Paradigm |Record-oriented, self-documenting
+|===
+
+== Rationale
+
+=== Why ENGINE
+
+COBOL SSG is surprisingly viable and fills a genuine niche:
+
+1. **Real toolchain**: GnuCOBOL is actively maintained, compiles to native code, and runs everywhere.
+
+2. **Actual audience**: COBOL developers exist (millions of lines in production). They deserve modern tooling that speaks their language.
+
+3. **Record-oriented fit**: COBOL's record structures map naturally to content frontmatter. The PARSE statement is genuinely elegant for this.
+
+4. **Self-documenting**: COBOL code reads like English. Configuration files are more readable than YAML/TOML for non-programmers.
+
+5. **Unique angle**: No other SSG targets the mainframe/enterprise documentation niche.
+
+=== Paradigmatic Strength
+
+[cols="1,2"]
+|===
+|SSG Concept |COBOL Implementation
+
+|Content files
+|Record definitions with `PIC` clauses
+
+|Templates
+|COPY statements (copybooks)
+
+|Build process
+|PROCEDURE DIVISION with sections
+
+|Configuration
+|DATA DIVISION with level numbers
+|===
+
+== Architecture
+
+----
+┌─────────────────────────────────────────────────────────┐
+│                  IDENTIFICATION DIVISION                 │
+│  PROGRAM-ID. DIVISIONONE-SSG                            │
+├─────────────────────────────────────────────────────────┤
+│                  ENVIRONMENT DIVISION                    │
+│  INPUT-OUTPUT SECTION                                    │
+│  - SOURCE-DIR  (content/)                               │
+│  - OUTPUT-DIR  (_site/)                                 │
+├─────────────────────────────────────────────────────────┤
+│                  DATA DIVISION                           │
+│  - POST-RECORD (frontmatter structure)                  │
+│  - TEMPLATE-RECORD (layout structure)                   │
+│  - CONFIG-RECORD (site settings)                        │
+├─────────────────────────────────────────────────────────┤
+│                  PROCEDURE DIVISION                      │
+│  - READ-CONTENT-SECTION                                 │
+│  - PARSE-FRONTMATTER-SECTION                            │
+│  - APPLY-TEMPLATE-SECTION                               │
+│  - WRITE-OUTPUT-SECTION                                 │
+└─────────────────────────────────────────────────────────┘
+----
+
+== Implementation Roadmap
+
+=== Phase 1: Core Pipeline
+- [ ] Content file reader with record definitions
+- [ ] Frontmatter parser using INSPECT/STRING
+- [ ] Basic template substitution
+
+=== Phase 2: Template System
+- [ ] COPY statement-based template includes
+- [ ] Conditional rendering (EVALUATE)
+- [ ] Loop constructs (PERFORM VARYING)
+
+=== Phase 3: MCP Integration
+- [ ] C interop via GnuCOBOL's CALL mechanism
+- [ ] ReScript adapter
+- [ ] poly-ssg-mcp tool registration
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Core pipeline
+|2 weeks
+
+|Template system
+|2 weeks
+
+|MCP integration
+|1 week
+
+|**Total**
+|**5 weeks**
+|===
+
+== Market Position
+
+Target audience:
+- Enterprise teams with COBOL expertise
+- Mainframe documentation projects
+- Organizations wanting "readable by management" build configs
+- COBOL education (modern application of classic skills)

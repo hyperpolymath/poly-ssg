@@ -1,0 +1,97 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= obli-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |obli-ssg
+|Verdict |*INTEGRATION*
+|Language |Oblibeny (custom oblivious computing)
+|Paradigm |Pattern-hiding, privacy-preserving
+|Integrates With |hyperpolymath/oblibeny
+|===
+
+== Rationale
+
+=== Why INTEGRATION (not ENGINE)
+
+obli-ssg's value depends entirely on the Oblibeny ecosystem:
+
+1. **Dependent on Oblibeny**: This is an Oblibeny application, showcasing oblivious computing primitives.
+
+2. **The SSG itself is standard**: Parsing, templates, output are conventional. The differentiation is Oblibeny's access-pattern hiding.
+
+3. **Privacy features should be plugins**: The oblivious file access, timing decorrelation, and pattern hiding could benefit ANY SSG, not just one written in Oblibeny.
+
+=== What's Genuinely Valuable
+
+The privacy concepts are real and useful:
+
+- **Access pattern hiding**: Prevents information leakage from build behavior
+- **Timing decorrelation**: Output timing doesn't reveal input processing order
+- **Pattern inference denial**: Statistical analysis of builds reveals nothing
+
+These should be extracted as poly-ssg security plugins.
+
+== Recommended Integration Architecture
+
+----
+┌─────────────────────────────────────────────────────────┐
+│             poly-ssg-oblivious (plugin)                 │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
+│  │ Pattern  │  │  Timing  │  │  Access  │              │
+│  │  Hide    │  │ Decorrel │  │  Guard   │              │
+│  └──────────┘  └──────────┘  └──────────┘              │
+└───────────────────────┬─────────────────────────────────┘
+                        │ wraps
+        ┌───────────────┼───────────────┐
+        ▼               ▼               ▼
+   casket-ssg      eclipse-ssg     any engine
+----
+
+== Use Cases
+
+Where oblivious SSG builds actually matter:
+
+1. **Classified documentation**: Government/defense sites where access patterns are sensitive
+2. **Competitive intelligence**: Build patterns could reveal release schedules
+3. **Healthcare portals**: Patient-related content processing
+4. **Legal document sites**: Client matter confidentiality
+
+== Implementation Roadmap
+
+=== Phase 1: Extract Oblivious Primitives
+- [ ] Define oblivious file read interface
+- [ ] Define timing decorrelation protocol
+- [ ] Create Oblibeny-independent specification
+
+=== Phase 2: Plugin Architecture
+- [ ] poly-ssg-oblivious plugin
+- [ ] Integration with existing engines
+- [ ] Performance characterization
+
+=== Phase 3: Oblibeny Showcase
+- [ ] obli-ssg as reference Oblibeny application
+- [ ] Security analysis documentation
+- [ ] Threat model specification
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Primitive extraction
+|2 weeks
+
+|Plugin architecture
+|2 weeks
+
+|Oblibeny showcase
+|1 week
+
+|**Total**
+|**5 weeks**
+|===

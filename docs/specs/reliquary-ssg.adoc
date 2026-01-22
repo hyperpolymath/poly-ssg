@@ -1,0 +1,90 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= reliquary-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |reliquary-ssg
+|Verdict |*THEME* or *ARCHIVE*
+|Language |Unspecified
+|Paradigm |Digital preservation
+|===
+
+== Rationale
+
+=== Current State
+
+The README is minimal:
+- "Preserving digital artifacts"
+- "Under development"
+- No language, architecture, or technical details
+
+This is essentially an empty placeholder.
+
+=== Why THEME or ARCHIVE
+
+Without a defined language or paradigm:
+
+1. **No unique technical angle**: "Digital preservation" is a use case, not a programming paradigm.
+
+2. **Could be any engine**: Preservation features (archival formats, metadata, checksums) could be added to any SSG.
+
+3. **Better as integration**: If preservation matters, create `poly-ssg-archive` plugin that works with all engines.
+
+== Decision Required
+
+=== Option A: Define as THEME
+
+Repurpose "reliquary" as an aesthetic/functional theme:
+- Museum/archive visual design
+- Preservation-focused layouts
+- Metadata-rich display templates
+- Integration with archive.org, LOCKSS, etc.
+
+Theme for casket-ssg or hackenbush-ssg.
+
+=== Option B: Define as INTEGRATION
+
+Create `poly-ssg-preserve` plugin:
+- WARC file generation
+- Content checksum manifests
+- Archive.org submission automation
+- LOCKSS/CLOCKSS integration
+
+=== Option C: Archive
+
+If preservation isn't a priority, archive the empty repo.
+
+== Recommendation
+
+**THEME** - The name "reliquary" (container for sacred relics) evokes museum/archival aesthetics. Make it a preservation-themed presentation layer for another engine.
+
+== If Proceeding as THEME
+
+=== Design Elements
+- Sepia/parchment color schemes
+- Artifact cards with metadata
+- Timeline visualizations
+- Provenance tracking displays
+- "Preserved on [date]" stamps
+
+=== Target Engine
+casket-ssg (Haskell) - good fit for complex metadata handling
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|If Theme |Time
+
+|Design system
+|1 week
+
+|Template implementation
+|1 week
+
+|**Total**
+|**2 weeks**
+|===

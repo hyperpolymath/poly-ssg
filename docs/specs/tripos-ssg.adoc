@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= tripos-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |tripos-ssg
+|Verdict |*ARCHIVE* or *THEME*
+|Language |Unspecified
+|Paradigm |"Structured"
+|===
+
+== Rationale
+
+=== Current State
+
+README is minimal:
+- "A structured static site generator"
+- "Under development"
+- No language, architecture, or technical details
+
+This is an empty placeholder with a vague description.
+
+=== Name Analysis
+
+"Tripos" has several meanings:
+1. Cambridge University examination system
+2. Three-legged stand/stool
+3. Historical: verse composition contests
+
+The name suggests academic/examination themes or triple-structured architecture.
+
+=== Why ARCHIVE or THEME
+
+1. **"Structured" describes every SSG**: All SSGs transform structured content into structured output.
+
+2. **No unique angle**: Without a defined language or paradigm, there's nothing to implement.
+
+3. **Cambridge theme potential**: Could become an academic/examination themed presentation.
+
+== Decision Required
+
+=== Option A: Define a Language
+
+If there's a specific language in mind:
+- BCPL (Cambridge connection, historical)
+- ML (Edinburgh/Cambridge roots)
+- Something three-part structured (matching "tripos")
+
+Then re-evaluate as ENGINE.
+
+=== Option B: THEME
+
+Repurpose as academic/examination theme:
+- Tripos examination styling
+- Cambridge academic aesthetics
+- Educational content organization
+- Grading/scoring visualizations
+
+Theme for casket-ssg (Haskell has Cambridge roots via ML lineage).
+
+=== Option C: Archive (Recommended)
+
+No defined purpose, no defined language. Archive.
+
+== Recommendation
+
+Archive unless there's specific intent for an academic-themed project.
+
+== If Proceeding as THEME
+
+=== Design Elements
+- Academic typography (Baskerville, Garamond)
+- Examination paper layouts
+- Structured question/answer formats
+- Grade boundaries and scoring displays
+- Cambridge blue accents
+
+=== Target Engine
+casket-ssg - functional programming has academic heritage

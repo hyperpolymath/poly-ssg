@@ -1,0 +1,148 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= warp-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |warp-ssg
+|Verdict |*ENGINE*
+|Language |Factor
+|Paradigm |Concatenative, stack-oriented
+|===
+
+== Rationale
+
+=== Why ENGINE
+
+Factor provides genuine differentiation:
+
+1. **Production-ready**: Factor is actively maintained with excellent documentation.
+
+2. **Concatenative paradigm**: Code is composed by concatenation. Every operation is a word pushed onto/popped from the stack.
+
+3. **Homoiconic**: Code is data. Site generation logic can manipulate itself during build.
+
+4. **Powerful metaprogramming**: Factor's quotations and combinators enable sophisticated abstractions.
+
+5. **Good performance**: JIT compilation, garbage collection, and extensive standard library.
+
+=== Paradigmatic Strength
+
+[cols="1,2"]
+|===
+|SSG Concept |Factor Implementation
+
+|Content files
+|Sequences of characters, processed via stack
+
+|Templates
+|Quotations applied to content stacks
+
+|Build process
+|Word composition: `read parse render emit`
+
+|Configuration
+|Vocabularies with stack-effect declarations
+|===
+
+== Architecture
+
+----
+┌─────────────────────────────────────────────────────────┐
+│                    warp-ssg (Factor)                    │
+├─────────────────────────────────────────────────────────┤
+│  Stack-Based Pipeline                                   │
+│                                                         │
+│  "post.md"        → [ file ]                           │
+│  file read        → [ content ]                        │
+│  content parse    → [ ast ]                            │
+│  ast render       → [ html ]                           │
+│  html emit        → [ ]                                │
+├─────────────────────────────────────────────────────────┤
+│  Vocabulary Organization                                │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
+│  │ parser   │  │ template │  │ emitter  │              │
+│  │ words    │  │ words    │  │ words    │              │
+│  └──────────┘  └──────────┘  └──────────┘              │
+└─────────────────────────────────────────────────────────┘
+----
+
+== Factor-Specific Advantages
+
+=== Stack Effects
+
+Every word declares its stack effect:
+
+[source,factor]
+----
+: render-post ( post -- html )
+    dup title>> render-title
+    swap body>> render-body
+    append ;
+----
+
+=== Quotations
+
+First-class code blocks enable powerful composition:
+
+[source,factor]
+----
+: build-all ( posts -- )
+    [ render-post ] map
+    [ emit-file ] each ;
+----
+
+=== Vocabularies
+
+Namespaced code organization:
+
+[source,factor]
+----
+USING: warp.parser warp.templates warp.emitter ;
+IN: warp.build
+----
+
+== Implementation Roadmap
+
+=== Phase 1: Core Words
+- [ ] File reading vocabulary
+- [ ] Markdown parsing words
+- [ ] Template application quotations
+
+=== Phase 2: Build Pipeline
+- [ ] Directory traversal
+- [ ] Incremental builds via modification tracking
+- [ ] Watch mode using file system hooks
+
+=== Phase 3: MCP Integration
+- [ ] Factor socket libraries for IPC
+- [ ] JSON parsing vocabulary
+- [ ] ReScript adapter
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Core words
+|2 weeks
+
+|Build pipeline
+|2 weeks
+
+|MCP integration
+|1 week
+
+|**Total**
+|**5 weeks**
+|===
+
+== Target Audience
+
+- Factor developers
+- Forth/concatenative language enthusiasts
+- Those who appreciate stack-based thinking
+- Metaprogramming enthusiasts

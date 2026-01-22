@@ -1,0 +1,66 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= cpt-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |cpt-ssg
+|Verdict |*ARCHIVE*
+|Language |QPL (Quantum Programming Language)
+|Paradigm |Quantum-classical hybrid
+|===
+
+== Rationale
+
+=== Why ARCHIVE
+
+While creatively written, this project has fundamental problems:
+
+1. **No QPL toolchain exists**: The Selinger paper defines QPL mathematically, but there's no compiler or interpreter. You'd have to write one first.
+
+2. **Quantum computing doesn't help SSGs**: Markdown parsing isn't a quantum speedup candidate. There's no exponential advantage to be gained.
+
+3. **QRAM doesn't exist**: The architecture assumes a "QRAM machine model" which is theoretical. There's no hardware or simulator to run this on.
+
+4. **Misleading claims**: "Measurement-driven rendering" and "entangled templates" sound cool but are physically meaningless for text transformation.
+
+=== The Core Problem
+
+SSG operations are classical:
+- Read file -> O(n)
+- Parse markdown -> O(n)
+- Apply template -> O(n)
+- Write output -> O(n)
+
+Quantum computing provides speedups for:
+- Unstructured search (Grover's)
+- Factoring (Shor's)
+- Optimization (QAOA)
+
+There's no intersection.
+
+== Alternative Disposition
+
+=== Option 1: Archive (Recommended)
+
+This is creative fiction, not a viable project.
+
+=== Option 2: Educational THEME
+
+Repurpose as a *THEME* for another engine with quantum computing aesthetics:
+- Superposition state diagrams
+- Bloch sphere visualizations
+- Quantum circuit notation
+- "Entanglement" relationship graphs
+
+This would be a casket-ssg or eclipse-ssg theme for quantum computing documentation sites.
+
+== Recommendation
+
+Archive. The README is well-written but describes impossible technology.
+
+== Effort Saved
+
+Archiving prevents attempting to implement a non-existent programming language on non-existent hardware.

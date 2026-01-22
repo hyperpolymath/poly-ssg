@@ -1,0 +1,64 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= region-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |region-ssg
+|Verdict |*ARCHIVE*
+|Language |ZPL (Z-level Programming Language)
+|Paradigm |Parallel array regions
+|===
+
+== Rationale
+
+=== Why ARCHIVE
+
+ZPL is an interesting historical language but impractical:
+
+1. **Dead project**: ZPL development ceased around 2006. The University of Washington ZPL project is archived.
+
+2. **No maintained compiler**: The ZPL compiler (zc) hasn't been updated in nearly 20 years. It likely won't build on modern systems.
+
+3. **Solved problem space**: Modern array parallelism is better served by:
+   - Julia (general array computing)
+   - Futhark (GPU array computing)
+   - Chapel (parallel programming)
+
+4. **Overlapping with iota-ssg/jura-ssg**: If array-oriented parallelism is desired, APL or J are active languages with maintained toolchains.
+
+5. **No practical benefit**: Static site generation doesn't need distributed-memory parallelism. You're not processing petabytes.
+
+== Alternative Disposition
+
+=== Option 1: Archive (Recommended)
+
+ZPL is a historical artifact. Archive.
+
+=== Option 2: Pivot to Chapel
+
+If parallel array programming is genuinely desired, consider:
+
+- **Chapel**: Active development at HPE, modern syntax, real parallelism
+- **Futhark**: Functional array language, compiles to GPU code
+
+A "chapel-ssg" would have the same array/parallel appeal with actual tooling.
+
+=== Option 3: THEME
+
+Repurpose "region" as a theme concept:
+- Geographic/regional content organization
+- Multi-region deployment visualization
+- Map-based navigation
+
+This would be a theme for another engine.
+
+== Recommendation
+
+Archive. If parallel array computing appeals, redirect to iota-ssg (APL) or jura-ssg (J), or consider a new Chapel-based project.
+
+== Effort Saved
+
+Archiving prevents 80+ hours of archaeology trying to build a 20-year-old compiler.

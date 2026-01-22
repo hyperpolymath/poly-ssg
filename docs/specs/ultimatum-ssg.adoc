@@ -1,0 +1,110 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= ultimatum-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |ultimatum-ssg
+|Verdict |*INTEGRATION*
+|Language |Must (hyperpolymath deployment DSL)
+|Paradigm |Contract-driven, linear logic
+|Integrates With |hyperpolymath/Must
+|===
+
+== Rationale
+
+=== Why INTEGRATION (not ENGINE)
+
+ultimatum-ssg's value is entirely dependent on the Must ecosystem:
+
+1. **Showcase for Must**: This is a Must application demonstrating Ephapax Linear Logic and contract-driven deployment.
+
+2. **The SSG concepts are standard**: Parsing, templates, output are conventional. The differentiation is Must's contract system.
+
+3. **Better as demonstration**: Ultimatum shows what Must can do; it's not a standalone SSG choice.
+
+=== What's Genuinely Valuable
+
+The Must/Just separation is interesting:
+
+- **Just**: Local development (exploratory)
+- **Must**: Deployment (contractual)
+
+This philosophical distinction could benefit all SSGs as an operational pattern.
+
+== Recommended Architecture
+
+----
+┌─────────────────────────────────────────────────────────┐
+│                     Must Ecosystem                       │
+├─────────────────────────────────────────────────────────┤
+│  ultimatum-ssg (showcase)                               │
+│  - Demonstrates contract-driven SSG                     │
+│  - Reference implementation for Must users              │
+├─────────────────────────────────────────────────────────┤
+│  poly-ssg-contracts (plugin)                            │
+│  - Extracted contract verification                      │
+│  - Works with any SSG engine                            │
+│  - Must-inspired but language-agnostic                  │
+└─────────────────────────────────────────────────────────┘
+----
+
+== What to Extract
+
+From the README, these concepts deserve standalone plugins:
+
+1. **Linear Resource Consumption**
+   - Files processed exactly once
+   - No orphaned intermediates
+   - `poly-ssg-linear` plugin
+
+2. **Contract Verification**
+   - Pre/post conditions on build steps
+   - Failed contracts halt pipeline
+   - `poly-ssg-contracts` plugin
+
+3. **Nickel Integration**
+   - Type-safe configuration
+   - Schema validation
+   - Already exists as general tool
+
+== Implementation Roadmap
+
+=== Phase 1: Must Showcase
+- [ ] Working ultimatum-ssg demonstrating Must features
+- [ ] Clear documentation of contract patterns
+- [ ] Example sites
+
+=== Phase 2: Extract Patterns
+- [ ] Identify language-agnostic concepts
+- [ ] Create poly-ssg-contracts plugin spec
+- [ ] Create poly-ssg-linear plugin spec
+
+=== Phase 3: Cross-Engine Integration
+- [ ] Apply contracts to casket-ssg, eclipse-ssg
+- [ ] Linear consumption verification for all engines
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Must showcase
+|3 weeks (depends on Must maturity)
+
+|Extract patterns
+|2 weeks
+
+|Cross-engine
+|2 weeks
+
+|**Total**
+|**7 weeks**
+|===
+
+== Dependency
+
+Ultimatum-ssg cannot proceed until Must itself is sufficiently developed. Check Must status first.

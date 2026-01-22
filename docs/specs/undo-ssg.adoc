@@ -1,0 +1,86 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= undo-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |undo-ssg
+|Verdict |*ARCHIVE*
+|Language |Arrow (reversible computing)
+|Paradigm |Zero-entropy, isomorphic transformation
+|===
+
+== Rationale
+
+=== Why ARCHIVE
+
+Despite interesting concepts, reversible computing doesn't serve SSG needs:
+
+1. **Arrow tooling is limited**: The Arrow language has academic implementations but no production-grade toolchain.
+
+2. **Reversibility solves no real problem**:
+   - "Un-building" a site? Use `git checkout`
+   - Verifying source integrity? Use checksums
+   - Deterministic builds? Use any pure functional language
+
+3. **Thermodynamic claims are irrelevant**: The energy savings of reversible computing apply at transistor scale. Your SSG's power consumption is dominated by:
+   - Disk I/O
+   - Network activity
+   - Display rendering
+   - NOT logical operations
+
+4. **Duplicates liminal-ssg**: Both claim reversible computing benefits. Having two reversible SSGs doubles maintenance for zero practical gain.
+
+=== The Core Misconception
+
+Reversible computing is about:
+- Theoretical computation models
+- Quantum computing foundations
+- Thermodynamic limits of computation
+
+It's NOT about:
+- Version control (solved by git)
+- Build reproducibility (solved by determinism)
+- Deployment rollback (solved by artifact storage)
+
+== Consolidation with liminal-ssg
+
+Both undo-ssg and liminal-ssg target reversible computing. Recommendation:
+
+**Archive BOTH** - Neither solves a real SSG problem.
+
+If one must survive for research purposes:
+- Choose based on tooling availability
+- Arrow may have slight edge over Janus
+- But neither is production-ready
+
+== Alternative Disposition
+
+=== Option 1: Archive (Recommended)
+
+Reversible computing is fascinating but irrelevant to SSG.
+
+=== Option 2: Research Project
+
+Keep as academic exploration, clearly labeled non-production:
+- Computer science education
+- Conference paper material
+- Reversible computing demonstration
+
+=== Option 3: THEME
+
+Repurpose "undo" as undo/history visualization theme:
+- Timeline-based content display
+- Diff visualizations
+- Version history navigation
+- "Undo" button aesthetics
+
+== Recommendation
+
+Archive both undo-ssg and liminal-ssg. Reversible computing doesn't solve SSG problems.
+
+== Effort Saved
+
+Archiving prevents 60+ hours of implementing academic computing theory for text transformation.

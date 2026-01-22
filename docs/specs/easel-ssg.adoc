@@ -1,0 +1,71 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= easel-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |easel-ssg
+|Verdict |*ARCHIVE*
+|Language |Piet (esoteric, bitmap-based)
+|Paradigm |Visual/chromatic programming
+|===
+
+== Rationale
+
+=== Why ARCHIVE
+
+Piet is fascinating but impractical for real software:
+
+1. **Unusable development experience**: You can't grep, diff, or version control a bitmap meaningfully. Code review is impossible.
+
+2. **Debugging nightmare**: There's no step-through debugger for colored pixels. You'd be manually tracing color transitions.
+
+3. **No real tooling**: While npiet exists, it's a toy interpreter. There's no ecosystem for libraries, package management, or IDE support.
+
+4. **Performance concerns**: Piet interpretation is inherently slow due to image parsing overhead.
+
+5. **Security theater**: "Steganographic metadata" sounds cool but provides no real security. Security through obscurity isn't security.
+
+=== What's Actually Interesting
+
+The *art project* aspect is genuinely creative:
+- Generate Piet programs that are also aesthetically pleasing
+- Use site generation as art installation
+- Explore non-textual computing paradigms
+
+But this belongs in an art gallery, not a production toolchain.
+
+== Alternative Disposition
+
+=== Option 1: Archive (Recommended)
+
+This is conceptual art, not practical software.
+
+=== Option 2: Art Project THEME
+
+Repurpose as a *THEME* that generates Piet-inspired visuals:
+- Color-block layouts
+- Chromatic navigation
+- Pixel art aesthetic
+- "Source code as art" galleries
+
+This would be a theme for hackenbush-ssg or eclipse-ssg.
+
+=== Option 3: Code Golf Curiosity
+
+Keep as a challenge project:
+- "Build hello world in Piet SSG"
+- Esoteric language benchmark suite
+- Conference talk/demo material
+
+Not worth production investment.
+
+== Recommendation
+
+Archive. Redirect creative energy to visual themes for working engines.
+
+== Effort Saved
+
+Archiving prevents 100+ hours of fighting bitmap manipulation for text transformation.

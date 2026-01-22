@@ -1,0 +1,134 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= canon-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |canon-ssg
+|Verdict |*ENGINE*
+|Language |Standard ML
+|Paradigm |Formally-defined functional
+|===
+
+== Rationale
+
+=== Why ENGINE
+
+Standard ML occupies a unique position:
+
+1. **Mathematically defined semantics**: SML'97 is one of the few languages with a complete formal definition. Your site logic has rigorous, unchanging semantics.
+
+2. **Production compilers**: MLton (whole-program optimizer) and SML/NJ are mature, actively maintained.
+
+3. **Module system excellence**: SML's module system (signatures, structures, functors) is considered best-in-class for organizing large codebases.
+
+4. **Distinct from casket-ssg**: While both are functional, SML's strict evaluation and formal definition differ significantly from Haskell's lazy evaluation.
+
+=== Paradigmatic Strength
+
+Strict, formally-defined functional programming:
+
+[cols="1,2"]
+|===
+|SSG Concept |SML Implementation
+
+|Content files
+|Algebraic data types with pattern matching
+
+|Templates
+|Functor-parameterized modules
+
+|Build process
+|Strict evaluation, explicit state threading
+
+|Configuration
+|Record types with signature constraints
+|===
+
+== Differentiation from casket-ssg (Haskell)
+
+[cols="1,2,2"]
+|===
+|Aspect |canon-ssg (SML) |casket-ssg (Haskell)
+
+|Evaluation
+|Strict (predictable memory)
+|Lazy (space leaks possible)
+
+|Semantics
+|Formally defined
+|Informally specified
+
+|Module system
+|First-class functors
+|Type classes
+
+|Target audience
+|PL researchers, formalists
+|Functional practitioners
+|===
+
+== Architecture
+
+----
+┌─────────────────────────────────────────────────────────┐
+│                    canon-ssg                            │
+├─────────────────────────────────────────────────────────┤
+│  Signature Layer (contracts)                            │
+│  ┌──────────────────────────────────────────┐          │
+│  │ signature PARSER                         │          │
+│  │ signature TEMPLATE                       │          │
+│  │ signature RENDERER                       │          │
+│  └──────────────────────────────────────────┘          │
+├─────────────────────────────────────────────────────────┤
+│  Structure Layer (implementations)                      │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
+│  │MarkdownP │  │ Mustache │  │ HtmlRend │              │
+│  └──────────┘  └──────────┘  └──────────┘              │
+├─────────────────────────────────────────────────────────┤
+│  Functor Layer (composition)                            │
+│  ┌──────────────────────────────────────────┐          │
+│  │ functor SiteBuilder(P: PARSER)           │          │
+│  │                    (T: TEMPLATE)         │          │
+│  │                    (R: RENDERER)         │          │
+│  └──────────────────────────────────────────┘          │
+└─────────────────────────────────────────────────────────┘
+----
+
+== Implementation Roadmap
+
+=== Phase 1: Core Types and Signatures
+- [ ] Define AST types for content
+- [ ] Parser signature and Markdown structure
+- [ ] Template signature
+
+=== Phase 2: Build Pipeline
+- [ ] Functor-based site builder
+- [ ] File watching via foreign function interface
+- [ ] Incremental build support
+
+=== Phase 3: MCP Integration
+- [ ] C FFI wrapper for MLton output
+- [ ] ReScript adapter
+- [ ] poly-ssg-mcp registration
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Core types
+|2 weeks
+
+|Build pipeline
+|2 weeks
+
+|MCP integration
+|1 week
+
+|**Total**
+|**5 weeks**
+|===

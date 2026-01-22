@@ -1,0 +1,110 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= anvil-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |anvil-ssg
+|Verdict |*ENGINE*
+|Language |Ada/SPARK
+|Paradigm |Safety-critical, formally verified
+|===
+
+== Rationale
+
+=== Why ENGINE
+
+Ada with SPARK is uniquely positioned in the SSG landscape:
+
+1. **Formal verification**: SPARK prover can mathematically prove absence of buffer overflows, division by zero, and uninitialized variables. No other SSG offers this.
+
+2. **Real tooling**: GNAT (GCC Ada) is mature, actively maintained, and available via standard package managers. GNATprove is production-grade.
+
+3. **Genuine niche**: Safety-critical documentation (aerospace, medical, automotive) requires toolchains meeting DO-178C or ISO 26262. An Ada SSG can be part of such a certified pipeline.
+
+4. **Unique value**: The "contracts all the way down" approach (pre/post conditions on every template operation) is not available in any existing SSG.
+
+=== Paradigmatic Strength
+
+Design by Contract with formal verification:
+
+[cols="1,2"]
+|===
+|SSG Concept |Ada/SPARK Implementation
+
+|Content files
+|Fixed-length record types with range constraints
+
+|Templates
+|Generic packages with contract aspects
+
+|Build process
+|Tasking model for deterministic parallelism
+
+|Configuration
+|Discriminated records with variant parts
+|===
+
+== Architecture
+
+----
+┌─────────────────────────────────────────────────────────┐
+│                    anvil-ssg                            │
+├─────────────────────────────────────────────────────────┤
+│  Proven Core (SPARK subset)                             │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐              │
+│  │ Parser   │──│ Transform│──│ Renderer │              │
+│  │ Pre: ... │  │ Pre: ... │  │ Pre: ... │              │
+│  │ Post:... │  │ Post:... │  │ Post:... │              │
+│  └──────────┘  └──────────┘  └──────────┘              │
+├─────────────────────────────────────────────────────────┤
+│  I/O Boundary (full Ada)                                │
+│  ┌──────────┐  ┌──────────┐                            │
+│  │FileSystem│  │ Network  │                            │
+│  └──────────┘  └──────────┘                            │
+└─────────────────────────────────────────────────────────┘
+----
+
+== Relationship to noteg-ssg
+
+Both anvil-ssg and noteg-ssg are Ada-based. Recommended consolidation:
+
+- **anvil-ssg**: Focus on SPARK subset, formal verification, safety-critical use cases
+- **noteg-ssg**: Merge into anvil-ssg as the "Ada-without-SPARK" mode for general use
+
+== Implementation Roadmap
+
+=== Phase 1: Proven Parser Core
+- [ ] SPARK-proven Markdown subset parser
+- [ ] Contract-based frontmatter extraction
+- [ ] GNATprove integration in CI
+
+=== Phase 2: Template System
+- [ ] Generic template packages
+- [ ] Type-safe template variables
+- [ ] Compile-time template validation
+
+=== Phase 3: MCP Integration
+- [ ] ReScript adapter via C FFI
+- [ ] poly-ssg-mcp tool registration
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Core parser
+|3 weeks
+
+|Template system
+|2 weeks
+
+|MCP integration
+|1 week
+
+|**Total**
+|**6 weeks**
+|===

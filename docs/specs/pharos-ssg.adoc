@@ -1,0 +1,135 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= pharos-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |pharos-ssg
+|Verdict |*ENGINE*
+|Language |Pharo (Smalltalk)
+|Paradigm |Live image, object-oriented
+|===
+
+== Rationale
+
+=== Why ENGINE
+
+Pharo brings genuinely unique capabilities:
+
+1. **Live image environment**: Changes are instant. No compile-edit-run cycle. You're manipulating live objects.
+
+2. **Real toolchain**: Pharo is actively maintained, well-documented, and has a vibrant community.
+
+3. **Reflective power**: The engine can inspect and modify itself at runtime. Debugging is exploring live objects.
+
+4. **State persistence**: The image saves everything. Resume work exactly where you left off, including debug state.
+
+5. **Visual tooling**: Pharo's inspector, playground, and debugger are excellent for site structure exploration.
+
+=== Paradigmatic Strength
+
+[cols="1,2"]
+|===
+|SSG Concept |Pharo Implementation
+
+|Content files
+|Objects in the image
+
+|Templates
+|Objects with rendering methods
+
+|Build process
+|Message sends between objects
+
+|Configuration
+|Instance variables, live modification
+|===
+
+== Architecture
+
+----
+┌─────────────────────────────────────────────────────────┐
+│                   Pharo Image                           │
+├─────────────────────────────────────────────────────────┤
+│  Site (root object)                                     │
+│  ├── Configuration                                      │
+│  ├── ContentCollection                                  │
+│  │   ├── Post (object)                                 │
+│  │   ├── Post (object)                                 │
+│  │   └── Page (object)                                 │
+│  ├── TemplateCollection                                │
+│  │   ├── BaseLayout                                    │
+│  │   └── PostTemplate                                  │
+│  └── AssetCollection                                   │
+├─────────────────────────────────────────────────────────┤
+│  #build  → renders all content to disk                  │
+│  #save   → persists the image state                     │
+│  #inspect → opens visual browser                        │
+└─────────────────────────────────────────────────────────┘
+----
+
+== Unique Features
+
+=== Live Editing
+
+Edit a template object while the preview updates. No rebuild step.
+
+=== Object Graph Navigation
+
+Your site *is* an object graph. Navigate relationships visually:
+- "Show me all posts tagged 'rust'"
+- "Find broken internal links"
+- "Visualize the category hierarchy"
+
+=== Headless Mode
+
+For CI/CD, run headless:
+[source,bash]
+----
+pharo --headless pharos.image build
+----
+
+== Implementation Roadmap
+
+=== Phase 1: Core Objects
+- [ ] Site, Post, Page, Template classes
+- [ ] ContentLoader from filesystem
+- [ ] MarkdownParser integration
+
+=== Phase 2: Rendering Pipeline
+- [ ] Template rendering via message sends
+- [ ] FileEmitter for output
+- [ ] Asset copying
+
+=== Phase 3: MCP Integration
+- [ ] TCP socket server in image
+- [ ] JSON-RPC protocol
+- [ ] ReScript adapter
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Core objects
+|2 weeks
+
+|Rendering pipeline
+|2 weeks
+
+|MCP integration
+|1 week
+
+|**Total**
+|**5 weeks**
+|===
+
+== Target Audience
+
+- Smalltalk developers
+- Those who appreciate live/image-based development
+- Researchers exploring object-oriented site modeling
+- NOT users expecting traditional file-based workflow

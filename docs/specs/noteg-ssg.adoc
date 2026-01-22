@@ -1,0 +1,102 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= noteg-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |noteg-ssg
+|Verdict |*INTEGRATION* (merge into anvil-ssg)
+|Language |Ada
+|Paradigm |Contract-based, strongly typed
+|===
+
+== Rationale
+
+=== Why INTEGRATION (Merge)
+
+noteg-ssg and anvil-ssg are both Ada-based SSGs:
+
+1. **Same language**: Both use Ada. Maintaining two Ada SSGs splits effort.
+
+2. **Same paradigm**: Both emphasize contracts, strong typing, and safety.
+
+3. **Different SPARK levels**: anvil-ssg focuses on SPARK (formal verification), noteg-ssg is general Ada.
+
+=== Recommended Consolidation
+
+Merge noteg-ssg into anvil-ssg as the "non-SPARK mode":
+
+----
+┌─────────────────────────────────────────────────────────┐
+│                    anvil-ssg                            │
+├─────────────────────────────────────────────────────────┤
+│  Core Library (Ada)                                     │
+│  - Parser                                               │
+│  - Template engine                                      │
+│  - File operations                                      │
+├─────────────────────────────────────────────────────────┤
+│  SPARK Subset (optional)                                │
+│  - Formally verified parser                             │
+│  - Proven template transformations                      │
+│  - GNATprove integration                                │
+├─────────────────────────────────────────────────────────┤
+│  Usage Modes:                                           │
+│  - anvil build           (standard Ada)                 │
+│  - anvil build --spark   (SPARK verification)          │
+└─────────────────────────────────────────────────────────┘
+----
+
+== What noteg-ssg Contributes
+
+From the README, noteg-ssg has good architectural ideas:
+
+- Task-based parallelism
+- Contract annotations (Pre/Post)
+- Range types for validation
+- Clean separation of stages
+
+These should be incorporated into anvil-ssg.
+
+== Implementation Roadmap
+
+=== Phase 1: Code Migration
+- [ ] Audit noteg-ssg for unique features
+- [ ] Port any features anvil-ssg lacks
+- [ ] Unified CLI interface
+
+=== Phase 2: Mode Separation
+- [ ] Standard Ada mode (default)
+- [ ] SPARK mode with `--verify` flag
+- [ ] Shared core library
+
+=== Phase 3: Archive noteg-ssg
+- [ ] Update noteg-ssg README to redirect to anvil-ssg
+- [ ] Archive repository
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Code migration
+|1 week
+
+|Mode separation
+|1 week
+
+|Archival
+|1 day
+
+|**Total**
+|**2 weeks**
+|===
+
+== Benefits of Consolidation
+
+- Single Ada SSG to maintain
+- Larger contributor pool
+- Clearer positioning ("Ada/SPARK SSG")
+- No confusion about which Ada project to use

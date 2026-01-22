@@ -1,0 +1,124 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= tyrano-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |tyrano-ssg
+|Verdict |*ENGINE*
+|Language |REXX (Regina/ooRexx)
+|Paradigm |Human-readable scripting, PARSE-driven
+|===
+
+== Rationale
+
+=== Why ENGINE
+
+REXX provides genuine differentiation:
+
+1. **Real toolchains**: Regina REXX and ooRexx are actively maintained, widely available.
+
+2. **Mainframe heritage**: REXX runs on z/OS, bridging mainframe documentation to the web.
+
+3. **PARSE instruction**: REXX's PARSE is genuinely elegant for content processing. No regex needed.
+
+4. **Extreme readability**: REXX code reads like English prose. Non-programmers can understand configs.
+
+5. **Cross-platform**: Linux, macOS, Windows, z/OS - runs everywhere.
+
+=== Paradigmatic Strength
+
+[cols="1,2"]
+|===
+|SSG Concept |REXX Implementation
+
+|Content files
+|String variables, line-by-line processing
+
+|Templates
+|PARSE-based variable substitution
+
+|Build process
+|Procedural with SAY for logging
+
+|Configuration
+|REXX data statements, readable assignments
+|===
+
+== PARSE Power
+
+The README shows REXX's killer feature:
+
+[source,rexx]
+----
+/* Extract frontmatter - no regex needed */
+parse var content '---' . frontmatter '---' . body
+
+/* Parse key-value pairs */
+parse var line key ':' value
+key = strip(key)
+value = strip(value)
+
+/* Template substitution */
+parse var template '{{' varname '}}' rest
+----
+
+This is cleaner than any regex-based approach.
+
+== Architecture (From README)
+
+----
+┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+│  Watch   │───▶│  Parse   │───▶│  Render  │───▶│   Emit   │
+│  Source  │    │ Content  │    │ Template │    │   HTML   │
+└──────────┘    └──────────┘    └──────────┘    └──────────┘
+----
+
+== Target Audience
+
+- REXX enthusiasts
+- Mainframe developers building documentation
+- Organizations wanting "readable by anyone" build configs
+- Legacy system integrators
+
+== Implementation Roadmap
+
+=== Phase 1: Core Pipeline
+- [ ] Directory walker using REXX file functions
+- [ ] Frontmatter parser using PARSE
+- [ ] Markdown to HTML (call external or implement subset)
+
+=== Phase 2: Template System
+- [ ] PARSE-based variable substitution
+- [ ] Include processing
+- [ ] Conditional rendering
+
+=== Phase 3: MCP Integration
+- [ ] Socket communication for IPC
+- [ ] JSON parsing in REXX
+- [ ] ReScript adapter
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Core pipeline
+|2 weeks
+
+|Template system
+|2 weeks
+
+|MCP integration
+|1 week
+
+|**Total**
+|**5 weeks**
+|===
+
+== Notes
+
+The README is well-developed with clear architecture. This is more mature than many other proposals. Prioritize accordingly.

@@ -1,0 +1,140 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= iota-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |iota-ssg
+|Verdict |*ENGINE*
+|Language |APL (Dyalog or GNU APL)
+|Paradigm |Array-oriented, vectorized
+|===
+
+== Rationale
+
+=== Why ENGINE
+
+APL provides genuine differentiation:
+
+1. **Real toolchain**: Dyalog APL is commercial-grade with excellent performance. GNU APL is FOSS and actively maintained.
+
+2. **Vectorized operations**: APL operations are inherently parallel. Processing thousands of files is a single array operation, not a loop.
+
+3. **Extreme conciseness**: A complete SSG core could be dozens of characters, not thousands of lines. This is genuinely maintainable at small scale.
+
+4. **Unique community**: APL developers are often domain experts (finance, science) who appreciate elegant solutions.
+
+5. **Niche fit**: Array-oriented thinking suits sites with structured, tabular content (documentation, data catalogs).
+
+=== Paradigmatic Strength
+
+[cols="1,2"]
+|===
+|SSG Concept |APL Implementation
+
+|Content files
+|Character matrices or nested arrays
+
+|Templates
+|Functions mapped across content arrays
+
+|Build process
+|Single vectorized expression
+
+|Configuration
+|Namespaces with array-valued variables
+|===
+
+== Architecture
+
+----
+         content/           templates/
+             │                   │
+             ▼                   ▼
+    ┌────────────────────────────────┐
+    │        ⍳ iota-ssg ⍳            │
+    │                                │
+    │   files ← ⊃⎕NGET¨ paths        │  ← Read all files as array
+    │   parsed ← parse¨ files        │  ← Vectorized parse
+    │   html ← template∘apply¨ parsed│  ← Vectorized render
+    │   (paths⊢⎕NPUT) html           │  ← Vectorized write
+    │                                │
+    └────────────────────────────────┘
+             │
+             ▼
+          _site/
+----
+
+== APL Considerations
+
+=== Character Encoding
+
+APL uses special glyphs (⍳, ⍴, ⌈, etc.). Modern editors and terminals handle this, but documentation should address setup.
+
+=== Learning Curve
+
+APL requires paradigm shift. Target audience:
+- Existing APL users wanting web tooling
+- Developers curious about array programming
+- NOT mainstream SSG users seeking Hugo/Jekyll alternatives
+
+== Relationship to jura-ssg (J)
+
+Both are array languages. Differentiation:
+
+[cols="1,2,2"]
+|===
+|Aspect |iota-ssg (APL) |jura-ssg (J)
+
+|Notation
+|Unicode glyphs (⍳⍴⌈)
+|ASCII (i.#>.)
+
+|Community
+|Finance, older enterprises
+|Mathematics, younger academics
+
+|Tooling
+|Dyalog (commercial), GNU APL
+|J Software (free)
+|===
+
+Keep both as they serve different communities.
+
+== Implementation Roadmap
+
+=== Phase 1: Core Functions
+- [ ] File reading as arrays (`⎕NGET`)
+- [ ] Markdown parser in APL
+- [ ] Template application via array indexing
+
+=== Phase 2: Build Pipeline
+- [ ] Incremental builds via modification times
+- [ ] Watch mode using `⎕NA` for inotify
+- [ ] Development server
+
+=== Phase 3: MCP Integration
+- [ ] C FFI via `⎕NA`
+- [ ] ReScript adapter
+- [ ] poly-ssg-mcp tool registration
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Core functions
+|3 weeks
+
+|Build pipeline
+|2 weeks
+
+|MCP integration
+|1 week
+
+|**Total**
+|**6 weeks**
+|===

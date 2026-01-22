@@ -1,0 +1,104 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= chicxulub-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |chicxulub-ssg
+|Verdict |*ENGINE*
+|Language |Bash/POSIX Shell
+|Paradigm |Pipeline-driven, zero-dependency
+|===
+
+== Rationale
+
+=== Why ENGINE
+
+Bash SSG fills a critical practical niche:
+
+1. **Zero dependencies**: Runs anywhere `/bin/sh` exists. No runtime installation, no package managers, no compilation.
+
+2. **Universal availability**: Every Unix-like system has a POSIX shell. Perfect for constrained environments, containers, CI/CD.
+
+3. **Existing traction**: The README shows actual architecture and working pipeline design. This is more developed than most.
+
+4. **Pipeline paradigm**: Shell pipelines are genuinely elegant for text transformation. `find | xargs | sed | tee` is natural SSG logic.
+
+5. **Practical value**: For simple sites, a shell SSG eliminates the "install Node/Ruby/etc." friction entirely.
+
+=== Paradigmatic Strength
+
+Unix philosophy: small tools, text streams, composition:
+
+[cols="1,2"]
+|===
+|SSG Concept |Shell Implementation
+
+|Content files
+|Text files processed by `find`
+
+|Templates
+|`sed`/`awk` substitution, heredocs
+
+|Build process
+|Pipeline stages connected by `\|`
+
+|Configuration
+|Environment variables, sourced files
+|===
+
+== Architecture
+
+Already well-defined in README:
+
+----
+        ┌───────────┐      ┌─────────────┐      ┌─────────────┐
+        │   PARSE   │ pipe │  TRANSFORM  │ pipe │    EMIT     │
+        │frontmatter│──────│  templates  │──────│ write files │
+        └───────────┘      └─────────────┘      └─────────────┘
+----
+
+== Implementation Status
+
+This repo appears to have actual thought behind it. Prioritize implementation.
+
+== Implementation Roadmap
+
+=== Phase 1: Core Pipeline
+- [ ] Frontmatter extraction (`awk`)
+- [ ] Markdown to HTML (shell wrapper around `cmark` or `lowdown`)
+- [ ] Template variable substitution
+
+=== Phase 2: Features
+- [ ] File watching via `inotifywait` or `fswatch`
+- [ ] Development server (`python -m http.server` fallback)
+- [ ] Incremental builds via timestamp comparison
+
+=== Phase 3: MCP Integration
+- [ ] Shell script that reads MCP JSON from stdin
+- [ ] ReScript adapter for poly-ssg-mcp
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Core pipeline
+|1 week
+
+|Features
+|1 week
+
+|MCP integration
+|3 days
+
+|**Total**
+|**2.5 weeks**
+|===
+
+== Notes
+
+The name "chicxulub" (the asteroid impact) is evocative but long. Consider whether this affects usability (`chicxulub build` vs `chi build`).

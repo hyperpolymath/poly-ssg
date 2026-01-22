@@ -1,0 +1,140 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= jura-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |jura-ssg
+|Verdict |*ENGINE*
+|Language |J
+|Paradigm |Array programming, tacit composition
+|===
+
+== Rationale
+
+=== Why ENGINE
+
+J brings unique value:
+
+1. **ASCII-based array programming**: Unlike APL's Unicode glyphs, J uses ASCII only. Easier to type, version control, and document.
+
+2. **Tacit programming**: Point-free composition creates highly reusable, testable pipeline components.
+
+3. **Active community**: J Software maintains excellent documentation and a responsive community.
+
+4. **Free tooling**: J is completely free (unlike Dyalog APL's commercial licensing).
+
+5. **Extreme density**: As the README shows, meaningful operations fit in single lines: `render =: emit @ template @ parse @ read`
+
+=== Paradigmatic Strength
+
+[cols="1,2"]
+|===
+|SSG Concept |J Implementation
+
+|Content files
+|Boxed arrays of strings
+
+|Templates
+|Verbs (functions) applied via rank
+
+|Build process
+|Tacit composition: `build =: render"1 @ gather`
+
+|Configuration
+|Namespaces with noun definitions
+|===
+
+== Architecture (From README)
+
+----
+┌─────────┐    ┌─────────┐    ┌──────────┐    ┌────────┐
+│ content │───▶│  parse  │───▶│ template │───▶│  emit  │
+│  files  │    │  (;:)   │    │   (@.)   │    │  (1!:) │
+└─────────┘    └─────────┘    └──────────┘    └────────┘
+     │              │              │              │
+     └──────────────┴──────────────┴──────────────┘
+                    rank polymorphic
+----
+
+== J-Specific Advantages
+
+=== Rank Operator
+
+The rank operator `"` controls how deeply operations penetrate:
+
+[source,j]
+----
+NB. render works on one file or a thousand
+render 'post.md'      NB. single file
+render posts          NB. array of files
+----
+
+=== Tacit Style
+
+No intermediate variables, pure composition:
+
+[source,j]
+----
+render =: emit @ template @ parse @ read
+build =: render"1 @ gather @ walkdir
+----
+
+== Relationship to iota-ssg (APL)
+
+[cols="1,2,2"]
+|===
+|Aspect |jura-ssg (J) |iota-ssg (APL)
+
+|Notation
+|ASCII only
+|Unicode glyphs
+
+|Learning
+|Easier for ASCII-centric devs
+|Harder initial setup
+
+|Licensing
+|Completely free
+|Dyalog is commercial
+|===
+
+Both serve array programming community. Keep both.
+
+== Implementation Roadmap
+
+=== Phase 1: Core Verbs
+- [ ] File I/O via `1!:` foreign functions
+- [ ] Markdown parser in J
+- [ ] Template verb with gerund selection
+
+=== Phase 2: Build Pipeline
+- [ ] Directory walking with `dir`
+- [ ] Incremental builds via mtime comparison
+- [ ] Watch mode using foreign interface
+
+=== Phase 3: MCP Integration
+- [ ] Socket interface for IPC
+- [ ] ReScript adapter
+- [ ] poly-ssg-mcp tool registration
+
+== Estimated Effort
+
+[cols="1,1"]
+|===
+|Phase |Time
+
+|Core verbs
+|2 weeks
+
+|Build pipeline
+|2 weeks
+
+|MCP integration
+|1 week
+
+|**Total**
+|**5 weeks**
+|===

@@ -1,0 +1,266 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= poly-ssg Design Specifications Index
+:toc:
+
+== Overview
+
+This directory contains design specifications for 27 SSG repositories in the hyperpolymath ecosystem. Each spec recommends one of four verdicts:
+
+[cols="1,3,1"]
+|===
+|Verdict |Meaning |Count
+
+|*ENGINE*
+|Standalone SSG implementation in a distinct language/paradigm
+|14
+
+|*THEME*
+|Visual theme for an existing engine
+|2
+
+|*INTEGRATION*
+|Integrates with another hyperpolymath project
+|6
+
+|*ARCHIVE*
+|Not worth pursuing; archive the repository
+|5
+|===
+
+== Summary by Verdict
+
+=== ENGINE (14 repos) - Implement These
+
+[cols="1,2,2,1"]
+|===
+|Repo |Language |Paradigm |Priority
+
+|link:anvil-ssg.adoc[anvil-ssg]
+|Ada/SPARK
+|Safety-critical, formally verified
+|Medium
+
+|link:canon-ssg.adoc[canon-ssg]
+|Standard ML
+|Formally-defined functional
+|Medium
+
+|link:chicxulub-ssg.adoc[chicxulub-ssg]
+|Bash/POSIX Shell
+|Pipeline-driven, zero-dependency
+|High
+
+|link:divisionone-ssg.adoc[divisionone-ssg]
+|COBOL
+|Record-oriented, self-documenting
+|Medium
+
+|link:eclipse-ssg.adoc[eclipse-ssg]
+|Pony
+|Actor-model, reference capabilities
+|*High*
+
+|link:iota-ssg.adoc[iota-ssg]
+|APL
+|Array-oriented, vectorized
+|Medium
+
+|link:jura-ssg.adoc[jura-ssg]
+|J
+|Array programming, tacit composition
+|Medium
+
+|link:pharos-ssg.adoc[pharos-ssg]
+|Pharo (Smalltalk)
+|Live image, object-oriented
+|Medium
+
+|link:redshift-ssg.adoc[redshift-ssg]
+|Red
+|Full-stack, dialecting
+|Medium
+
+|link:tyrano-ssg.adoc[tyrano-ssg]
+|REXX
+|Human-readable, PARSE-driven
+|Medium
+
+|link:vindaloo-ssg.adoc[vindaloo-ssg]
+|Curry
+|Constraint-satisfaction, non-deterministic
+|Low
+
+|link:warp-ssg.adoc[warp-ssg]
+|Factor
+|Concatenative, stack-oriented
+|Medium
+|===
+
+=== INTEGRATION (6 repos) - Merge or Plugin
+
+[cols="1,2,2"]
+|===
+|Repo |Integrates With |Action
+
+|link:dei-ssg.adoc[dei-ssg]
+|wokelang
+|Extract consent/attribution as plugins
+
+|link:noteg-ssg.adoc[noteg-ssg]
+|anvil-ssg
+|Merge into anvil-ssg as non-SPARK mode
+
+|link:obli-ssg.adoc[obli-ssg]
+|oblibeny
+|Extract oblivious computing as plugins
+
+|link:tiamat-ssg.adoc[tiamat-ssg]
+|ddraig-ssg, casket-ssg
+|Clarify intent or archive
+
+|link:ultimatum-ssg.adoc[ultimatum-ssg]
+|Must
+|Showcase for Must, extract contracts as plugins
+
+|link:vladik-ssg.adoc[vladik-ssg]
+|anvomidav
+|Showcase for Anvomidav, creative project
+|===
+
+=== THEME (2 repos) - Visual Design Only
+
+[cols="1,2,2"]
+|===
+|Repo |Theme Concept |Target Engine
+
+|link:reliquary-ssg.adoc[reliquary-ssg]
+|Digital preservation, museum aesthetic
+|casket-ssg
+
+|link:tripos-ssg.adoc[tripos-ssg]
+|Academic/examination styling
+|casket-ssg
+|===
+
+=== ARCHIVE (5 repos) - Do Not Pursue
+
+[cols="1,2,2"]
+|===
+|Repo |Language |Reason
+
+|link:60-ssg.adoc[60-ssg]
+|ALGOL 60
+|No toolchain exists
+
+|link:consensus-ssg.adoc[consensus-ssg]
+|Rust/Raft
+|Solves non-problem (distributed consensus for SSG)
+
+|link:cpt-ssg.adoc[cpt-ssg]
+|QPL
+|Quantum language doesn't exist
+
+|link:easel-ssg.adoc[easel-ssg]
+|Piet
+|Bitmap programming is impractical
+
+|link:liminal-ssg.adoc[liminal-ssg]
+|Janus
+|Reversible computing solves no SSG problem
+
+|link:region-ssg.adoc[region-ssg]
+|ZPL
+|Language is dead (2006)
+
+|link:undo-ssg.adoc[undo-ssg]
+|Arrow
+|Reversible computing solves no SSG problem
+|===
+
+== Estimated Total Effort
+
+=== If All ENGINEs Implemented
+
+[cols="1,1"]
+|===
+|Category |Weeks
+
+|High-priority engines (eclipse, chicxulub)
+|7.5
+
+|Medium-priority engines (10 repos)
+|50
+
+|Low-priority engines (vindaloo)
+|7
+
+|Integrations
+|25
+
+|Themes
+|4
+
+|**Total**
+|**93.5 weeks** (~2 years)
+|===
+
+== Recommended Prioritization
+
+=== Phase 1: Foundation (Months 1-3)
+1. **eclipse-ssg** (Pony) - Unique actor model
+2. **chicxulub-ssg** (Bash) - Zero dependencies, practical
+
+=== Phase 2: Practical Engines (Months 4-6)
+3. **tyrano-ssg** (REXX) - Well-developed README
+4. **divisionone-ssg** (COBOL) - Genuine niche
+5. **anvil-ssg** (Ada/SPARK) - Safety-critical niche
+
+=== Phase 3: Array Languages (Months 7-9)
+6. **jura-ssg** (J) - ASCII-based array
+7. **iota-ssg** (APL) - Unicode array
+
+=== Phase 4: Remaining Engines (Months 10-15)
+8. **canon-ssg** (Standard ML)
+9. **pharos-ssg** (Pharo)
+10. **redshift-ssg** (Red)
+11. **warp-ssg** (Factor)
+12. **vindaloo-ssg** (Curry)
+
+=== Ongoing: Integrations and Themes
+- Extract plugins from dei-ssg, obli-ssg, ultimatum-ssg
+- Merge noteg-ssg into anvil-ssg
+- Develop themes for reliquary-ssg, tripos-ssg
+
+== File Listing
+
+----
+poly-ssg/docs/specs/
+├── INDEX.adoc          (this file)
+├── 60-ssg.adoc
+├── anvil-ssg.adoc
+├── canon-ssg.adoc
+├── chicxulub-ssg.adoc
+├── consensus-ssg.adoc
+├── cpt-ssg.adoc
+├── dei-ssg.adoc
+├── divisionone-ssg.adoc
+├── easel-ssg.adoc
+├── eclipse-ssg.adoc
+├── iota-ssg.adoc
+├── jura-ssg.adoc
+├── liminal-ssg.adoc
+├── noteg-ssg.adoc
+├── obli-ssg.adoc
+├── pharos-ssg.adoc
+├── redshift-ssg.adoc
+├── region-ssg.adoc
+├── reliquary-ssg.adoc
+├── tiamat-ssg.adoc
+├── tripos-ssg.adoc
+├── tyrano-ssg.adoc
+├── ultimatum-ssg.adoc
+├── undo-ssg.adoc
+├── vindaloo-ssg.adoc
+├── vladik-ssg.adoc
+└── warp-ssg.adoc
+----

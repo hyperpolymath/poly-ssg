@@ -1,0 +1,58 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+= consensus-ssg Design Specification
+:toc:
+
+== Summary
+
+[cols="1,3"]
+|===
+|Name |consensus-ssg
+|Verdict |*ARCHIVE*
+|Language |Rust (Raft implementation)
+|Paradigm |Distributed consensus
+|===
+
+== Rationale
+
+=== Why ARCHIVE
+
+The concept of "consensus-driven SSG" is intellectually interesting but practically absurd:
+
+1. **Solves a non-problem**: Static sites don't need distributed consensus. There's one source of truth (your content files), one build process, one output.
+
+2. **Massive overhead**: Running a Raft cluster to build a blog is like using a freight train to deliver a letter.
+
+3. **Complexity without benefit**: The failure modes of distributed systems (split-brain, leader election delays, network partitions) add risk without solving any actual SSG problem.
+
+4. **No target audience**: Who would deploy a 3+ node cluster just to generate HTML files?
+
+=== Potential Misunderstanding
+
+If the intent was **distributed build caching** (like Bazel remote cache) or **edge deployment coordination**, that's different and potentially valuable. But the README describes actual Raft consensus for build commits, which is overkill.
+
+== Alternative Disposition
+
+=== Option 1: Archive entirely
+
+Recommended. The concept doesn't serve a real use case.
+
+=== Option 2: Pivot to INTEGRATION
+
+If there's genuine interest in distributed builds, pivot to:
+
+- **poly-ssg-cache**: Distributed content-addressable build cache
+- **poly-ssg-deploy**: Multi-region deployment coordination
+
+These would be *integrations* with actual SSG engines, not standalone generators.
+
+=== Option 3: Conceptual Theme
+
+Repurpose as a *THEME* for another engine with "consensus protocol" visual aesthetics (network diagrams, node status displays, leader indicators).
+
+== Recommendation
+
+Archive. If distributed systems integration is desired, create a focused `poly-ssg-cache` or `poly-deploy-mcp` project instead.
+
+== Effort Saved
+
+Archiving prevents 80+ hours of implementing Raft just to generate static HTML.
