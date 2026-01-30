@@ -1,7 +1,7 @@
 # ReScript WASM-GC Backend
 
 [![Build Status](https://github.com/hyperpolymath/poly-ssg/actions/workflows/ci.yml/badge.svg)](https://github.com/hyperpolymath/poly-ssg/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[MPL-2.0-or-later,link="https://opensource.org/licenses/MPL-2.0"]
 [![OCaml](https://img.shields.io/badge/OCaml-%3E%3D4.14-orange)](https://ocaml.org/)
 [![WebAssembly](https://img.shields.io/badge/WebAssembly-GC-654FF0)](https://webassembly.org/)
 

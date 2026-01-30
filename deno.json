@@ -1,0 +1,7 @@
+{
+  "tasks": {
+    "build": "rescript build",
+    "clean": "rescript clean",
+    "watch": "rescript build -w"
+  }
+}
