@@ -1,88 +1,137 @@
 ---
-title: Poly SSG - One Contract, Many Paradigms
-description: Polyglot static site generator framework where each engine embodies its language's philosophy
+title: poly-ssg - Polyglot Static Site Generator Metaframework
+description: MCP-native metaframework for building and managing polyglot static site generators with formal verification
+date: 2026-01-30
+license: PMPL-1.0-or-later
 ---
 
-# Poly SSG
+# poly-ssg
 
-_One contract. Many paradigms. Every paradigm teaches._
+**Polyglot Static Site Generator Metaframework**
 
-A polyglot static site generator framework where each engine embodies its language's philosophy—from dependently-typed correctness to stack-based minimalism—unified through a common MCP interface.
+![License: PMPL-1.0](https://img.shields.io/badge/License-PMPL--1.0-indigo.svg)
+![Status: Active Development](https://img.shields.io/badge/Status-Active-green.svg)
 
-## Who Is This For?
+A metaframework for building and managing polyglot static site generators with MCP (Model Context Protocol) integration and formal verification capabilities.
 
-- **Paradigm explorers** — See the same problem solved through functional, logic, parallel, and stack-based lenses
-- **Language enthusiasts** — Each engine is idiomatic, not a transliteration
-- **MCP practitioners** — Switch between engines without changing your tooling
-- **Educators** — Demonstrate that there's no "one true way" to generate sites
+## Philosophy
 
-## Why poly-ssg?
+**poly-ssg** embraces the palimpsest nature of knowledge systems. Like manuscript layers building upon each other, static site generators should compose, interoperate, and preserve lineage across language boundaries.
 
-### Paradigm Purity
+Traditional SSG ecosystems are siloed by language. poly-ssg breaks these barriers by:
 
-Each engine embraces its language's strengths. Haskell stays pure. Prolog stays declarative. Forth stays stack-oriented. No lowest-common-denominator compromises.
+- **Language-agnostic orchestration** - Coordinate generators written in any language
+- **Formal verification hooks** - Integrate proof systems (a2ml, k9-svc) at build time
+- **MCP-native design** - First-class Model Context Protocol support
+- **Provenance preservation** - Track content lineage across transformations
 
-### One Contract, Many Implementations
+## Current Engines
 
-The MCP contract defines _what_ an SSG does. Each engine decides _how_. Your AI assistant, build scripts, and workflows remain unchanged when you switch paradigms.
+### Casket-SSG (Reference Implementation) ✓
 
-### Production-Ready Satellites
+**Language:** Haskell
+**Status:** Production Ready (v2.0.0)
+**Repository:** [hyperpolymath/casket-ssg](https://github.com/hyperpolymath/casket-ssg)
 
-Each engine is a standalone project. **Use Casket (Haskell) in production** while exploring Ddraig (Idris 2) for provable correctness. They share a contract, not a codebase.
+First SSG with formal verification integration. Features:
 
-## Engines
+- Markdown, AsciiDoc, RST, Org-mode support (via Pandoc)
+- a2ml integration (typed, verifiable markup)
+- k9-svc validation (self-validating components)
+- Spell checking (hunspell/aspell)
+- i18n support (en, es, fr, de)
+- Gnosis metadata integration
 
-| Engine | Language | Paradigmatic Strength | Status |
-|--------|----------|----------------------|--------|
-| **Casket** | Haskell | Pure functional, a2ml + k9-svc verification | ✅ **Production (v1.0)** |
-| **Ddraig** | Idris 2 | Dependently-typed, compile-time proofs | 🔧 In Development |
-| **Estate** | Forth | Stack-based, minimal dependencies | 🔧 In Development |
-| **Parallax** | Chapel | Data-parallel, massive scale | 🔧 In Development |
-| **Prodigy** | Prolog | Logic-based, declarative rules | 🔧 In Development |
-| **Rescribe** | ReScript | Type-safe JS compilation | 🔧 In Development |
-| **Zigzag** | Zig | Zero-overhead, explicit control | 🔧 In Development |
+**Deployed sites:**
+- [axel-protocol.org](https://axel-protocol.org)
+- [stamp-protocol.org](https://stamp-protocol.org)
+- [asdf-plugins registry](https://hyperpolymath.github.io/asdf-plugins/)
 
-## Casket SSG - First Production Engine
+### Planned Engines
 
-**casket-ssg v1.0** is **production-ready** and powers this site!
+- **hackenbush-ssg** (ReScript) - Fast, type-safe with JSX templating
+- **bunsenite-ssg** (Nickel) - Configuration-as-code with type inference
+- **cobalt-ssg** (Rust) - Low-latency with incremental builds
 
-### Features
+## MCP Integration
 
-- ✅ Markdown & a2ml content formats
-- ✅ YAML frontmatter
-- ✅ External template system
-- ✅ Asset pipeline (CSS, images auto-copy)
-- ✅ Site configuration (config.yaml)
-- ✅ **a2ml integration** (typed, verifiable markup)
-- ✅ **k9-svc validation** (self-validating components)
+poly-ssg provides a unified MCP server interface:
 
-**Unique:** First SSG with **formal verification** built-in.
+```javascript
+// Query any engine through MCP
+const result = await mcp.call("poly-ssg/build", {
+  engine: "casket-ssg",
+  input: "content/",
+  output: "_site/"
+});
+```
 
-### Quick Start
+Engines register capabilities (Markdown, AsciiDoc, i18n, etc.) and poly-ssg routes requests to the appropriate implementation.
+
+## Formal Verification
+
+poly-ssg engines can integrate verification systems:
+
+- **a2ml** - Attested Markup Language with type-level content guarantees
+- **k9-svc** - Self-Validating Components with runtime proofs
+- **Idris2** - Dependent types for provable correctness
+
+Example from Casket-SSG:
+
+```haskell
+-- Verify content compiles with a2ml type checker
+verifyContent :: A2MLDoc -> Either TypeError HTML
+```
+
+## Use Cases
+
+- **Multi-engine sites** - Use Casket for formal content, hackenbush for blogs
+- **Proof-carrying content** - Mathematical papers with verified theorems
+- **Compliance documentation** - Generate sites with provable properties
+- **Research artifacts** - Preserve lineage and attribution chains
+
+## License
+
+**PMPL-1.0-or-later** (Palimpsest-MPL License)
+
+Like a palimpsest manuscript, poly-ssg recognizes that static site generators carry layers of meaning - from original content to transformation logic to final presentation. This license protects both technical attribution and cultural context.
+
+See the [Palimpsest License](https://github.com/hyperpolymath/palimpsest-license) for full details.
+
+### Why PMPL for poly-ssg?
+
+- **Emotional lineage** - Content transformations preserve author intent
+- **Quantum-safe provenance** - Long-term attribution for generated sites
+- **Ethical use framework** - Respect cultural and narrative context
+- **AI training permitted** - With clear attribution obligations
+
+## Getting Started
+
+### Using Casket-SSG (Available Now)
 
 ```bash
-# Clone casket-ssg
+# Clone the reference implementation
 git clone https://github.com/hyperpolymath/casket-ssg
 cd casket-ssg
 
 # Build
-stack build
+cabal build
 
-# Build your site
-casket-ssg build content _site
+# Generate a site
+cabal run casket-ssg build content/ _site/
 ```
 
-## Quick Links
+### Contributing an Engine
 
-- [casket-ssg Repository](https://github.com/hyperpolymath/casket-ssg)
-- [poly-ssg-mcp (MCP Interface)](https://github.com/hyperpolymath/poly-ssg-mcp)
-- [Example Site: axel-protocol.org](https://axel-protocol.org) (Built with casket-ssg)
-- [Contributing](https://github.com/hyperpolymath/poly-ssg/blob/main/CONTRIBUTING.adoc)
+See [ENGINE-SPEC.adoc](https://github.com/hyperpolymath/poly-ssg/blob/main/ENGINE-SPEC.adoc) for requirements.
 
-## License
+## Resources
 
-MPL-2.0-or-later | Philosophy: [Palimpsest](https://github.com/hyperpolymath/palimpsest-license)
+- **Repository:** [github.com/hyperpolymath/poly-ssg](https://github.com/hyperpolymath/poly-ssg)
+- **Casket-SSG:** [github.com/hyperpolymath/casket-ssg](https://github.com/hyperpolymath/casket-ssg)
+- **License:** [github.com/hyperpolymath/palimpsest-license](https://github.com/hyperpolymath/palimpsest-license)
+- **Maintainer:** Jonathan D.A. Jewell <jonathan.jewell@open.ac.uk>
 
 ---
 
-_This site is built with **casket-ssg** v1.0 (Haskell engine)_
+Built with 🔮 by [Jonathan D.A. Jewell](https://github.com/hyperpolymath) | Licensed under [PMPL-1.0-or-later](https://github.com/hyperpolymath/palimpsest-license)
