@@ -77,3 +77,7 @@ htmlcov/
 /tmp/
 *.tmp
 *.bak
+
+# Casket-SSG
+_site/
+.stack-work/
