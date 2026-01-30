@@ -19,7 +19,7 @@ function text(str) {
 }
 
 function tag(tagName, _attrs, children) {
-  let childrenHtml = children.map(child => child).join("");
+  let childrenHtml = (children.map(c => c).join(''));
   return `<` + tagName + `>` + childrenHtml + `</` + tagName + `>`;
 }
 

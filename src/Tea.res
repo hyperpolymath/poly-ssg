@@ -26,9 +26,10 @@ module Html = {
   let text = (str: string): node => Obj.magic(str)
 
   let tag = (tagName: string, _attrs: array<attribute>, children: array<node>): node => {
-    let childrenHtml = children
-      ->Array.map(child => Obj.magic(child))
-      ->Array.join("")
+    // Use raw JavaScript to concatenate children
+    let childrenHtml: string = %raw(`
+      children.map(c => c).join('')
+    `)
     Obj.magic(`<${tagName}>${childrenHtml}</${tagName}>`)
   }
 

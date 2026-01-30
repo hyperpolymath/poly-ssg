@@ -1,28 +1,32 @@
-;; SPDX-License-Identifier: AGPL-3.0-or-later
-;; ECOSYSTEM.scm - Ecosystem relationships for poly-ssg
-;; Media-Type: application/vnd.ecosystem+scm
+;; SPDX-License-Identifier: MPL-2.0-or-later
+;; ECOSYSTEM.scm - poly-ssg ecosystem relationships
 
 (ecosystem
   (version "1.0.0")
   (name "poly-ssg")
-  (type "library")  ;; or: application, tool, specification, template
-  (purpose "Hyperpolymath ecosystem component")
+  (type "comparison-site")
+  (purpose "Interactive comparison of SSG engines with formally verified config generation")
 
   (position-in-ecosystem
-    "Part of the hyperpolymath ecosystem of 500+ repositories "
-    "following Rhodium Standard Repository (RSR) conventions.")
+    "Demonstrates ReScript+Deno+proven stack"
+    "Part of 4-site proven integration showcase"
+    "Educational tool for SSG engine selection")
 
   (related-projects
-    ;; Examples - customize based on actual relationships:
-    ;; (sibling-standard "rsr-template-repo" "Template for new repos")
-    ;; (dependency "hypatia" "Security scanning")
-    ;; (consumer "gitbot-fleet" "Quality enforcement")
-    )
+    (project "rescript-tea" (relationship "sibling-standard"))
+    (project "proven" (relationship "sibling-standard"))
+    (project "stamp-website" (relationship "sibling-standard"))
+    (project "asdf-plugins" (relationship "sibling-standard"))
+    (project "axel-protocol" (relationship "sibling-standard"))
+    (project "casket-ssg" (relationship "potential-consumer"))
+    (project "poly-ssg-mcp" (relationship "potential-consumer")))
 
   (what-this-is
-    "A component of the hyperpolymath ecosystem. "
-    "[TODO: Add specific description]")
+    "SSG engine comparison site"
+    "Built with proven formally verified components"
+    "ReScript+Deno stack demonstration")
 
   (what-this-is-not
-    "This is not a standalone project - it integrates with "
-    "the broader hyperpolymath tooling ecosystem."))
+    "NOT the poly-ssg framework itself"
+    "NOT an SSG implementation"
+    "NOT using Node.js (Deno per RSR)"))

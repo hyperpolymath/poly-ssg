@@ -6,7 +6,7 @@
   },
   "imports": {
     "rescript": "npm:rescript@^12.1.0",
-    "@rescript/core": "npm:@rescript/core@^1.7.0",
+    "@rescript/core": "npm:@rescript/core@^1.6.0",
     "proven/": "../proven/bindings/rescript/src/"
   },
   "compilerOptions": {

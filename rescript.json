@@ -16,5 +16,6 @@
   "dependencies": [],
   "warnings": {
     "error": "+101"
-  }
+  },
+  "compiler-flags": ["-open Belt"]
 }

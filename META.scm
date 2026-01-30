@@ -1,46 +1,29 @@
-;; SPDX-License-Identifier: AGPL-3.0-or-later
-;; META.scm - Architectural decisions and project meta-information
-;; Media-Type: application/meta+scheme
+;; SPDX-License-Identifier: MPL-2.0-or-later
+;; META.scm - poly-ssg meta information
 
-(define-meta poly-ssg
-  (version "1.0.0")
-
+(define meta
   (architecture-decisions
-    ;; ADR format: (adr-NNN status date context decision consequences)
-    ((adr-001 accepted "2026-01-30"
-      "Need to establish repository structure and standards"
-      "Adopt RSR (Rhodium Standard Repository) conventions from rsr-template-repo"
-      "Ensures consistency with 500+ repos in hyperpolymath ecosystem. "
-      "Enables automated quality enforcement via gitbot-fleet and Hypatia.")))
+    (adr "adr-001"
+      (status "accepted")
+      (date "2026-01-30")
+      (context "Need safe config generation for SSG comparisons")
+      (decision "Use ProvenSafeString for formally verified string operations")
+      (consequences "Config generation cannot fail at runtime"))
+
+    (adr "adr-002"
+      (status "accepted")
+      (date "2026-01-30")
+      (context "Array operations unavailable in minimal ReScript setup")
+      (decision "Use %raw JavaScript for array operations or manual concatenation")
+      (consequences "Trade type safety for compilation simplicity")))
 
   (development-practices
-    (code-style
-      "Follow hyperpolymath language policy: "
-      "Prefer ReScript, Rust, Gleam, Elixir. "
-      "Avoid TypeScript, Go, Python per RSR.")
-    (security
-      "All commits signed. "
-      "Hypatia neurosymbolic scanning enabled. "
-      "OpenSSF Scorecard tracking.")
-    (testing
-      "Comprehensive test coverage required. "
-      "CI/CD runs on all pushes.")
-    (versioning
-      "Semantic versioning (semver). "
-      "Changelog maintained in CHANGELOG.md.")
-    (documentation
-      "README.adoc for overview. "
-      "STATE.scm for current state. "
-      "ECOSYSTEM.scm for relationships.")
-    (branching
-      "Main branch protected. "
-      "Feature branches for new work. "
-      "PRs required for merges."))
+    (code-style "ReScript conventions, minimal Obj.magic usage")
+    (security "CSP headers, HTTPS-only, proven validation")
+    (testing "Property tests via proven library"))
 
   (design-rationale
-    (why-rsr
-      "RSR provides standardized structure across 500+ repos, "
-      "enabling automated tooling and consistent developer experience.")
-    (why-hypatia
-      "Neurosymbolic security scanning combines neural pattern recognition "
-      "with symbolic reasoning for fast, deterministic security checks.")))
+    (why-rescript "Type safety, fast compilation, JS interop")
+    (why-deno "RSR policy, modern runtime, explicit permissions")
+    (why-proven "Demonstrate formal verification in web apps")
+    (why-tea "Predictable state, testable logic")))
