@@ -1,0 +1,102 @@
+; SPDX-License-Identifier: PMPL-1.0-or-later
+; Cloudflare DNS Zone Template for Hyperpolymath Projects
+; Security-hardened: Post-quantum ready, IPv6-only, QUIC+HTTP/3
+; Based on user security requirements (SECURITY-STANDARDS.scm)
+
+; Domain: my-lang.net
+; Project: my-lang
+; Repository: https://github.com/hyperpolymath/my-lang
+
+$ORIGIN my-lang.net.
+$TTL 3600
+
+; --- SOA Record ---
+@       IN  SOA     ns1.cloudflare.com. admin.my-lang.net. (
+            2026020801  ; Serial (YYYYMMDDNN)
+            10800       ; Refresh (3 hours)
+            3600        ; Retry (1 hour)
+            604800      ; Expire (7 days)
+            3600        ; Minimum TTL (1 hour)
+        )
+
+; --- Nameservers (Cloudflare) ---
+@       IN  NS      ns1.cloudflare.com.
+@       IN  NS      ns2.cloudflare.com.
+
+; --- Core Records (IPv6 ONLY - IPv4 TERMINATED) ---
+; Note: Cloudflare Pages provides IPv6. IPv4 disabled per security policy.
+@       IN  AAAA    2606:4700:xxxx:xxxx::1  ; Root (Cloudflare Pages - UPDATE)
+www     IN  AAAA    2606:4700:xxxx:xxxx::1  ; www subdomain (Cloudflare Pages - UPDATE)
+
+; --- GitHub Pages Source (NOT proxied) ---
+gh-pages IN  CNAME  hyperpolymath.github.io.
+
+; --- CAA Records (Certificate Authority Authorization) ---
+; Restrict to Let's Encrypt + DigiCert fallback
+@       IN  CAA     0 issue "letsencrypt.org"
+@       IN  CAA     0 issue "digicert.com"
+@       IN  CAA     0 issuewild "letsencrypt.org"
+@       IN  CAA     0 iodef "mailto:security@hyperpolymath.org"
+
+; --- DANE/TLSA (TLS Certificate Association) ---
+; Format: _port._protocol TLSA usage selector matching-type certificate-data
+; Usage 3 = Domain-issued cert, Selector 1 = SubjectPublicKeyInfo, Matching 1 = SHA-256
+_443._tcp   IN  TLSA  3 1 1 PLACEHOLDER_TLSA_SHA256_HASH_UPDATE_BEFORE_DEPLOYMENT  ; HTTPS cert hash (UPDATE per domain)
+
+; --- SSHFP (SSH Fingerprints) ---
+; Ed448 fingerprints (SHA-256 only - SHA-1 TERMINATED)
+@       IN  SSHFP   6 2 PLACEHOLDER_SSH_ED448_SHA256_UPDATE_BEFORE_DEPLOYMENT  ; Ed448 SSH key (UPDATE)
+
+; --- DNSSEC (Post-Quantum Ready) ---
+; Cloudflare manages DNSSEC automatically
+; Algorithm 13 (ECDSA P-256) transitioning to Ed448
+
+; --- SPF (Sender Policy Framework) ---
+; GitHub Pages email (if applicable)
+@       IN  TXT     "v=spf1 include:_spf.github.com ~all"
+
+; --- DMARC (Domain-based Message Authentication) ---
+_dmarc  IN  TXT     "v=DMARC1; p=reject; rua=mailto:dmarc-reports@hyperpolymath.org; ruf=mailto:dmarc-forensics@hyperpolymath.org; fo=1"
+
+; --- MTA-STS (Mail Transfer Agent Strict Transport Security) ---
+_mta-sts IN  TXT    "v=STSv1; id=2026020816; mode=enforce"
+
+; --- TLS Reporting ---
+_smtp._tls IN  TXT  "v=TLSRPTv1; rua=mailto:tls-reports@hyperpolymath.org"
+
+; --- Security.txt Indicator ---
+@       IN  TXT     "security-contact=https://my-lang.net/.well-known/security.txt"
+
+; --- AI Bot Data Protocol (AIBDP) ---
+@       IN  TXT     "aibdp=https://my-lang.net/.well-known/aibdp.json"
+
+; --- Consent-Aware HTTP (HTTP 430) ---
+@       IN  TXT     "consent-aware-http=https://my-lang.net/.well-known/aibdp.json"
+
+; --- OpenPGP Key Location ---
+openpgp IN  TXT     "url=https://hyperpolymath.github.io/pgp-key.asc"
+
+; --- GitHub Verification ---
+@       IN  TXT     "github-pages-challenge-hyperpolymath=PLACEHOLDER_GITHUB_VERIFICATION_CODE"
+
+; --- Crypto Standards Declaration ---
+@       IN  TXT     "crypto=Kyber-1024+Dilithium5+SPHINCS+;tls=1.3;ipv6-only;http3"
+
+; --- HTTPS Enforcement ---
+@       IN  TXT     "https-only=max-age=63072000;includeSubDomains;preload"
+
+; --- Subdomains (if applicable) ---
+; Uncomment for projects with subdomains (e.g., glyphbase.lithoglyph.org)
+; {{SUBDOMAIN}}  IN  AAAA  2606:4700:xxxx:xxxx::2  ; Subdomain (UPDATE)
+
+; --- Status & Monitoring ---
+status  IN  CNAME   my-lang.net.
+
+; --- Notes ---
+; 1. UPDATE {{PLACEHOLDERS}} before deployment
+; 2. IPv4 records TERMINATED per security policy
+; 3. TLS 1.3 + QUIC + HTTP/3 enforced via Cloudflare settings
+; 4. Post-quantum crypto: Kyber-1024 (KEM) + Dilithium5 (signatures)
+; 5. Fallback: SPHINCS+ for conservative PQ backup
+; 6. WCAG 2.3 AAA compliance enforced via site design
+; 7. Zero tracking, zero cookies, zero data collection

@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Generate AI Bot Data Protocol (AIBDP) manifest for consent-aware HTTP
+
+set -euo pipefail
+
+DOMAIN="$1"
+REPO="$2"
+TITLE="$3"
+
+cat << JSON
+{
+  "version": "1.0",
+  "site": {
+    "name": "$TITLE",
+    "domain": "$DOMAIN",
+    "repository": "https://github.com/hyperpolymath/$REPO"
+  },
+  "consent": {
+    "data_collection": {
+      "analytics": false,
+      "cookies": false,
+      "tracking": false,
+      "fingerprinting": false
+    },
+    "ai_training": {
+      "allow_scraping": true,
+      "allow_training": true,
+      "attribution_required": true,
+      "license": "PMPL-1.0-or-later"
+    },
+    "third_party": {
+      "advertising": false,
+      "behavioral_tracking": false,
+      "social_media_widgets": false
+    }
+  },
+  "privacy": {
+    "data_sovereignty": "EU/UK",
+    "data_retention": "none",
+    "contact": "https://$DOMAIN/contact.html"
+  },
+  "ethical_standards": {
+    "anti_slavery": true,
+    "anti_money_laundering": true,
+    "data_sovereignty": true,
+    "accessibility": "WCAG-2.3-AA",
+    "open_source": true
+  },
+  "technical": {
+    "security_headers": true,
+    "https_only": true,
+    "subresource_integrity": true,
+    "content_security_policy": true
+  },
+  "feedback": {
+    "url": "https://$DOMAIN/contact.html",
+    "github_issues": "https://github.com/hyperpolymath/$REPO/issues"
+  }
+}
+JSON

@@ -1,0 +1,24 @@
+# Complete list of 22 hyperpolymath project domains
+# Format: domain | category
+7tentacles.org | ai
+my-lang.net | playground
+a2ml.net | tooling
+affinescript.dev | language
+nesy-prover.dev | ai
+verisimdb.org | database
+lithoglyph.org | language
+oblibeny.net | security
+hypervigilant.dev | security
+ipv6-mastery.net | networking
+ipv6-ready.net | networking
+did-spec.org | identity
+palimpsest.license | license
+typewise.dev | language
+poly-ssg.org | tooling
+scaffoldia.dev | tooling
+polymono.dev | tooling
+http-capability-gateway.net | networking
+consent-aware-http.org | standards
+cadre-tea-router.dev | language
+rescript-tea.dev | language
+gitbot-fleet.dev | automation
