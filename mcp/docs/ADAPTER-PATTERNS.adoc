@@ -1,0 +1,391 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= MCP Adapter Usage Patterns
+:toc: macro
+:toclevels: 3
+
+MCP (Model Context Protocol) adapter patterns for the poly-ssg-mcp unified server.
+
+toc::[]
+
+== Overview
+
+The poly-ssg-mcp server provides a unified MCP interface for 29+ static site generators across 20 programming languages. This document describes the patterns for implementing and using adapters.
+
+== Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    MCP Client                           │
+│                  (Claude, etc.)                         │
+└─────────────────────┬───────────────────────────────────┘
+                      │ JSON-RPC / stdio
+┌─────────────────────▼───────────────────────────────────┐
+│                  poly-ssg-mcp                           │
+│               (Unified MCP Server)                      │
+├─────────────────────────────────────────────────────────┤
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐       │
+│  │  Zola   │ │ Hakyll  │ │ Cobalt  │ │   ...   │       │
+│  │ Adapter │ │ Adapter │ │ Adapter │ │ (29+)   │       │
+│  └────┬────┘ └────┬────┘ └────┬────┘ └────┬────┘       │
+└───────┼──────────┼──────────┼──────────┼───────────────┘
+        │          │          │          │
+        ▼          ▼          ▼          ▼
+    ┌──────┐  ┌──────┐   ┌──────┐   ┌──────┐
+    │ zola │  │stack │   │cobalt│   │ ...  │
+    │ CLI  │  │exec  │   │ CLI  │   │      │
+    └──────┘  └──────┘   └──────┘   └──────┘
+```
+
+== Adapter Interface
+
+Every adapter must export these properties (defined in `src/Adapter.res`):
+
+[source,rescript]
+----
+type adapter = {
+  name: string,           // Human-readable name (e.g., "Zola")
+  description: string,    // Brief description
+  language: string,       // Primary language (e.g., "Rust")
+  connect: unit => promise<bool>,     // Initialize adapter
+  disconnect: unit => promise<unit>,  // Cleanup
+  isConnected: unit => bool,          // Connection status
+  tools: array<tool>,                 // MCP tool definitions
+}
+
+type tool = {
+  name: string,           // Tool identifier (lowercase_with_underscores)
+  description: string,    // Tool description for LLM
+  inputSchema: JSON.t,    // JSON Schema for input validation
+  execute?: toolExecutor, // Optional executor function
+}
+----
+
+== Standard Tool Pattern
+
+All adapters should implement these standard tools with consistent naming:
+
+|===
+| Tool Suffix | Purpose | Required
+
+| `_init`
+| Initialize a new project
+| Yes
+
+| `_build`
+| Build the static site
+| Yes
+
+| `_serve`
+| Start development server
+| Recommended
+
+| `_clean`
+| Remove build artifacts
+| Recommended
+
+| `_version`
+| Show tool version
+| Recommended
+
+| `_check`
+| Validate configuration
+| Optional
+
+| `_deploy`
+| Deploy to hosting
+| Optional
+|===
+
+=== Naming Convention
+
+Tools follow the pattern: `{adapter_name}_{action}`
+
+Examples:
+- `zola_init`
+- `hakyll_build`
+- `cobalt_serve`
+
+== Creating a New Adapter
+
+=== Step 1: Create the ReScript File
+
+Create `src/adapters/YourSSG.res`:
+
+[source,rescript]
+----
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 Your Name
+
+// YourSSG adapter - Brief description
+// https://yourssg.example.com/
+
+open Adapter
+
+let name = "YourSSG"
+let language = "YourLanguage"
+let description = "Brief description of YourSSG"
+
+let state: adapterState = {
+  connected: false,
+  projectPath: None,
+}
+
+let connect = async () => {
+  try {
+    let result = await Deno.Command.run("yourssg", ["--version"], None)
+    state.connected = result.success
+    result.success
+  } catch {
+  | _ => {
+      state.connected = false
+      false
+    }
+  }
+}
+
+let disconnect = async () => {
+  state.connected = false
+}
+
+let isConnected = () => state.connected
+
+// Define tools...
+let tools: array<tool> = [
+  {
+    name: "yourssg_init",
+    description: "Initialize a new YourSSG site",
+    inputSchema: makeSchema(...),
+  },
+  // ... more tools
+]
+----
+
+=== Step 2: Add to main.js
+
+Import your adapter in `main.js`:
+
+[source,javascript]
+----
+import * as YourSSG from "./lib/es6/src/adapters/YourSSG.res.js";
+
+const adapters = [
+  // ... existing adapters
+  YourSSG,
+];
+----
+
+=== Step 3: Build and Test
+
+```bash
+deno task res:build
+deno task test
+```
+
+== Input Schema Patterns
+
+=== Path Parameter
+
+Most tools accept a path parameter:
+
+[source,rescript]
+----
+let makeProp = (typeName: string, desc: string) =>
+  JSON.Encode.object(Dict.fromArray([
+    ("type", JSON.Encode.string(typeName)),
+    ("description", JSON.Encode.string(desc)),
+  ]))
+
+let props = Dict.make()
+Dict.set(props, "path", makeProp("string", "Path to site root"))
+----
+
+=== Boolean Flags
+
+For optional boolean flags:
+
+[source,rescript]
+----
+Dict.set(props, "drafts", makeProp("boolean", "Include draft content"))
+Dict.set(props, "force", makeProp("boolean", "Overwrite existing files"))
+----
+
+=== Required vs Optional
+
+Use the `required` array to specify mandatory parameters:
+
+[source,rescript]
+----
+// path is required, drafts is optional
+makeSchema(props, ["path"])
+----
+
+== Satellite Integration
+
+Satellite SSG repositories (zigzag-ssg, casket-ssg, etc.) are standalone implementations that integrate with poly-ssg-mcp through the adapter pattern.
+
+=== Satellite Categories
+
+|===
+| Category | Examples | Notes
+
+| Implemented Engines
+| zigzag-ssg, casket-ssg, prodigy-ssg
+| Full working SSG implementations
+
+| Hub Adapters
+| Zola, Hakyll, Cobalt adapters
+| Wrappers for existing SSGs
+
+| Theme/Integration
+| hackenbush-ssg, dei-ssg
+| Templates and plugins
+|===
+
+=== Satellite Command Pattern
+
+Satellites typically provide these commands:
+
+```bash
+# Initialize new site
+yourssg init [path]
+
+# Build site
+yourssg build [options]
+
+# Development server
+yourssg serve [options]
+
+# Clean build artifacts
+yourssg clean
+```
+
+== Error Handling
+
+=== Connection Failures
+
+Always handle missing tools gracefully:
+
+[source,rescript]
+----
+let connect = async () => {
+  try {
+    let result = await Deno.Command.run("yourssg", ["--version"], None)
+    if result.success {
+      state.connected = true
+      true
+    } else {
+      Console.error("YourSSG not found or returned error")
+      false
+    }
+  } catch {
+  | _ => {
+      Console.error("YourSSG command not available")
+      false
+    }
+  }
+}
+----
+
+=== Tool Execution Failures
+
+Return structured error responses:
+
+[source,rescript]
+----
+let executeBuild = async (path: option<string>) => {
+  try {
+    let result = await Deno.Command.run("yourssg", ["build"], path)
+    if result.success {
+      JSON.Encode.object(Dict.fromArray([
+        ("success", JSON.Encode.bool(true)),
+        ("output", JSON.Encode.string(result.stdout)),
+      ]))
+    } else {
+      JSON.Encode.object(Dict.fromArray([
+        ("success", JSON.Encode.bool(false)),
+        ("error", JSON.Encode.string(result.stderr)),
+      ]))
+    }
+  } catch {
+  | exn => JSON.Encode.object(Dict.fromArray([
+      ("success", JSON.Encode.bool(false)),
+      ("error", JSON.Encode.string(Exn.message(exn)->Option.getOr("Unknown error"))),
+    ]))
+  }
+}
+----
+
+== Testing Adapters
+
+=== Unit Tests
+
+Create `tests/adapters/YourSSG_test.js`:
+
+[source,javascript]
+----
+import { assertEquals, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts";
+import * as YourSSG from "../../lib/es6/src/adapters/YourSSG.res.js";
+
+Deno.test("YourSSG: exports required interface", () => {
+  assertExists(YourSSG.name);
+  assertExists(YourSSG.language);
+  assertExists(YourSSG.tools);
+  assertExists(YourSSG.connect);
+});
+
+Deno.test("YourSSG: tools have valid schemas", () => {
+  for (const tool of YourSSG.tools) {
+    assertEquals(typeof tool.name, "string");
+    assertEquals(typeof tool.description, "string");
+    assertExists(tool.inputSchema);
+  }
+});
+----
+
+=== Integration Tests
+
+See `tests/satellite_integration_test.js` for patterns.
+
+== Best Practices
+
+1. **Lowercase tool names**: Use `yourssg_build` not `YourSSG_Build`
+2. **Consistent naming**: Follow the `{adapter}_{action}` pattern
+3. **Meaningful descriptions**: Help the LLM understand when to use each tool
+4. **Graceful degradation**: Handle missing tools without crashing
+5. **Path handling**: Support both relative and absolute paths
+6. **SPDX headers**: All files must have license headers
+
+== Reference
+
+=== Current Hub Adapters
+
+|===
+| Adapter | Language | Tools
+
+| Zola | Rust | zola_init, zola_build, zola_serve, zola_check, zola_version
+| Hakyll | Haskell | hakyll_init, hakyll_build, hakyll_serve, hakyll_clean
+| Cobalt | Rust | cobalt_init, cobalt_build, cobalt_serve, cobalt_clean
+| mdBook | Rust | mdbook_init, mdbook_build, mdbook_serve, mdbook_clean
+| Serum | Elixir | serum_init, serum_build, serum_server
+|===
+
+=== Current Satellites
+
+|===
+| Satellite | Language | Status
+
+| zigzag-ssg | Zig | Implemented
+| casket-ssg | Haskell | Implemented
+| prodigy-ssg | Prolog | Implemented
+| sparkle-ssg | Gleam | Implemented
+| macrauchenia-ssg | OCaml | Implemented
+| eclipse-ssg | Pony | Implemented
+| chicxulub-ssg | Bash | Implemented
+| anvil-ssg | Ada/SPARK | Implemented
+| divisionone-ssg | COBOL | Implemented
+| labnote-ssg | SciLab | Implemented
+| milk-ssg | COW | Implemented
+|===
+
+See `SATELLITES.scm` for the complete registry.

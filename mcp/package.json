@@ -1,0 +1,13 @@
+{
+  "name": "polyglot-ssg-mcp",
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "rescript": "^12.0.1"
+  },
+  "scripts": {
+    "res:build": "rescript build",
+    "res:watch": "rescript build -w",
+    "res:clean": "rescript clean"
+  }
+}

@@ -1,0 +1,173 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= obli-ssg
+:toc: macro
+:toclevels: 2
+:icons: font
+:source-highlighter: rouge
+
+Oblivious static site generator in Oblibeny.
+
+____
+Let patterns hide. Let access obscure. Let pages render.
+____
+
+toc::[]
+
+== Who Is This For?
+
+* **Privacy researchers** exploring oblivious computation in practical applications
+* **Security-conscious developers** seeking static site generation with minimized metadata leakage
+* **Oblibeny enthusiasts** learning the ecosystem through a real-world project
+* **Hyperpolymath users** wanting SSG tooling that integrates with poly-ssg-mcp
+
+== Why obli-ssg?
+
+=== Oblivious by Design
+
+Traditional static site generators expose access patterns during build: which templates load first, what content gets parsed when, which assets copy in what order. These patterns leak information about your site's structure.
+
+obli-ssg treats build-time access patterns as a first-class privacy concern.
+
+=== Pattern-Hiding Pipelines
+
+[source]
+----
+content/         ──┐
+templates/       ──┼──▶ [ oblivious build ] ──▶ public/
+assets/          ──┘
+                          ↑
+                    access patterns
+                    remain hidden
+----
+
+The build process uses Oblibeny primitives to ensure observers cannot infer site structure from build-time behavior.
+
+=== Beyond Encryption
+
+Encryption protects content at rest. Oblivious computing protects _how_ content is accessed. obli-ssg provides both:
+
+[cols="1,2"]
+|===
+|Layer |Protection
+
+|Content
+|Standard encryption for sensitive source files
+
+|Access Patterns
+|Oblibeny runtime obscures which files are read and when
+
+|Build Order
+|Randomized, indistinguishable processing sequences
+
+|Output Correlation
+|No observable relationship between input access and output generation
+|===
+
+=== Four Pillars
+
+[cols="1,3"]
+|===
+|Pillar |Description
+
+|**Hide What You Read**
+|File access patterns reveal nothing about site structure
+
+|**Obscure When You Write**
+|Output timing is decoupled from input processing
+
+|**Deny Pattern Inference**
+|Statistical analysis of build behavior yields no useful information
+
+|**Grant Privacy by Default**
+|No configuration required—oblivious operation is the baseline
+|===
+
+== Quick Start
+
+[source,bash]
+----
+# Clone the repository
+git clone https://github.com/hyperpolymath/obli-ssg.git
+cd obli-ssg
+
+# Build with Deno (ReScript adapter)
+deno task build
+
+# Generate a site with oblivious build
+deno task generate --source ./content --output ./public
+----
+
+== Architecture
+
+----
+┌─────────────────────────────────────────────────────────┐
+│                     obli-ssg                            │
+├─────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
+│  │   Content   │  │  Template   │  │   Asset     │     │
+│  │   Reader    │  │   Engine    │  │   Pipeline  │     │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘     │
+│         │                │                │            │
+│         └────────────────┼────────────────┘            │
+│                          ▼                              │
+│              ┌───────────────────┐                      │
+│              │  Oblibeny Runtime │                      │
+│              │  ┌─────────────┐  │                      │
+│              │  │ obli-fs     │  │                      │
+│              │  │ pattern-    │  │                      │
+│              │  │ hiding I/O  │  │                      │
+│              │  └─────────────┘  │                      │
+│              └───────────────────┘                      │
+│                          │                              │
+│                          ▼                              │
+│              ┌───────────────────┐                      │
+│              │   Output Stage    │                      │
+│              │   (decorrelated)  │                      │
+│              └───────────────────┘                      │
+└─────────────────────────────────────────────────────────┘
+----
+
+== Features
+
+* **Oblivious file access** via obli-fs integration
+* **Pattern-hiding content pipeline** for Markdown, AsciiDoc, and structured data
+* **Template rendering** with access-pattern protection
+* **Asset processing** with timing decorrelation
+* **MCP integration** with poly-ssg-mcp hub
+* **ReScript adapter** for type-safe orchestration
+
+== Integration
+
+obli-ssg is a satellite of the https://github.com/hyperpolymath/poly-ssg-mcp[poly-ssg-mcp] hub, providing oblivious computing capabilities to the broader SSG ecosystem.
+
+Related MCP projects:
+
+* https://github.com/hyperpolymath/poly-ssg-mcp[poly-ssg-mcp] — Static site generator hub
+* https://github.com/hyperpolymath/poly-container-mcp[poly-container-mcp] — Container orchestration
+* https://github.com/hyperpolymath/poly-iac-mcp[poly-iac-mcp] — Infrastructure as code
+
+== Requirements
+
+* https://github.com/hyperpolymath/oblibeny[Oblibeny] ecosystem
+* https://deno.land[Deno] 2.0+ (runtime)
+* https://rescript-lang.org[ReScript] (adapter layer)
+
+== Security
+
+This project takes security seriously:
+
+* Oblivious computing provides defense against access-pattern analysis
+* CodeQL static analysis enabled
+* SHA-pinned GitHub Actions
+* Dependabot for automated dependency updates
+
+See link:SECURITY.md[SECURITY.md] for reporting vulnerabilities.
+
+== Contributing
+
+See link:CONTRIBUTING.md[CONTRIBUTING.md] for contribution guidelines.
+
+== License
+
+Dual licensed under MIT OR AGPL-3.0-or-later. See link:LICENSE.txt[LICENSE.txt] for details.

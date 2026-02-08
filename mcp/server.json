@@ -1,0 +1,20 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.hyperpolymath/poly-ssg-mcp",
+  "title": "Polyglot SSG MCP",
+  "description": "Unified MCP for 28 static site generators across 19 languages: Zola, Hakyll, and more",
+  "repository": {
+    "url": "https://github.com/hyperpolymath/poly-ssg-mcp",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/hyperpolymath/poly-ssg-mcp:main",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

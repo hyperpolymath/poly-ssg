@@ -1,0 +1,403 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= polyglot-ssg-mcp
+:toc: macro
+:toclevels: 3
+:icons: font
+
+Unified MCP server for **60+ static site generators** across **50+ programming languages**.
+
+image:https://img.shields.io/badge/RSR-compliant-gold[RSR Compliant,link=https://github.com/hyperpolymath/rhodium-standard-repositories]
+image:https://img.shields.io/badge/MCP-server-blue[MCP Server,link=https://github.com/modelcontextprotocol]
+image:https://img.shields.io/badge/SSGs-60+-blue[SSGs]
+image:https://img.shields.io/badge/Languages-50+-green[Languages]
+image:https://img.shields.io/badge/License-PMPL--1.0-blue.svg[License: PMPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"]
+
+toc::[]
+
+== Overview
+
+polyglot-ssg-mcp provides a unified interface for static site generators across the programming language spectrum. No mainstream JS/Python/Ruby - this is for functional programming, systems languages, and academic tools.
+
+== Supported SSGs by Language
+
+[cols="2,3,4"]
+|===
+|Language |SSGs |Notes
+
+|**Ada/SPARK**
+|Anvil, Noteg
+|Safety-critical, contract-based design
+
+|**Agda**
+|QED
+|Dependently-typed proofs
+
+|**Algol**
+|60
+|Historical language revival
+
+|**APL**
+|Iota
+|Array-based notation
+
+|**Arrow**
+|Undo
+|Reversible computation
+
+|**Bash**
+|Chicxulub
+|Shell-native scripting
+
+|**Befunge-93**
+|Befunge
+|2D stack-based esoteric language
+
+|**Betlang**
+|Odd
+|Betting-inspired DSL
+
+|**Chapel**
+|Parallax
+|Parallel computing, HPC-focused
+
+|**Clojure**
+|Babashka, Cryogen, Perun
+|Data-driven, REPL workflow
+
+|**COBOL**
+|DivisionOne
+|Enterprise legacy, structured divisions
+
+|**Common Lisp**
+|Coleslaw
+|Extensible, macro-powered
+
+|**Crystal**
+|Marmot
+|Ruby-like syntax, compiled
+
+|**COW**
+|Milk
+|Esoteric, moo-based commands
+
+|**Curry**
+|Vindaloo
+|Functional-logic programming
+
+|**D**
+|Reggae
+|Systems programming build tool
+
+|**Deno**
+|Saur
+|Secure runtime, TypeScript-first
+
+|**Eclexia**
+|Pareto
+|80/20 principle optimization
+
+|**Elixir**
+|NimblePublisher, Serum, Tableau
+|BEAM ecosystem, Phoenix integration
+
+|**Erlang**
+|Zotonic
+|CMS with static export
+
+|**Forth**
+|Estate
+|Stack-based minimalism
+
+|**F#**
+|Fornax
+|.NET ecosystem, type providers
+
+
+|**Factor**
+|Warp
+|Concatenative, stack-based
+
+|**Gleam**
+|Sparkle
+|Type-safe, BEAM ecosystem
+
+|**Haskell**
+|Casket, Ema, Hakyll
+|FP-native, Pandoc integration
+
+|**Idris2**
+|Ddraig
+|Dependent types, verified code
+
+|**Janus**
+|Liminal
+|Reversible programming
+
+|**J**
+|Jura
+|Array programming, APL descendant
+
+|**Julia**
+|Documenter.jl, Franklin.jl, StaticWebPages.jl
+|Scientific/academic publishing
+
+|**Just**
+|Praxis, Reliquary, Tiamat, Tripos
+|Task runner, build automation
+
+|**Kotlin**
+|Orchid
+|JVM, documentation-focused
+
+|**Life**
+|Hackenbush
+|Conway's Game of Life, Turing-complete
+
+|**Logo**
+|Terrapin
+|Educational, turtle graphics
+
+|**Malbolge**
+|Bolgia
+|Esoteric, intentionally difficult
+
+|**Mojo**
+|Easel
+|Python-like, AI/ML focused
+
+|**Must**
+|Ultimatum
+|Constraint-based programming
+
+|**My**
+|My-ssg
+|Personal/experimental language
+
+|**Oblibeny**
+|Obli
+|Privacy-preserving, pattern-hiding
+
+|**Nim**
+|Nimrod (nimib ecosystem), Rats
+|Python-like, compiled
+
+|**OCaml**
+|Macrauchenia, YOCaml
+|Composable, type-safe
+
+|**Odin**
+|Gungir
+|Systems programming, C alternative
+
+|**Pharo**
+|Pharos
+|Live image, Smalltalk descendant
+
+|**Pony**
+|Eclipse
+|Actor-model, capabilities-secure
+
+|**Prolog**
+|Prodigy
+|Logic-based, declarative inference
+
+|**QPL**
+|CPT
+|Quantum programming language
+
+|**Racket**
+|Frog, Pollen
+|Publishing-focused, typesetting
+
+|**Raft**
+|Consensus
+|Distributed systems protocol
+
+|**RED**
+|REDShift
+|Full-stack, Rebol descendant
+
+|**REXX**
+|Tyrano
+|Scripting, mainframe heritage
+
+|**Ring**
+|Orbital
+|Multi-paradigm, lightweight
+
+|**ReScript**
+|Rescribe
+|Type-safe JavaScript compilation
+
+|**Rust**
+|Cobalt, mdBook, Zola
+|Fast, single-binary tools
+
+|**Scala**
+|Laika, ScalaTex
+|Multi-format output (HTML, PDF, EPUB)
+
+|**SciLab**
+|LabNote
+|Scientific computing, MATLAB-like
+
+|**StandardML**
+|Canon
+|Academic ML dialect
+
+|**Swift**
+|Publish
+|Apple ecosystem, SwiftUI-style API
+
+|**Tcl**
+|Wub
+|Web framework with static generation
+
+|**WASM (WAT)**
+|Wagasm
+|WebAssembly text format
+
+|**WokeLang**
+|Dei
+|Consent-aware, ethical computing
+
+|**Z**
+|Region
+|Formal specification language
+
+|**Zig**
+|Zigzag
+|Zero-overhead, compile-time
+
+3+|*SPECIAL CASES*
+
+|**AQL**
+|Avocado
+|ArangoDB Query Language
+
+|**RISC-V**
+|Baremetal
+|Assembly, embedded systems
+
+|===
+
+== Quick Start
+
+[source,bash]
+----
+# Run with Deno
+deno task start
+
+# Or with container
+podman run -it ghcr.io/hyperpolymath/polyglot-ssg-mcp:latest
+----
+
+== Installation
+
+=== Deno (Recommended)
+
+[source,bash]
+----
+git clone https://github.com/hyperpolymath/polyglot-ssg-mcp
+cd polyglot-ssg-mcp
+deno task start
+----
+
+=== Container
+
+[source,bash]
+----
+# Wolfi (default)
+podman pull ghcr.io/hyperpolymath/polyglot-ssg-mcp:latest
+
+# Alpine variant
+podman pull ghcr.io/hyperpolymath/polyglot-ssg-mcp:alpine
+----
+
+== MCP Client Configuration
+
+=== Claude Desktop
+
+[source,json]
+----
+{
+  "mcpServers": {
+    "polyglot-ssg": {
+      "command": "deno",
+      "args": ["task", "start"],
+      "cwd": "/path/to/polyglot-ssg-mcp"
+    }
+  }
+}
+----
+
+== Tools
+
+=== Meta Tools
+
+|===
+|Tool |Description
+
+|`ssg_list`
+|List all SSGs with languages and status
+
+|`ssg_detect`
+|Auto-detect installed SSGs
+
+|`ssg_help`
+|Get help for a specific SSG
+
+|`ssg_version`
+|Server version info
+|===
+
+=== Per-SSG Tools
+
+Each SSG provides tools prefixed with its name. Common patterns:
+
+* `{ssg}_init` - Initialize new project
+* `{ssg}_build` - Build the site
+* `{ssg}_serve` - Start development server
+* `{ssg}_clean` - Clean build artifacts
+* `{ssg}_version` - Get SSG version
+
+== Environment Variables
+
+[source,bash]
+----
+# Override binary paths
+ZOLA_PATH=/custom/path/zola
+HAKYLL_PATH=/custom/path/hakyll
+# ... etc for each SSG
+----
+
+== Architecture
+
+[source]
+----
+polyglot-ssg-mcp/
+├── index.js              # Main MCP server
+├── adapters/             # 28 SSG adapters
+│   ├── zola.js           # Rust
+│   ├── hakyll.js         # Haskell
+│   ├── franklin.js       # Julia
+│   └── ...
+├── src/                  # ReScript source
+│   ├── Executor.res      # Type-safe execution
+│   └── Adapter.res       # Adapter interface
+└── Containerfile         # OCI container
+----
+
+== Related Projects
+
+* https://github.com/hyperpolymath/polyglot-db-mcp[polyglot-db-mcp] - Multi-database MCP
+* https://github.com/hyperpolymath/polyglot-container-mcp[polyglot-container-mcp] - Container runtime MCP
+
+== License
+
+MIT - See LICENSE.txt
+
+== Author
+
+Jonathan D.A. Jewell (@hyperpolymath)

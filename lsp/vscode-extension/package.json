@@ -1,0 +1,130 @@
+{
+  "name": "poly-ssg",
+  "displayName": "PolySSG",
+  "description": "Language Server for 60+ Static Site Generators",
+  "version": "0.1.0",
+  "publisher": "hyperpolymath",
+  "license": "PMPL-1.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hyperpolymath/poly-ssg-lsp"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters"
+  ],
+  "keywords": [
+    "static-site-generator",
+    "ssg",
+    "zola",
+    "hugo",
+    "jekyll",
+    "mdbook",
+    "hakyll",
+    "franklin"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/config.toml",
+    "workspaceContains:**/config.yaml",
+    "workspaceContains:**/_config.yml",
+    "workspaceContains:**/book.toml",
+    "workspaceContains:**/config.md",
+    "workspaceContains:**/site.hs"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "PolySSG Configuration",
+      "properties": {
+        "poly-ssg.lsp.path": {
+          "type": "string",
+          "default": "",
+          "description": "Path to poly-ssg-lsp executable (leave empty to use bundled server)"
+        },
+        "poly-ssg.lsp.args": {
+          "type": "array",
+          "default": [],
+          "description": "Additional arguments to pass to the LSP server"
+        },
+        "poly-ssg.diagnostics.onSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run diagnostics on file save"
+        },
+        "poly-ssg.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Trace communication between VSCode and the LSP server"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "poly-ssg.build",
+        "title": "PolySSG: Build Site"
+      },
+      {
+        "command": "poly-ssg.serve",
+        "title": "PolySSG: Start Dev Server"
+      },
+      {
+        "command": "poly-ssg.clean",
+        "title": "PolySSG: Clean Build Artifacts"
+      },
+      {
+        "command": "poly-ssg.restartServer",
+        "title": "PolySSG: Restart LSP Server"
+      }
+    ],
+    "languages": [
+      {
+        "id": "markdown",
+        "extensions": [
+          ".md",
+          ".markdown"
+        ]
+      },
+      {
+        "id": "toml",
+        "extensions": [
+          ".toml"
+        ]
+      },
+      {
+        "id": "yaml",
+        "extensions": [
+          ".yml",
+          ".yaml"
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "@vscode/test-electron": "^2.3.0",
+    "@vscode/vsce": "^2.22.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  }
+}

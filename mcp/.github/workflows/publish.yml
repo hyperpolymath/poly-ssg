@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-FileCopyrightText: 2025 hyperpolymath
+#
+# Publish to JSR (JavaScript Registry) on release tags
+# Uses OIDC authentication - no secrets required!
+
+name: Publish to JSR
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no actual publish)'
+        required: false
+        default: 'true'
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write  # Required for JSR OIDC auth
+
+jobs:
+  publish:
+    name: Publish to JSR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@11b63cf76cfcafb4e43f97b6cad24d8e8438f62d # v1
+        with:
+          deno-version: v2.x
+
+      - name: Verify types
+        run: deno check main.js
+
+      - name: Run lints
+        run: deno lint --ignore=node_modules,lib
+
+      - name: Publish to JSR (dry run)
+        if: github.event.inputs.dry_run == 'true'
+        run: deno publish --dry-run
+
+      - name: Publish to JSR
+        if: github.event.inputs.dry_run != 'true' || startsWith(github.ref, 'refs/tags/')
+        run: deno publish
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2
+        with:
+          generate_release_notes: true
+          draft: false

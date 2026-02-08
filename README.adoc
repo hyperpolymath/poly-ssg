@@ -1,0 +1,85 @@
+image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[MPL-2.0-or-later,link="https://opensource.org/licenses/MPL-2.0"]
+image:https://img.shields.io/badge/Philosophy-Palimpsest-indigo.svg[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-license"]
+image:https://img.shields.io/badge/Idris-Inside-5E5086[Idris Inside,link="https://github.com/hyperpolymath/proven"]
+
+// SPDX-License-Identifier: MPL-2.0-or-later
+// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
+
+= Poly SSG Comparison Site
+:toc: auto
+
+image:https://img.shields.io/badge/RSR-compliant-blue[RSR Compliant]
+image:https://img.shields.io/badge/status-active-green[Status: Active]
+
+Interactive comparison of SSG engines (Casket, Hackenbush, Bunsenite, Cobalt) built with ReScript, Deno, and formally verified components from proven.
+
+== Architecture
+
+* *ReScript* - Type-safe frontend compilation
+* *Deno* - Modern runtime (no Node.js per RSR)
+* *proven* - Formally verified string operations
+* *TEA* - The Elm Architecture for state management
+
+=== Formally Verified Components
+
+This site uses *ProvenSafeString* from the proven library for safe config generation, ensuring:
+
+* No string overflow or underflow
+* Memory-safe concatenation
+* Proven correctness of output format
+
+== Development
+
+=== Build
+
+[source,bash]
+----
+# Build ReScript to JavaScript
+deno task build
+
+# Watch mode
+deno task watch
+
+# Clean artifacts
+deno task clean
+----
+
+=== Local Server
+
+[source,bash]
+----
+deno run -A jsr:@std/http/file-server .
+# or
+python3 -m http.server 8000
+----
+
+== Features
+
+* *Interactive Engine Selection* - Choose between SSG engines
+* *Live Config Generation* - See engine-specific configuration
+* *Feature Comparison* - Understand engine capabilities
+* *Safe String Operations* - Formally verified config building
+
+== Project Status (2026-01-30)
+
+* ✅ ReScript compilation with Deno
+* ✅ proven integration for safe strings
+* ✅ PolySsgApp.res with TEA architecture
+* ✅ Security hardening (.well-known/, headers, DNS)
+* ⏳ Full UI implementation (basic render)
+* ⏳ Visual comparison table
+* ⏳ Interactive feature filtering
+
+== Related Projects
+
+* link:https://github.com/hyperpolymath/casket-ssg[Casket SSG] - Haskell implementation
+* link:https://github.com/hyperpolymath/hackenbush-ssg[Hackenbush SSG] - Fast SSG
+* link:https://github.com/hyperpolymath/bunsenite[Bunsenite] - Nickel-based SSG
+* link:https://github.com/hyperpolymath/poly-ssg-mcp[poly-ssg-mcp] - MCP server
+* link:https://github.com/hyperpolymath/proven[proven] - Formally verified library
+
+== License
+
+PMPL-1.0-or-later (Palimpsest-MPL)
+
+Philosophy: _One contract. Many paradigms. Every paradigm teaches._

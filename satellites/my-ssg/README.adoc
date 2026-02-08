@@ -1,0 +1,18 @@
+= My SSG
+:toc: auto
+
+Customizable static site generator template. Make it yours.
+
+== Overview
+
+A template for building your own static site generator with full customization support.
+
+== Features
+
+* Fully customizable
+* Poly-SSG compatible
+* Template-based
+
+== License
+
+AGPL-3.0-or-later

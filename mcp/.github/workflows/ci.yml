@@ -1,0 +1,125 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions: read-all
+
+jobs:
+  language-policy:
+    name: Enforce Language Policy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Check for prohibited TypeScript files
+        run: |
+          echo "=== Language Policy Check ==="
+          echo "Policy: ReScript is the primary language. TypeScript is PROHIBITED."
+
+          TS_FILES=$(find . -name "*.ts" -not -path "./node_modules/*" -not -path "./.git/*" | head -20)
+          if [ -n "$TS_FILES" ]; then
+            echo "ERROR: TypeScript files detected!"
+            echo "$TS_FILES"
+            exit 1
+          fi
+
+          echo "OK: No TypeScript files found"
+
+      - name: Verify ReScript source exists
+        run: |
+          RES_COUNT=$(find ./src -name "*.res" 2>/dev/null | wc -l)
+          echo "Found $RES_COUNT ReScript source files"
+
+  rescript-build:
+    name: Build ReScript
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build ReScript
+        run: npm run res:build
+
+  deno-check:
+    name: Deno Compatibility Check
+    runs-on: ubuntu-latest
+    needs: rescript-build
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@11b63cf76cfcafb4e43f97b6cad24d8e8438f62d # v1
+        with:
+          deno-version: v1.x
+
+      - name: Setup Node.js
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install and build
+        run: |
+          npm ci
+          npm run res:build
+
+      - name: Check Deno compatibility
+        run: deno check --allow-import index.js || echo "Note: Full check requires SSG runtimes"
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@11b63cf76cfcafb4e43f97b6cad24d8e8438f62d # v1
+        with:
+          deno-version: v1.x
+
+      - name: Lint JavaScript
+        run: deno lint --ignore=node_modules,lib || true
+
+      - name: Format check
+        run: deno fmt --check --ignore=node_modules,lib || true
+
+  adapter-count:
+    name: Verify Adapter Count
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Count adapters
+        run: |
+          COUNT=$(ls adapters/*.js | wc -l)
+          echo "Found $COUNT adapters"
+          if [ "$COUNT" -lt 28 ]; then
+            echo "ERROR: Expected 28 adapters, found $COUNT"
+            exit 1
+          fi
+          echo "OK: All 28 adapters present"

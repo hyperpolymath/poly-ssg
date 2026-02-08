@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+# polyglot-ssg-mcp - Fedora variant
+
+FROM registry.fedoraproject.org/fedora-minimal:41
+
+LABEL org.opencontainers.image.title="polyglot-ssg-mcp"
+LABEL org.opencontainers.image.description="Unified MCP server for 28 static site generators (Fedora)"
+LABEL org.opencontainers.image.authors="Jonathan D.A. Jewell"
+LABEL org.opencontainers.image.source="https://github.com/hyperpolymath/polyglot-ssg-mcp"
+LABEL org.opencontainers.image.licenses="MIT"
+
+# Install Deno
+RUN microdnf install -y curl unzip \
+    && curl -fsSL https://deno.land/install.sh | DENO_INSTALL=/usr/local sh \
+    && microdnf clean all
+
+WORKDIR /app
+
+COPY deno.json package.json rescript.json ./
+COPY index.js ./
+COPY adapters/ ./adapters/
+COPY src/ ./src/
+COPY lib/ ./lib/
+
+RUN deno cache --config=deno.json index.js
+
+RUN useradd -u 1000 nonroot
+USER nonroot
+EXPOSE 3000
+
+ENTRYPOINT ["deno", "run", "--allow-run", "--allow-read", "--allow-write", "--allow-env", "index.js"]

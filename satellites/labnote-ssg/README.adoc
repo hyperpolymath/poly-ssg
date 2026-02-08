@@ -1,0 +1,114 @@
+// SPDX-License-Identifier: MPL-2.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= labnote-ssg
+:toc: macro
+:toclevels: 2
+:source-highlighter: rouge
+
+image:https://img.shields.io/badge/RSR-Gold-gold[RSR Gold]
+image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[MPL-2.0-or-later,link="https://opensource.org/licenses/MPL-2.0"]
+image:https://img.shields.io/badge/MCP-compatible-green[MCP Compatible]
+
+MCP adapter hub for 28 static site generators — part of the https://github.com/hyperpolymath[hyperpolymath] ecosystem.
+
+toc::[]
+
+== Overview
+
+labnote-ssg provides Model Context Protocol (MCP) adapters for 28 different static site generators (SSGs). As a satellite project in the hyperpolymath ecosystem, it integrates with https://github.com/hyperpolymath/poly-ssg-mcp[poly-ssg-mcp] hub to provide a unified interface for working with diverse SSG tooling.
+
+=== Features
+
+* **28 SSG Adapters** — Support for major static site generators across multiple languages
+* **MCP Protocol** — Standard interface for AI-assisted development workflows
+* **Security-First** — Safe command execution with no shell injection vulnerabilities
+* **RSR Compliant** — Follows Rhodium Standard Repository guidelines
+
+== Supported SSGs
+
+[cols="1,1,2"]
+|===
+|Language |SSG |Description
+
+|Rust |Zola |Fast SSG with Sass compilation and syntax highlighting
+|Rust |mdBook |Documentation/book generator for Rust projects
+|Rust |Cobalt |Simple, extensible static site generator
+|Elixir |Serum |Simple static website generator
+|Elixir |NimblePublisher |Markdown-based publishing engine
+|Elixir |Tableau |Static site generator using LiveView
+|Haskell |Hakyll |Flexible static site library
+|Haskell |Ema |Hot-reloading static site generator
+|Clojure |Cryogen |Static site generator written in Clojure
+|Clojure |Perun |Composable static site generator
+|Clojure |Babashka |Fast native Clojure scripting
+|Common Lisp |Coleslaw |Flexible static blog generator
+|Racket |Frog |Static blog generator
+|Racket |Pollen |Book-publishing system
+|Julia |Franklin |Flexible static site generator
+|Julia |Publish |Documentation publishing system
+|Julia |Documenter |Documentation generator for packages
+|Scala |Laika |Text markup transformer and site generator
+|Scala |Orchid |Documentation and static site engine
+|Scala |ScalaTex |Typesetting with Scala
+|F# |Fornax |Scriptable static site generator
+|OCaml |YOCaml |Static site generator in OCaml
+|Nim |Nimrod |Static site builder
+|D |Reggae |Build system for D language
+|D |Marmot |Static site generator
+|Ada |StaticWebPages |Web page generator
+|Erlang |Zotonic |Web framework and CMS
+|Erlang |Wub |Web utilities
+|===
+
+== Architecture
+
+labnote-ssg serves as a satellite implementation in the poly-ssg-mcp ecosystem:
+
+....
+                    ┌─────────────────────┐
+                    │   poly-ssg-mcp      │
+                    │   (Central Hub)     │
+                    └──────────┬──────────┘
+                               │ MCP Protocol
+            ┌──────────────────┼──────────────────┐
+            │                  │                  │
+    ┌───────┴───────┐  ┌───────┴───────┐  ┌───────┴───────┐
+    │  labnote-ssg  │  │   Other SSG   │  │   Other SSG   │
+    │  (Satellite)  │  │   Satellites  │  │   Satellites  │
+    └───────────────┘  └───────────────┘  └───────────────┘
+....
+
+== Security
+
+* All adapters use safe command execution (`Deno.Command` with array arguments)
+* No shell string construction or `eval` usage
+* CodeQL SAST scanning enabled
+* Dependabot security updates configured
+* Full security policy available in link:SECURITY.md[SECURITY.md]
+
+== Development
+
+=== Prerequisites
+
+* https://deno.land[Deno] runtime (for adapter execution)
+* Individual SSG binaries as needed
+
+=== Running Adapters
+
+Adapters are designed to be loaded by the poly-ssg-mcp hub. Each adapter exports:
+
+* `name` — SSG name
+* `language` — Implementation language
+* `description` — Brief description
+* `connect()` — Initialize connection
+* `disconnect()` — Clean up
+* `isConnected()` — Connection status
+* `tools` — Array of MCP-compatible tool definitions
+
+== Contributing
+
+See link:CONTRIBUTING.md[CONTRIBUTING.md] for development guidelines.
+
+== License
+
+Dual licensed under MIT OR AGPL-3.0-or-later. See link:LICENSE.txt[LICENSE.txt] for details.

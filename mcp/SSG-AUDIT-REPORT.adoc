@@ -1,0 +1,250 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= SSG Repository Audit Report
+:toc: auto
+:toclevels: 2
+:icons: font
+
+Generated: 2025-01-03
+
+== Executive Summary
+
+Audit of **51 SSG repositories** for compliance with the wagasm-ssg template structure.
+
+[cols="2,1,4"]
+|===
+|Metric |Count |Notes
+
+|**Total Repos Audited**
+|51
+|All `*-ssg` repos in hyperpolymath
+
+|**Fully Compliant**
+|7
+|befunge-ssg, milk-ssg, parallax-ssg, prodigy-ssg, terrapin-ssg, wagasm-ssg, zigzag-ssg
+
+|**TypeScript Violations**
+|0
+|✓ No TypeScript found anywhere
+
+|**Missing STATE.scm**
+|42
+|Need state tracking files
+
+|**Missing src/ Directory**
+|30
+|Need directory restructure
+
+|**Missing Core Language**
+|28
+|Need implementation files
+|===
+
+== Compliant Repositories (7)
+
+These repos fully match the template structure:
+
+[cols="2,2,1,1"]
+|===
+|Repository |Core Language |ReScript Files |Status
+
+|befunge-ssg |Befunge-93 (2 files) |4 |✓ OK
+|milk-ssg |COW (1 file) |1 |✓ OK
+|parallax-ssg |Chapel (1 file) |1 |✓ OK
+|prodigy-ssg |Prolog (7 files) |1 |✓ OK
+|terrapin-ssg |Logo (1 file) |1 |✓ OK
+|wagasm-ssg |WAT (1 file) |3 |✓ OK
+|zigzag-ssg |Zig (3 files) |1 |✓ OK
+|===
+
+== Repos With Core Language But Missing Structure (16)
+
+These have core language files but need STATE.scm and/or src/ reorganization:
+
+[cols="2,2,1,3"]
+|===
+|Repository |Core Language |ReScript |Issues
+
+|60-ssg |Algol (1) |0 |NO_STATE, NO_SRC/
+|anvil-ssg |Ada (2) |0 |NO_STATE, NO_SRC/
+|baremetal-ssg |ASM (1) |0 |NO_STATE, NO_SRC/
+|canon-ssg |SML (1) |0 |NO_STATE, NO_SRC/
+|casket-ssg |Haskell (2) |0 |NO_STATE
+|consensus-ssg |Rust (1) |0 |NO_STATE, NO_SRC/
+|ddraig-ssg |Idris (2) |0 |NO_STATE
+|eclipse-ssg |Pony (1) |13 |NO_STATE, NO_SRC/
+|estate-ssg |Forth (1) |0 |NO_STATE
+|iota-ssg |APL (1) |0 |NO_STATE, NO_SRC/
+|jura-ssg |J (1) |0 |NO_STATE, NO_SRC/
+|noteg-ssg |Ada (2) |0 |NO_STATE, NO_SRC/
+|pharos-ssg |Smalltalk (5) |10 |NO_STATE, NO_SRC/
+|===
+
+== Repos Missing Core Language (28)
+
+These repos have NO source files in their declared core language:
+
+[cols="3,2,3"]
+|===
+|Repository |Expected Language |Notes
+
+|chicxulub-ssg |Bash |Shell scripts only, no .sh in detectable locations
+|cpt-ssg |QPL |Quantum programming - no .qpl files
+|dei-ssg |WokeLang |Custom language - no standard extension
+|divisionone-ssg |COBOL |No .cob/.cbl files
+|easel-ssg |Mojo |No .🔥 or .mojo files
+|gungir-ssg |Odin |No .odin files
+|hackenbush-ssg |Life |No .life/.lif files (has ReScript only)
+|labnote-ssg |SciLab |No .sci/.sce files
+|liminal-ssg |Janus |No .janus/.jan files
+|macrauchenia-ssg |OCaml |No .ml/.mli files
+|my-ssg |My |Custom language - unknown extension
+|obli-ssg |Oblibeny |Privacy language - unknown extension
+|odd-ssg |Betlang |Custom DSL - no standard extension
+|orbital-ssg |Ring |No .ring files
+|praxis-ssg |Just |Justfile-based - need Justfile
+|qed-ssg |Agda |No .agda files (ReScript only)
+|rats-ssg |Nim |No .nim files (ReScript only)
+|redshift-ssg |RED |No .red files
+|region-ssg |Z |Formal spec - no .z files
+|reliquary-ssg |Just |Justfile-based - need Justfile
+|rescribe-ssg |ReScript |ReScript IS the core language - needs detection fix
+|saur-ssg |Deno |Deno runtime - JavaScript/TypeScript based
+|sparkle-ssg |Gleam |No .gleam files
+|terrapin-ssg |Logo |Already OK, false positive in script
+|tiamat-ssg |Just |Justfile-based - need Justfile
+|tripos-ssg |Just |Justfile-based - need Justfile
+|tyrano-ssg |REXX |No .rexx/.rex files
+|ultimatum-ssg |Must |Mustfile-based - need Mustfile
+|undo-ssg |Arrow |No .arrow files
+|vindaloo-ssg |Curry |No .curry files
+|vladik-ssg |Unknown |Unknown core language
+|warp-ssg |Factor |No .factor files
+|===
+
+== Required Actions
+
+=== Priority 1: Add STATE.scm (42 repos)
+
+All repos need `STATE.scm` at root with:
+
+[source,scheme]
+----
+;;; STATE.scm — {repo-name}
+;; SPDX-License-Identifier: PMPL-1.0-or-later
+(define metadata
+  '((version . "0.1.0")
+    (project . "{repo-name}")
+    (required-language . "{core-language}")
+    (status . "EXPERIMENTAL")))
+(define language-enforcement
+  '((primary-language . "{core-language}")
+    (file-extension . ".{ext}")
+    (forbidden-languages . ("TypeScript" "Python" "Go"))
+    (enforcement . "STRICT")))
+----
+
+=== Priority 2: Restructure Directories (30 repos)
+
+Move files to match template:
+```
+repo/
+├── src/           # Host code (Deno/JS)
+├── rs/src/        # ReScript adapters
+├── assets/        # CSS/static files
+├── site/          # Content
+└── STATE.scm      # At root
+```
+
+=== Priority 3: Add Core Language Files (28 repos)
+
+Each SSG must have at least one source file in its core language:
+
+- wagasm-ssg → `.wat` files
+- befunge-ssg → `.bf` files
+- zigzag-ssg → `.zig` files
+- etc.
+
+== TypeScript Compliance
+
+**PASS**: Zero TypeScript files found across all 51 repositories.
+
+This confirms all repos follow the language policy of using ReScript instead of TypeScript.
+
+== ReScript Adapter Status
+
+[cols="1,3"]
+|===
+|Count |Repos
+
+|13+ |eclipse-ssg (exceptional - needs review)
+|10+ |pharos-ssg, hackenbush-ssg
+|4-9 |befunge-ssg, my-ssg, odd-ssg, qed-ssg
+|1-3 |wagasm-ssg, zigzag-ssg, milk-ssg, parallax-ssg, prodigy-ssg, terrapin-ssg, rescribe-ssg
+|0 |All others (need adapters)
+|===
+
+== Recommendations
+
+1. **Batch fix STATE.scm** - Create script to generate STATE.scm for 42 repos
+2. **Batch restructure** - Move files to proper directories for 30 repos
+3. **Add stub files** - Create minimal core language examples for 28 repos
+4. **Review eclipse-ssg** - 13 ReScript files seems excessive
+5. **Fix SATELLITES.scm** - Ensure poly-ssg-mcp lists all 51 satellites
+
+== Appendix: Raw Audit Data
+
+```
+60-ssg               | src:N rs:N state:N | res: 0 ts: 0 | core: Algol(1)        | NO_STATE NO_SRC/
+anvil-ssg            | src:N rs:N state:N | res: 0 ts: 0 | core: Ada(2)          | NO_STATE NO_SRC/
+baremetal-ssg        | src:N rs:N state:N | res: 0 ts: 0 | core: ASM(1)          | NO_STATE NO_SRC/
+befunge-ssg          | src:Y rs:Y state:Y | res: 4 ts: 0 | core: Befunge(2)      | OK
+canon-ssg            | src:N rs:N state:N | res: 0 ts: 0 | core: SML(1)          | NO_STATE NO_SRC/
+casket-ssg           | src:Y rs:N state:N | res: 0 ts: 0 | core: Haskell(2)      | NO_STATE
+chicxulub-ssg        | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+consensus-ssg        | src:N rs:N state:N | res: 0 ts: 0 | core: Rust(1)         | NO_STATE NO_SRC/
+cpt-ssg              | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+ddraig-ssg           | src:Y rs:N state:N | res: 0 ts: 0 | core: Idris(2)        | NO_STATE
+dei-ssg              | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+divisionone-ssg      | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+easel-ssg            | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+eclipse-ssg          | src:N rs:N state:N | res:13 ts: 0 | core: Pony(1)         | NO_STATE NO_SRC/
+estate-ssg           | src:Y rs:N state:N | res: 0 ts: 0 | core: Forth(1)        | NO_STATE
+gungir-ssg           | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+hackenbush-ssg       | src:Y rs:N state:Y | res:10 ts: 0 | core: NONE            | NO_CORE_LANG
+iota-ssg             | src:N rs:N state:N | res: 0 ts: 0 | core: APL(1)          | NO_STATE NO_SRC/
+jura-ssg             | src:N rs:N state:N | res: 0 ts: 0 | core: J(1)            | NO_STATE NO_SRC/
+labnote-ssg          | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+liminal-ssg          | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+macrauchenia-ssg     | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+milk-ssg             | src:Y rs:N state:Y | res: 1 ts: 0 | core: COW(1)          | OK
+my-ssg               | src:Y rs:N state:N | res: 4 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG
+noteg-ssg            | src:N rs:N state:N | res: 0 ts: 0 | core: Ada(2)          | NO_STATE NO_SRC/
+obli-ssg             | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+odd-ssg              | src:Y rs:N state:N | res: 9 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG
+orbital-ssg          | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+parallax-ssg         | src:Y rs:N state:Y | res: 1 ts: 0 | core: Chapel(1)       | OK
+pharos-ssg           | src:N rs:N state:N | res:10 ts: 0 | core: Smalltalk(5)    | NO_STATE NO_SRC/
+praxis-ssg           | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+prodigy-ssg          | src:Y rs:N state:Y | res: 1 ts: 0 | core: Prolog(7)       | OK
+qed-ssg              | src:Y rs:N state:N | res: 8 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG
+rats-ssg             | src:Y rs:N state:N | res:15 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG
+redshift-ssg         | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+region-ssg           | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+reliquary-ssg        | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+rescribe-ssg         | src:Y rs:N state:Y | res: 2 ts: 0 | core: NONE            | NO_CORE_LANG
+saur-ssg             | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+sparkle-ssg          | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+terrapin-ssg         | src:Y rs:N state:Y | res: 1 ts: 0 | core: Logo(1)         | OK
+tiamat-ssg           | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+tripos-ssg           | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+tyrano-ssg           | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+ultimatum-ssg        | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+undo-ssg             | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+vindaloo-ssg         | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+vladik-ssg           | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+wagasm-ssg           | src:Y rs:N state:Y | res: 3 ts: 0 | core: WAT(1)          | OK
+warp-ssg             | src:N rs:N state:N | res: 0 ts: 0 | core: NONE            | NO_STATE NO_CORE_LANG NO_SRC/
+zigzag-ssg           | src:Y rs:N state:Y | res: 1 ts: 0 | core: Zig(3)          | OK
+```
+

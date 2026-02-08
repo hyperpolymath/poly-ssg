@@ -1,0 +1,100 @@
+---
+title: Poly-SSG - Static Site Generator Comparison
+description: Interactive comparison of modern static site generators with proven validation
+author: Jonathan D.A. Jewell
+date: 2026-01-30
+---
+
+# Poly-SSG: Static Site Generator Comparison
+
+An interactive tool for comparing and selecting the right static site generator for your project.
+
+## Supported Generators
+
+### Casket-SSG
+**Modern, flexible SSG with multiple markup formats**
+
+- **Markdown** - CommonMark compliant
+- **AsciiDoc** - Technical documentation
+- **A2ML** - Attested markup language
+- **k9-svc** - Self-validating components
+- **Pandoc** - Universal document converter
+
+### Hackenbush-SSG
+**Fast, minimalist SSG built with Rust**
+
+- **Markdown** - Fast parsing
+- **TOML** - Configuration
+- **Speed** - Optimized for performance
+- **Simplicity** - Minimal learning curve
+
+### Bunsenite-SSG
+**Type-safe SSG with Nickel configuration**
+
+- **Nickel** - Configuration language with contracts
+- **Type-safe** - Compile-time validation
+- **Functional** - Pure functional programming
+- **Validated** - Contract-based configuration
+
+### Cobalt-SSG
+**Ruby-based SSG with Liquid templates**
+
+- **Markdown** - Standard format
+- **Liquid** - Template engine
+- **Ruby** - Powerful ecosystem
+- **Jekyll-compatible** - Familiar syntax
+
+## Features Comparison
+
+| Feature | Casket | Hackenbush | Bunsenite | Cobalt |
+|---------|--------|------------|-----------|--------|
+| Markdown | ✓ | ✓ | ✓ | ✓ |
+| AsciiDoc | ✓ | ✗ | ✗ | ✗ |
+| A2ML | ✓ | ✗ | ✗ | ✗ |
+| Type Safety | ✓ | ✗ | ✓ | ✗ |
+| Speed | Medium | Fast | Medium | Slow |
+| Complexity | Medium | Low | High | Medium |
+
+## How to Choose
+
+**Choose Casket-SSG if you need:**
+- Multiple markup formats
+- k9-svc integration
+- A2ML attested content
+- Proven validation
+
+**Choose Hackenbush-SSG if you need:**
+- Maximum performance
+- Minimal setup
+- Simple projects
+- Rust ecosystem
+
+**Choose Bunsenite-SSG if you need:**
+- Type-safe configuration
+- Functional programming
+- Nickel contracts
+- Compile-time validation
+
+**Choose Cobalt-SSG if you need:**
+- Jekyll compatibility
+- Ruby ecosystem
+- Liquid templates
+- Familiar workflow
+
+## Try It Out
+
+1. Visit the [interactive demo](/demo)
+2. Compare feature sets
+3. Test each generator
+4. Make an informed choice
+
+## Learn More
+
+- [Casket-SSG](https://github.com/hyperpolymath/casket-ssg)
+- [Hackenbush-SSG](https://github.com/hyperpolymath/hackenbush-ssg)
+- [Bunsenite-SSG](https://github.com/hyperpolymath/bunsenite)
+- [Cobalt-SSG](https://cobalt-org.github.io/)
+
+---
+
+*Poly-SSG - Choose the right tool for the job.*

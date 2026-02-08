@@ -1,0 +1,8 @@
+= Jura SSG
+:toc: auto
+
+Static site generator implementation in the Poly-SSG family.
+
+== License
+
+AGPL-3.0-or-later

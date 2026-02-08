@@ -1,0 +1,52 @@
+{
+  "$schema": "https://deno.land/x/deno/cli/schemas/config-file.v1.json",
+  "name": "@hyperpolymath/sparkle-ssg",
+  "version": "0.2.0",
+  "exports": {
+    ".": "./adapters/mod.js",
+    "./validation": "./adapters/validation.js"
+  },
+  "tasks": {
+    "check": "deno check adapters/*.js",
+    "lint": "deno lint adapters/",
+    "fmt": "deno fmt adapters/",
+    "test": "deno test tests/ --allow-read --allow-run",
+    "test:coverage": "deno test --coverage=coverage/ tests/ --allow-all",
+    "coverage": "deno coverage coverage/ --lcov > coverage/lcov.info"
+  },
+  "lint": {
+    "include": ["adapters/"],
+    "rules": {
+      "tags": ["recommended"],
+      "include": [
+        "ban-untagged-todo",
+        "no-unused-vars",
+        "no-explicit-any",
+        "eqeqeq"
+      ],
+      "exclude": ["no-unused-vars"]
+    }
+  },
+  "fmt": {
+    "include": ["adapters/"],
+    "useTabs": false,
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "semiColons": true,
+    "singleQuote": false,
+    "proseWrap": "preserve"
+  },
+  "test": {
+    "include": ["tests/"]
+  },
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": false,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "imports": {
+    "@std/assert": "jsr:@std/assert@^1.0.0",
+    "@std/testing": "jsr:@std/testing@^1.0.0"
+  }
+}

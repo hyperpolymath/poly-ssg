@@ -1,0 +1,51 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= Security Policy
+:toc:
+
+== Supported Versions
+
+[cols="1,1"]
+|===
+|Version |Supported
+
+|1.x
+|Yes
+|===
+
+== Reporting a Vulnerability
+
+Please report security vulnerabilities via:
+
+* GitHub Issues: https://github.com/hyperpolymath/polyglot-ssg-mcp/issues
+* Email: See .well-known/security.txt
+
+== Security Model
+
+=== Command Execution
+
+* All SSG commands executed via `Deno.Command` (not shell)
+* Whitelist approach for allowed subcommands
+* Argument sanitization before execution
+* No shell metacharacters allowed
+
+=== Permissions
+
+The server requires these Deno permissions:
+
+* `--allow-run` - Execute SSG CLI commands
+* `--allow-read` - Read project files
+* `--allow-write` - Write generated output
+* `--allow-env` - Access environment variables
+
+=== Container Security
+
+* Non-root user execution
+* Minimal base images (Wolfi, Alpine)
+* No unnecessary packages
+
+== Known Considerations
+
+* SSG CLIs must be trusted and installed separately
+* File system access limited to working directory
+* Network access only through SSG build processes

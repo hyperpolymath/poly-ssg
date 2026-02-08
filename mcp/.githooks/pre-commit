@@ -1,0 +1,81 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+#
+# RSR Language Policy Enforcement
+# Prevents commits that add TypeScript or non-generated JavaScript files
+
+set -e
+
+echo "RSR Policy Check: Enforcing ReScript-only policy..."
+
+# Get list of staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
+# Check for forbidden file types
+VIOLATIONS=""
+
+for file in $STAGED_FILES; do
+    # Skip node_modules and lib directories
+    case "$file" in
+        node_modules/*|lib/*|lib/es6/*) continue ;;
+    esac
+
+    # Check for TypeScript files (forbidden)
+    case "$file" in
+        *.ts|*.tsx)
+            VIOLATIONS="$VIOLATIONS\n  - $file (TypeScript forbidden - use ReScript)"
+            ;;
+    esac
+
+    # Check for JavaScript files (only generated .res.js allowed)
+    case "$file" in
+        *.js|*.jsx)
+            # Allow generated ReScript output
+            case "$file" in
+                *.res.js) continue ;;
+            esac
+
+            # Allow specific exceptions (entry points, config)
+            case "$file" in
+                main.js)
+                    # Entry point shim - imports ReScript modules for Deno
+                    continue
+                    ;;
+                server.js|index.js|transport/*.js)
+                    # These are legacy - block now
+                    VIOLATIONS="$VIOLATIONS\n  - $file (Legacy JS - use main.js shim)"
+                    ;;
+                adapters/*.js)
+                    # Block new JS adapters
+                    VIOLATIONS="$VIOLATIONS\n  - $file (New adapters must be ReScript)"
+                    ;;
+                *.config.js|deno.json)
+                    # Config files allowed
+                    continue
+                    ;;
+            esac
+            ;;
+    esac
+done
+
+if [ -n "$VIOLATIONS" ]; then
+    echo ""
+    echo "RSR Policy Violation Detected!"
+    echo "==============================="
+    echo "The following files violate the RSR language policy:"
+    echo ""
+    printf "$VIOLATIONS\n"
+    echo ""
+    echo "Policy Requirements:"
+    echo "  - New code must be written in ReScript (.res files)"
+    echo "  - TypeScript (.ts, .tsx) is forbidden"
+    echo "  - Only generated .res.js files are allowed"
+    echo ""
+    echo "To bypass this check (not recommended):"
+    echo "  git commit --no-verify"
+    echo ""
+    exit 1
+fi
+
+echo "RSR Policy Check: PASSED"

@@ -1,0 +1,70 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+= Contributing to polyglot-ssg-mcp
+:toc:
+
+== Welcome
+
+Thank you for your interest in contributing to polyglot-ssg-mcp!
+
+== Language Policy
+
+IMPORTANT: This project has a strict language policy:
+
+* **ReScript** is the primary language for core modules
+* **JavaScript** is acceptable for SSG adapters
+* **TypeScript is PROHIBITED** - use ReScript instead
+
+== Adding a New SSG Adapter
+
+=== Eligibility Criteria
+
+SSGs must be:
+
+* From non-mainstream languages (no JS/Python/Ruby frameworks)
+* Open source
+* Actively maintained
+* Have a CLI interface
+
+=== Steps
+
+1. Create `adapters/your-ssg.js`
+2. Export required interface:
+** `name` - SSG name
+** `language` - Programming language
+** `description` - Brief description
+** `connect()` - Check if SSG is available
+** `disconnect()` - Cleanup
+** `isConnected()` - Connection status
+** `tools` - Array of tool definitions
+3. Add SPDX header
+4. Import in `index.js`
+5. Update documentation
+
+=== Tool Naming Convention
+
+Tools should follow the pattern: `{ssg}_{action}`
+
+Examples:
+* `zola_build`
+* `hakyll_watch`
+* `franklin_serve`
+
+== Code Standards
+
+* SPDX headers on all files
+* Use `deno fmt` for formatting
+* No TypeScript
+* ReScript for type-safe core components
+
+== Pull Requests
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run `just lint` and `just fmt`
+5. Submit PR with clear description
+
+== Questions?
+
+Open an issue: https://github.com/hyperpolymath/polyglot-ssg-mcp/issues

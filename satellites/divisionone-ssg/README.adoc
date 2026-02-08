@@ -1,0 +1,178 @@
+= Division One SSG
+Jonathan D.A. Jewell <jonathan@hyperpolymath.org>
+v0.1.0, 2025-12-17
+:toc: left
+:toclevels: 3
+:icons: font
+:source-highlighter: highlight.js
+:experimental:
+
+== Overview
+
+Division One SSG is a satellite repository providing **28 SSG (Static Site Generator) adapters** synchronized from the https://github.com/hyperpolymath/poly-ssg-mcp[poly-ssg-mcp hub]. These adapters enable unified access to diverse static site generators through the Model Context Protocol (MCP).
+
+=== Features
+
+* **28 SSG Adapters** covering 17+ programming languages
+* **MCP Integration** for standardized tool interfaces
+* **Secure by Design** using Deno's permission model
+* **RSR Compliant** following Rhodium Standard Repository guidelines
+
+== Quick Start
+
+=== Prerequisites
+
+* https://deno.land/[Deno] runtime (v1.40+)
+* Target SSG installed (e.g., `zola`, `hakyll`, etc.)
+
+=== Usage
+
+[source,javascript]
+----
+// Import an adapter
+import * as zola from "./adapters/zola.js";
+
+// Connect to the SSG
+await zola.connect();
+
+// Use available tools
+const result = await zola.tools[1].execute({ path: "./my-site" }); // build
+
+// Disconnect
+await zola.disconnect();
+----
+
+== Supported SSGs
+
+[cols="1,3,2"]
+|===
+|Language |SSGs |Adapters
+
+|Rust
+|Zola, Cobalt, mdBook
+|`zola.js`, `cobalt.js`, `mdbook.js`
+
+|Haskell
+|Hakyll, Ema
+|`hakyll.js`, `ema.js`
+
+|Elixir
+|Serum, NimblePublisher, Tableau
+|`serum.js`, `nimble-publisher.js`, `tableau.js`
+
+|Julia
+|Franklin, Documenter, StaticWebPages
+|`franklin.js`, `documenter.js`, `staticwebpages.js`
+
+|Clojure
+|Cryogen, Perun, Babashka
+|`cryogen.js`, `perun.js`, `babashka.js`
+
+|Racket
+|Frog, Pollen
+|`frog.js`, `pollen.js`
+
+|Scala
+|Laika, ScalaTex
+|`laika.js`, `scalatex.js`
+
+|OCaml
+|YOCaml
+|`yocaml.js`
+
+|F#
+|Fornax
+|`fornax.js`
+
+|Kotlin
+|Orchid
+|`orchid.js`
+
+|Swift
+|Publish
+|`publish.js`
+
+|Crystal
+|Marmot
+|`marmot.js`
+
+|Nim
+|Nimrod
+|`nimrod.js`
+
+|D
+|Reggae
+|`reggae.js`
+
+|Tcl
+|Wub
+|`wub.js`
+
+|Erlang
+|Zotonic
+|`zotonic.js`
+
+|Common Lisp
+|Coleslaw
+|`coleslaw.js`
+|===
+
+== Architecture
+
+=== Adapter Pattern
+
+Each adapter exports:
+
+* `name` - SSG name
+* `language` - Implementation language
+* `description` - Brief description
+* `connect()` - Initialize connection
+* `disconnect()` - Cleanup
+* `isConnected()` - Connection status
+* `tools[]` - Available MCP tools
+
+=== Security
+
+* **Command Execution**: Uses `Deno.Command` with array-based arguments (immune to command injection)
+* **No Shell Interpolation**: All parameters passed as discrete arguments
+* **Deno Permissions**: Leverages Deno's security sandbox
+
+== Project Structure
+
+----
+divisionone-ssg/
+├── adapters/           # 28 SSG adapter implementations
+├── .github/            # GitHub workflows and templates
+├── META.scm            # Architecture decisions
+├── ECOSYSTEM.scm       # Ecosystem positioning
+├── STATE.scm           # Project state tracking
+├── SECURITY.md         # Security policy
+├── CONTRIBUTING.md     # Contribution guidelines
+├── CODE_OF_CONDUCT.md  # Community guidelines
+└── ROADMAP.md          # Development roadmap
+----
+
+== Related Projects
+
+* https://github.com/hyperpolymath/poly-ssg-mcp[poly-ssg-mcp] - Hub repository with unified MCP server
+* https://github.com/hyperpolymath/rhodium-standard-repositories[Rhodium Standard Repositories] - Repository guidelines
+
+== Contributing
+
+See link:CONTRIBUTING.md[CONTRIBUTING.md] for guidelines.
+
+== Security
+
+See link:SECURITY.md[SECURITY.md] for reporting vulnerabilities.
+
+== License
+
+Dual-licensed under https://opensource.org/licenses/MIT[MIT] OR https://www.gnu.org/licenses/agpl-3.0.html[AGPL-3.0-or-later].
+
+== Acknowledgments
+
+Part of the https://github.com/hyperpolymath[hyperpolymath] ecosystem.
+
+---
+
+Copyright (C) 2025 Jonathan D.A. Jewell

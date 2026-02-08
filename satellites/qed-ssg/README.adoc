@@ -1,0 +1,35 @@
+= qed-ssg
+:toc:
+:toc-title: Table of Contents
+:icons: font
+
+**Verified static site generation in Agda.**
+"QED" — *Quod Erat Demonstrandum*. A site generator where every build is a completed mathematical proof.
+
+== Who Is This For?
+* **Type Theorists** who demand that site generation be a formally verified transformation.
+* **Logic Researchers** exploring dependently-typed web content.
+* **Security Architects** requiring a build tool that is proven to be correct against its specification.
+
+== Why qed-ssg?
+=== Proof-as-Generator
+In `qed-ssg`, the generator is not just a program; it is a proof that a given set of source files satisfies the "Site Theorem." If the types don't check, the proof is incomplete, and no site is emitted.
+
+=== Formal Specification
+Every template in `qed-ssg` is a total function. This guarantees that your site will never encounter a runtime crash or a partial render. The "teeth" of Agda ensure absolute compliance with your **Must-spec**.
+
+== Quick Start
+[source,oil]
+----
+# Setup Agda via asdf
+just setup
+
+# Verify the site theorem and emit HTML
+just verify
+
+# Check for holes in the site logic
+just check
+----
+
+== License
+AGPL-3.0-or-later
