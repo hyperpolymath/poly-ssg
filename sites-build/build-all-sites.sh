@@ -40,6 +40,20 @@ declare -A COLORS=(
     # Package Management
     ["palimpsest"]="#E67E22"  # Orange (rewriting)
 
+    # Build Tools & Frameworks
+    ["poly-ssg"]="#F39C12"    # Gold (static site generation)
+    ["scaffoldia"]="#D35400"  # Burnt orange (scaffolding)
+    ["polymono"]="#C0392B"    # Deep red (monorepo management)
+
+    # Web Protocols & Routing
+    ["http-capability-gateway"]="#1ABC9C"  # Turquoise (HTTP protocols)
+    ["consent-aware-http"]="#16A085"       # Dark turquoise (consent)
+    ["cadre-tea-router"]="#27AE60"         # Green (routing)
+    ["rescript-tea"]="#229954"             # Forest green (TEA framework)
+
+    # Bot Orchestration
+    ["gitbot-fleet"]="#7D3C98"  # Deep purple (automation)
+
     # Default
     ["default"]="#2980B9"     # Professional blue
 )
@@ -61,6 +75,14 @@ declare -A CATEGORIES=(
     ["ipv6-ready"]="networking"
     ["did-spec"]="identity"
     ["palimpsest"]="license"
+    ["poly-ssg"]="tooling"
+    ["scaffoldia"]="tooling"
+    ["polymono"]="tooling"
+    ["http-capability-gateway"]="protocol"
+    ["consent-aware-http"]="protocol"
+    ["cadre-tea-router"]="framework"
+    ["rescript-tea"]="framework"
+    ["gitbot-fleet"]="automation"
 )
 
 # Site definitions: domain | repo | title | tagline | category
@@ -79,6 +101,14 @@ declare -a SITES=(
     "did-spec.org|did-spec|DID Specification|Decentralized identifier standards and implementations|identity"
     "palimpsest.license|palimpsest|Palimpsest License|Open source license for ethical AI and rewritable code|license"
     "typewise.dev|typewise|TypeWise|Type system education and dependent type theory resources|language"
+    "poly-ssg.org|poly-ssg|Poly-SSG|Polyglot static site generation with formal verification|tooling"
+    "scaffoldia.dev|scaffoldia|Scaffoldia|Template-driven scaffolding with Haskell validation|tooling"
+    "polymono.dev|polymono|PolyMono|Advanced monorepo management and workspace orchestration|tooling"
+    "http-capability-gateway.net|http-capability-gateway|HTTP Capability Gateway|Verb-based HTTP governance and security headers|protocol"
+    "consent-aware-http.org|consent-aware-http|Consent-Aware HTTP|HTTP 430 protocol for ethical web consent|protocol"
+    "cadre-tea-router.dev|cadre-tea-router|Cadre TEA Router|Verified URL routing for TEA architecture|framework"
+    "rescript-tea.dev|rescript-tea|ReScript TEA|The Elm Architecture in ReScript with type safety|framework"
+    "gitbot-fleet.dev|gitbot-fleet|GitBot Fleet|Orchestrated GitHub bot automation with Hypatia intelligence|automation"
 )
 
 get_color() {

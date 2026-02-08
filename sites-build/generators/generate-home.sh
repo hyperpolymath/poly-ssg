@@ -35,6 +35,24 @@ get_hero_content() {
         verification)
             echo '<p class="hero-icon" aria-hidden="true">✓</p>'
             ;;
+        tooling)
+            echo '<p class="hero-icon" aria-hidden="true">🔧</p>'
+            ;;
+        identity)
+            echo '<p class="hero-icon" aria-hidden="true">🆔</p>'
+            ;;
+        license)
+            echo '<p class="hero-icon" aria-hidden="true">📜</p>'
+            ;;
+        protocol)
+            echo '<p class="hero-icon" aria-hidden="true">🔗</p>'
+            ;;
+        framework)
+            echo '<p class="hero-icon" aria-hidden="true">🏗️</p>'
+            ;;
+        automation)
+            echo '<p class="hero-icon" aria-hidden="true">🤖</p>'
+            ;;
         *)
             echo '<p class="hero-icon" aria-hidden="true">⚡</p>'
             ;;
