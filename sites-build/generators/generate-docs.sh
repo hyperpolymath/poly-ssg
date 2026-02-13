@@ -21,7 +21,7 @@ ul { margin-left: 2rem; } li { margin-bottom: 0.5rem; } footer { background: #f8
 <main id="main" role="main"><h1>Documentation</h1><p>Complete documentation for $TITLE. For the latest updates, see the <a href="https://github.com/hyperpolymath/$REPO">GitHub repository</a>.</p>
 
 <div class="doc-card"><h3>🚀 Quick Start</h3><p>Get started with $TITLE in minutes:</p><pre><code>git clone https://github.com/hyperpolymath/$REPO
-cd $REPO
+cd "$REPO"
 # Follow README.md for installation</code></pre></div>
 
 <h2 id="installation">Installation</h2><p>Detailed installation instructions available in the repository <a href="https://github.com/hyperpolymath/$REPO#installation">README</a>.</p>
