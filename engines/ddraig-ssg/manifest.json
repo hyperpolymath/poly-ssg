@@ -24,7 +24,8 @@
     "commands": [
       "./build/exec/ddraig test-markdown",
       "./build/exec/ddraig test-frontmatter",
-      "./build/exec/ddraig test-full"
+      "./build/exec/ddraig test-full",
+      "./build/exec/ddraig build ../../content ../../_site"
     ]
   },
   "ci": {
@@ -32,6 +33,13 @@
       "container": "ghcr.io/idris-community/idris2:latest",
       "install": "apk add --no-cache make",
       "build": "idris2 Ddraig.idr -o ddraig && ./build/exec/ddraig build"
+    }
+  },
+  "deployment": {
+    "github-pages": {
+      "enabled": true,
+      "output": "_site",
+      "cname": "axiom.metadatasticaian.art"
     }
   }
 }

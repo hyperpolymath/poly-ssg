@@ -1,11 +1,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-name: Deploy with Casket-SSG
+name: Deploy with Casket-SSG (Manual Fallback)
 
 permissions: read-all
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:

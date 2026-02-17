@@ -65,6 +65,55 @@ forth-estate-test *tests="all":
             ;;
     esac
 
+# Build with Ddraig (Idris2)
+_build-ddraig-ssg src dest *args:
+    #!/usr/bin/env bash
+    SRC="{{src}}"
+    DEST="{{dest}}"
+    if [[ "$SRC" = /* ]]; then
+      SRC_PATH="$SRC"
+    else
+      SRC_PATH="../../$SRC"
+    fi
+    if [[ "$DEST" = /* ]]; then
+      DEST_PATH="$DEST"
+    else
+      DEST_PATH="../../$DEST"
+    fi
+    cd engines/ddraig-ssg
+    idris2 Ddraig.idr -o ddraig
+    ./build/exec/ddraig build "$SRC_PATH" "$DEST_PATH" {{args}}
+
+# Run Ddraig tests
+ddraig-ssg-test *tests="all":
+    #!/usr/bin/env bash
+    cd engines/ddraig-ssg
+    idris2 Ddraig.idr -o ddraig
+    case "{{tests}}" in
+        all)
+            ./build/exec/ddraig test-markdown
+            ./build/exec/ddraig test-frontmatter
+            ./build/exec/ddraig test-full
+            ;;
+        markdown)
+            ./build/exec/ddraig test-markdown
+            ;;
+        frontmatter)
+            ./build/exec/ddraig test-frontmatter
+            ;;
+        full)
+            ./build/exec/ddraig test-full
+            ;;
+        build)
+            ./build/exec/ddraig build ../../content ../../_site
+            ;;
+        *)
+            echo "Unknown test: {{tests}}"
+            echo "Available: all, markdown, frontmatter, full, build"
+            exit 1
+            ;;
+    esac
+
 # ============================================================================
 # Testing Recipes
 # ============================================================================

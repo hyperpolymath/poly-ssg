@@ -105,6 +105,24 @@ let engines = {
     dictionary_size = 1048576,
   },
 
+  ddraig-ssg = {
+    name = "ddraig-ssg",
+    language = "Idris 2",
+    implementation = "idris2",
+    version = "0.1.0",
+    build_command = ["idris2", "Ddraig.idr", "-o", "ddraig"],
+    build_args = ["./build/exec/ddraig", "build"],
+    features = ["markdown", "frontmatter", "templates", "dependently-typed"],
+    dependencies = {
+      runtime = ["idris2 >= 0.8.0"],
+      optional = [],
+    },
+    deployment = {
+      github_pages = true,
+      cname = "axiom.metadatasticaian.art",
+    },
+  },
+
   # Future engines (stubs for planning)
   webforge = {
     name = "webforge",
@@ -141,7 +159,7 @@ let engines = {
 
 # Combinatoric build matrix
 let build_matrix = {
-  engines = ["forth-estate"],  # Add more as implemented
+  engines = ["forth-estate", "ddraig-ssg"],  # Add more as implemented
   formats = ["html", "json", "xml"],
   environments = ["development", "production", "testing"],
 
@@ -162,8 +180,8 @@ let build_matrix = {
 {
   # Site metadata
   site | SiteConfig = {
-    name = "My Poly-SSG Site",
-    url = "https://example.com",
+    name = "Axiom Site Build",
+    url = "https://axiom.metadatasticaian.art",
     description = "Built with poly-ssg",
     author = "hyperpolymath",
     language = "en",

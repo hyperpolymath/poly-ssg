@@ -53,6 +53,24 @@ deno run -A jsr:@std/http/file-server .
 python3 -m http.server 8000
 ----
 
+=== GitHub Pages Deployment (Ddraig)
+
+Primary Pages deploy now uses `ddraig-ssg` (Idris 2) via:
+
+* `.github/workflows/deploy-ddraig.yml` (auto on `main`)
+* Custom domain: `axiom.metadatasticaian.art` (via `_site/CNAME`)
+
+Casket deploy remains available as a manual fallback workflow:
+`.github/workflows/deploy-casket.yml`.
+
+[source,bash]
+----
+cd engines/ddraig-ssg
+idris2 Ddraig.idr -o ddraig
+./build/exec/ddraig build ../../content ../../_site
+echo "axiom.metadatasticaian.art" > ../../_site/CNAME
+----
+
 == Features
 
 * *Interactive Engine Selection* - Choose between SSG engines

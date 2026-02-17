@@ -108,6 +108,35 @@ jobs:
           fi
         working-directory: engines/forth-estate
 
+  # Ddraig (Idris 2) build and test
+  ddraig-ssg:
+    name: Ddraig SSG
+    runs-on: ubuntu-latest
+    container: ghcr.io/idris-community/idris2:latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Build Ddraig executable
+        run: |
+          cd engines/ddraig-ssg
+          idris2 Ddraig.idr -o ddraig
+
+      - name: Run Ddraig parser tests
+        run: |
+          cd engines/ddraig-ssg
+          ./build/exec/ddraig test-markdown
+          ./build/exec/ddraig test-frontmatter
+          ./build/exec/ddraig test-full
+
+      - name: Build site with Ddraig
+        run: |
+          cd engines/ddraig-ssg
+          ./build/exec/ddraig build ../../content ../../_site
+
   # Strict lint and format checks - ALL MUST PASS
   lint:
     name: Lint & Format (Strict)
@@ -230,7 +259,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    needs: [rescript-wasm, forth-estate, lint, security]
+    needs: [rescript-wasm, forth-estate, ddraig-ssg, lint, security]
 
     steps:
       - name: All checks passed
@@ -240,6 +269,7 @@ jobs:
           echo "========================================="
           echo "- ReScript-WASM: Build & Tests PASSED"
           echo "- Forth Estate: Syntax PASSED"
+          echo "- Ddraig SSG: Build & Tests PASSED"
           echo "- Lint & Format: PASSED"
           echo "- Security Checks: PASSED"
           echo "========================================="

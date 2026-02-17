@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: Deploy with Ddraig-SSG
+
+permissions: read-all
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "content/**"
+      - "engines/ddraig-ssg/**"
+      - ".github/workflows/deploy-ddraig.yml"
+  workflow_dispatch:
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    container: ghcr.io/idris-community/idris2:latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+
+      - name: Build site with Ddraig-SSG
+        run: |
+          cd engines/ddraig-ssg
+          idris2 Ddraig.idr -o ddraig
+          ./build/exec/ddraig build ../../content ../../_site
+
+      - name: Set custom domain
+        run: |
+          echo "axiom.metadatasticaian.art" > _site/CNAME
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
