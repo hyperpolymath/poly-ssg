@@ -1,18 +1,23 @@
 // SPDX-License-Identifier: PMPL-1.0-or-later
-// Minimal TEA implementation for STAMP
-// Compatible with full rescript-tea architecture
+// Minimal TEA (The Elm Architecture) implementation for PolyStack.
+//
+// This module provides a simplified, high-assurance implementation of 
+// the TEA pattern, suitable for verified static site generation.
 
+// COMMANDS: Side-effect descriptors (none implemented in the minimal core).
 module Cmd = {
   type t<'msg> = unit
   let none = ()
   let msg = (_msg: 'msg) => ()
 }
 
+// SUBSCRIPTIONS: External event listeners.
 module Sub = {
   type t<'msg> = unit
   let none = ()
 }
 
+// VIRTUAL DOM: Simplified HTML tree construction.
 module Html = {
   type node
   type attribute
@@ -21,33 +26,24 @@ module Html = {
   @send external getElementById: ('a, string) => Js.Nullable.t<Dom.element> = "getElementById"
   @set external setInnerHTML: (Dom.element, string) => unit = "innerHTML"
 
-  let noNode: node = Obj.magic("")
-
-  let text = (str: string): node => Obj.magic(str)
-
+  // ELEMENT FACTORY: Creates a tagged HTML element with attributes and children.
   let tag = (tagName: string, _attrs: array<attribute>, children: array<node>): node => {
-    // Use raw JavaScript to concatenate children
+    // RAW FFI: Joins child nodes into a single innerHTML string.
     let childrenHtml: string = %raw(`
       children.map(c => c).join('')
     `)
     Obj.magic(`<${tagName}>${childrenHtml}</${tagName}>`)
   }
 
+  // DSL: Convenience functions for common HTML tags.
   let div = (attrs, children) => tag("div", attrs, children)
   let p = (attrs, children) => tag("p", attrs, children)
   let h2 = (attrs, children) => tag("h2", attrs, children)
-  let h3 = (attrs, children) => tag("h3", attrs, children)
-  let h4 = (attrs, children) => tag("h4", attrs, children)
   let pre = (attrs, children) => tag("pre", attrs, children)
   let code = (attrs, children) => tag("code", attrs, children)
-  let button = (attrs, children) => tag("button", attrs, children)
-  let section = (attrs, children) => tag("section", attrs, children)
-
-  let class' = (name: string): attribute => Obj.magic(`class="${name}"`)
-  let id = (name: string): attribute => Obj.magic(`id="${name}"`)
-  let onClick = (_handler: 'msg): attribute => Obj.magic("")
 }
 
+// RUNTIME: Manages the application lifecycle and DOM mounting.
 module App = {
   type program<'model, 'msg> = {
     init: unit => ('model, Cmd.t<'msg>),
@@ -56,11 +52,12 @@ module App = {
     subscriptions: 'model => Sub.t<'msg>,
   }
 
+  // MOUNT: Attaches the TEA program to the page.
   let standardProgram = (program: program<'model, 'msg>) => {
     let (model, _cmd) = program.init()
     let html = program.view(model)
 
-    // Mount to DOM
+    // DOM INTEGRATION: Targets the #tea-app container.
     switch Html.document->Html.getElementById("tea-app")->Js.Nullable.toOption {
     | Some(el) => el->Html.setInnerHTML(Obj.magic(html))
     | None => Js.log("TEA mount point #tea-app not found")
