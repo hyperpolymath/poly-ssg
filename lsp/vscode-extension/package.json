@@ -109,22 +109,19 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile",
-    "test": "node ./out/test/runTest.js",
-    "package": "vsce package",
-    "publish": "vsce publish"
+    "compile": "deno task compile",
+    "watch": "deno task watch",
+    "package": "deno task package",
+    "lint": "deno lint",
+    "fmt": "deno fmt"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/vscode": "^1.80.0",
-    "@vscode/test-electron": "^2.3.0",
-    "@vscode/vsce": "^2.22.0",
-    "typescript": "^5.3.0"
+    "@types/vscode": "^1.80.0"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1"
+  },
+  "overrides": {
+    "minimatch": "^9.0.0"
   }
 }
