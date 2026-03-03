@@ -10,8 +10,8 @@ mix compile
 
 echo "Building VSCode extension..."
 cd vscode-extension
-npm install
-npm run compile
+deno task compile
+
 
 echo "✓ Installation complete!"
 echo ""

@@ -9,8 +9,8 @@ echo "🔄 Running post-merge tasks..."
 if git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD | grep -q "adapters/package.json"; then
     echo "  Updating adapter dependencies..."
     if [ -d "adapters" ] && [ -f "adapters/package.json" ]; then
-        cd adapters && npm install && cd ..
-        echo "  ✓ Adapter dependencies updated"
+        cd adapters && deno task build && cd ..
+        echo "  ✓ Adapter dependencies updated (via Deno)"
     fi
 fi
 
