@@ -1,34 +1,12 @@
 {
-  "name": "@hyperpolymath/polyglot-ssg-mcp",
-  "version": "1.1.0",
-  "exports": "./main.js",
-  "imports": {
-    "@anthropic-ai/sdk": "npm:@anthropic-ai/sdk@^0.39.0",
-    "@modelcontextprotocol/sdk/server/mcp.js": "npm:@modelcontextprotocol/sdk@1.24.3/server/mcp.js",
-    "@modelcontextprotocol/sdk/server/stdio.js": "npm:@modelcontextprotocol/sdk@1.24.3/server/stdio.js",
-    "@modelcontextprotocol/sdk/": "npm:@modelcontextprotocol/sdk@1.24.3/",
-    "@rescript/runtime/lib/es6/Stdlib_JSON.js": "npm:@rescript/runtime@12.0.1/lib/es6/Stdlib_JSON.js",
-    "@rescript/runtime/lib/es6/Stdlib_Int.js": "npm:@rescript/runtime@12.0.1/lib/es6/Stdlib_Int.js",
-    "@rescript/runtime/lib/es6/Stdlib_Option.js": "npm:@rescript/runtime@12.0.1/lib/es6/Stdlib_Option.js",
-    "@rescript/runtime/lib/es6/Stdlib_JsExn.js": "npm:@rescript/runtime@12.0.1/lib/es6/Stdlib_JsExn.js",
-    "@rescript/runtime/lib/es6/Primitive_exceptions.js": "npm:@rescript/runtime@12.0.1/lib/es6/Primitive_exceptions.js",
-    "@rescript/runtime/lib/es6/Primitive_object.js": "npm:@rescript/runtime@12.0.1/lib/es6/Primitive_object.js"
-  },
+  "name": "polyglot-ssg-mcp",
+  "version": "1.0.0",
   "tasks": {
-    "start": "deno run --allow-run --allow-read --allow-write --allow-env --allow-net main.js",
-    "dev": "deno run --watch --allow-run --allow-read --allow-write --allow-env --allow-net main.js",
-    "serve": "MCP_HTTP_MODE=true deno run --allow-run --allow-read --allow-write --allow-env --allow-net main.js",
-    "serve:dev": "MCP_HTTP_MODE=true deno run --watch --allow-run --allow-read --allow-write --allow-env --allow-net main.js",
-    "check": "deno check main.js",
-    "lint": "deno lint --ignore=node_modules,lib",
-    "fmt": "deno fmt --ignore=node_modules,lib",
-    "res:build": "deno run -A npm:rescript build",
-    "res:watch": "deno run -A npm:rescript build -w",
-    "res:clean": "deno run -A npm:rescript clean",
-    "test": "deno test --allow-read tests/",
-    "test:integration": "deno test --allow-read --allow-run tests/satellite_integration_test.js"
+    "res:build": "rescript build",
+    "res:watch": "rescript build -w",
+    "res:clean": "rescript clean"
   },
-  "compilerOptions": {
-    "lib": ["deno.ns", "deno.unstable"]
+  "imports": {
+    "rescript": "^12.0.0"
   }
 }
