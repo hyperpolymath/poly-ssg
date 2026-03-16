@@ -130,7 +130,7 @@ See [ENGINE-SPEC.adoc](https://github.com/hyperpolymath/poly-ssg/blob/main/ENGIN
 - **Repository:** [github.com/hyperpolymath/poly-ssg](https://github.com/hyperpolymath/poly-ssg)
 - **Casket-SSG:** [github.com/hyperpolymath/casket-ssg](https://github.com/hyperpolymath/casket-ssg)
 - **License:** [github.com/hyperpolymath/palimpsest-license](https://github.com/hyperpolymath/palimpsest-license)
-- **Maintainer:** Jonathan D.A. Jewell <jonathan.jewell@open.ac.uk>
+- **Maintainer:** Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 
 ---
 
