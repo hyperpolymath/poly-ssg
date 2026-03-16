@@ -227,7 +227,7 @@ gungir-ssg is part of the https://github.com/hyperpolymath[hyperpolymath] ecosys
 
 == Licence
 
-AGPL-3.0-or-later — See link:LICENSE.txt[LICENSE.txt]
+PMPL-1.0-or-later — See link:LICENSE.txt[LICENSE.txt]
 
 Copyright (C) 2025 Jonathan D.A. Jewell
 

@@ -12,7 +12,7 @@
     homepage = "https://poly-ssg.org",
     repository = "https://github.com/hyperpolymath/poly-ssg",
 
-    license = "AGPL-3.0-or-later",
+    license = "PMPL-1.0-or-later",
     author = {
       name = "Jonathan D.A. Jewell",
       email = "jonathan.jewell@open.ac.uk",

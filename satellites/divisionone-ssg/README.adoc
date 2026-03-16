@@ -167,7 +167,7 @@ See link:SECURITY.md[SECURITY.md] for reporting vulnerabilities.
 
 == License
 
-Dual-licensed under https://opensource.org/licenses/MIT[MIT] OR https://www.gnu.org/licenses/agpl-3.0.html[AGPL-3.0-or-later].
+Dual-licensed under https://opensource.org/licenses/MIT[MIT] OR https://www.gnu.org/licenses/agpl-3.0.html[PMPL-1.0-or-later].
 
 == Acknowledgments
 

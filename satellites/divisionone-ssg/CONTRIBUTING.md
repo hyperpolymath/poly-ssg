@@ -272,7 +272,7 @@ For significant adapter changes, consider contributing to the hub repository ins
 
 ## License
 
-By contributing, you agree that your contributions will be dual-licensed under MIT OR AGPL-3.0-or-later.
+By contributing, you agree that your contributions will be dual-licensed under MIT OR PMPL-1.0-or-later.
 
 ---
 

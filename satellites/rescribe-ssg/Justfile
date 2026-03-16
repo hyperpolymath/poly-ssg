@@ -222,7 +222,7 @@ info:
     @echo "╠══════════════════════════════════════════╣"
     @echo "║ Language: ReScript (MANDATORY)           ║"
     @echo "║ Output:   JavaScript (.mjs)              ║"
-    @echo "║ License:  AGPL-3.0-or-later              ║"
+    @echo "║ License:  PMPL-1.0-or-later              ║"
     @echo "╚══════════════════════════════════════════╝"
     @cat STATE.scm | grep "overall-completion" || true
 

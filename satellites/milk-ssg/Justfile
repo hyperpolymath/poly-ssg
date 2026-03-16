@@ -206,7 +206,7 @@ info:
     @echo ""
     @grep -E "version.*:" STATE.scm | head -1 || echo "Version: see STATE.scm"
     @echo "Language: COW (esoteric)"
-    @echo "License: AGPL-3.0-or-later"
+    @echo "License: PMPL-1.0-or-later"
     @echo ""
     @echo "Run 'just --list' for available commands"
 

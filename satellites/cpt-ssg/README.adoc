@@ -130,4 +130,4 @@ Integration via MCP enables:
 
 SPDX-License-Identifier: MPL-2.0-or-later
 
-Dual-licensed under AGPL-3.0-or-later for open source use.
+Dual-licensed under PMPL-1.0-or-later for open source use.

@@ -2,7 +2,7 @@
 Module      : Types
 Description : Core types for the Gnosis rendering engine
 Copyright   : (c) 2025-2026 Jonathan D.A. Jewell
-License     : AGPL-3.0-or-later
+License     : PMPL-1.0-or-later
 Maintainer  : hyperpolymath
 
 This module defines the FlexiText type which ensures every visual

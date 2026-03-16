@@ -15,4 +15,4 @@ A template for building your own static site generator with full customization s
 
 == License
 
-AGPL-3.0-or-later
+PMPL-1.0-or-later

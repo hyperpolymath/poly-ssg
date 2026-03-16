@@ -111,4 +111,4 @@ See link:CONTRIBUTING.md[CONTRIBUTING.md] for development guidelines.
 
 == License
 
-Dual licensed under MIT OR AGPL-3.0-or-later. See link:LICENSE.txt[LICENSE.txt] for details.
+Dual licensed under MIT OR PMPL-1.0-or-later. See link:LICENSE.txt[LICENSE.txt] for details.

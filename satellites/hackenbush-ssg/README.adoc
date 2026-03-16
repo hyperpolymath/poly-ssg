@@ -102,4 +102,4 @@ hackenbush-ssg is a satellite of the https://github.com/hyperpolymath/poly-ssg-m
 
 == License
 
-AGPL-3.0-or-later
+PMPL-1.0-or-later

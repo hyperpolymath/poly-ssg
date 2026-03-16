@@ -297,7 +297,7 @@ See link:STATE.scm[STATE.scm] for the complete roadmap. Current milestones:
 
 Dual licensed under:
 
-* link:LICENSE.txt[AGPL-3.0-or-later]
+* link:LICENSE.txt[PMPL-1.0-or-later]
 * MIT (with Palimpsest License philosophical overlay)
 
 == Acknowledgments
