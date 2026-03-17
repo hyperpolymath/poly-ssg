@@ -198,7 +198,7 @@ Phase 2 is complete when:
 
 == Resources
 
-- a2ml repo: https://github.com/hyperpolymath/a2ml
-- k9-svc repo: https://github.com/hyperpolymath/k9-svc
+- a2ml repo: https://github.com/hyperpolymath/standards/tree/main/a2ml
+- k9-svc repo: https://github.com/hyperpolymath/standards/tree/main/k9-svc
 - poly-ssg: https://github.com/hyperpolymath/poly-ssg
 - Pandoc: https://pandoc.org/

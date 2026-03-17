@@ -5,7 +5,7 @@
 
 ; Domain: a2ml.net
 ; Project: a2ml
-; Repository: https://github.com/hyperpolymath/a2ml
+; Repository: https://github.com/hyperpolymath/standards/tree/main/a2ml
 
 $ORIGIN a2ml.net.
 $TTL 3600

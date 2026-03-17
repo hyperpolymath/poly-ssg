@@ -3,7 +3,7 @@
   "site": {
     "name": "A2ML",
     "domain": "a2ml.net",
-    "repository": "https://github.com/hyperpolymath/a2ml"
+    "repository": "https://github.com/hyperpolymath/standards/tree/main/a2ml"
   },
   "consent": {
     "data_collection": {
@@ -44,6 +44,6 @@
   },
   "feedback": {
     "url": "https://a2ml.net/contact.html",
-    "github_issues": "https://github.com/hyperpolymath/a2ml/issues"
+    "github_issues": "https://github.com/hyperpolymath/standards/tree/main/a2ml/issues"
   }
 }
