@@ -13,8 +13,8 @@
 - **Integration**: Import via Deno, compile ReScript → JS
 
 #### 2. **Idris2 ABIs + Zig FFIs** (Formal Verification + Safe FFI)
-- **ABIs**: `/var/mnt/eclipse/repos/language-bridges/src/abi/*.idr`
-- **FFIs**: `/var/mnt/eclipse/repos/language-bridges/ffi/zig/src/*.zig`
+- **ABIs**: `/var$REPOS_DIR/language-bridges/src/abi/*.idr`
+- **FFIs**: `/var$REPOS_DIR/language-bridges/ffi/zig/src/*.zig`
 - **Purpose**: Type-safe, formally verified interfaces
 - **Use**: Generate crypto primitives (SHAKE3-512, Kyber-1024, Dilithium5) with proofs
 

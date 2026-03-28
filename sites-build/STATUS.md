@@ -3,7 +3,7 @@
 # 22 Hyperpolymath Project Sites - Status Report
 
 **Date**: 2026-02-08
-**Location**: `/var/mnt/eclipse/repos/polystack/poly-ssg/sites-build/`
+**Location**: `/var$REPOS_DIR/polystack/poly-ssg/sites-build/`
 
 ---
 
@@ -253,7 +253,7 @@ sites-build/
 
 ```bash
 # Build all 22 sites
-cd /var/mnt/eclipse/repos/polystack/poly-ssg/sites-build
+cd /var$REPOS_DIR/polystack/poly-ssg/sites-build
 ./build-all-sites.sh
 
 # Generate DNS zone files
