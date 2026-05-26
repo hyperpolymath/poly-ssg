@@ -87,7 +87,7 @@ defmodule PolySSG.LSP.MixProject do
     [
       name: "poly_ssg_lsp",
       files: ~w(lib .formatter.exs mix.exs README.md LICENSE CHANGELOG.md),
-      licenses: ["PMPL-1.0-or-later"],
+      licenses: ["MPL-2.0"],
       links: %{
         "GitHub" => @source_url,
         "poly-ssg-mcp" => "https://github.com/hyperpolymath/poly-ssg-mcp"
