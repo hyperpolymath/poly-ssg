@@ -1,0 +1,252 @@
+== SPDX-License-Identifier: PMPL-1.0-or-later
+
+== Cloudflare Configuration Guide (Scott Helme A+ Standards)
+
+=== Security Headers (A+ Rating)
+
+==== Current _headers File (Already Generated)
+
+✅ Based on Scott Helme’s recommendations from securityheaders.com
+
+....
+HSTS: max-age=63072000; includeSubDomains; preload
+CSP: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: geolocation=(), camera=(), microphone=()
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+....
+
+*Result*: Should achieve A+ on securityheaders.com
+
+=== Cloudflare Dashboard Settings
+
+==== 1. SSL/TLS Configuration
+
+*Encryption Mode*: Full (strict) - ✅ Use origin certificates
+(Cloudflare → Origin) - ✅ TLS 1.3 enabled - ✅ TLS 1.2 fallback
+(minimum) - ❌ TLS 1.1 and below DISABLED - ✅ Automatic HTTPS Rewrites
+ON - ✅ Always Use HTTPS ON
+
+*Origin Server Certificates*: 1. Generate Cloudflare Origin Certificate
+(15-year validity) 2. Install on origin server (if applicable) 3. For
+GitHub Pages: Not needed (Cloudflare terminates TLS)
+
+*Edge Certificates*: - ✅ Universal SSL (Let’s Encrypt) - ✅
+Auto-renewal enabled - ✅ ECDSA + RSA dual-stack (for compatibility) -
+✅ Minimum TLS Version: 1.2 (1.3 preferred)
+
+*TLS 1.3*: - ✅ Enable TLS 1.3 - ✅ 0-RTT Connection Resumption
+(optional, improves performance)
+
+*HSTS*: - ✅ Enable HSTS - Max Age: 63072000 (2 years) - ✅ Include
+Subdomains - ✅ Preload (submit to hstspreload.org after testing) - ✅
+No-Sniff Header ON
+
+==== 2. DNSSEC
+
+*Status*: ✅ Enable DNSSEC for all 22 domains
+
+*Steps*: 1. Enable DNSSEC in Cloudflare dashboard (DNS → Settings →
+DNSSEC) 2. Copy DS records 3. Add DS records to domain registrar (varies
+by domain) 4. Verify propagation: `+dig +dnssec DNSKEY example.org+`
+
+*Algorithm*: ECDSA P-256 (Algorithm 13) - Transitioning to Ed448 when
+DNSSEC supports post-quantum
+
+==== 3. Network Settings
+
+*HTTP/3 (QUIC)*: - ✅ Enable HTTP/3 (with QUIC) - ✅ QUIC UDP port 443
+
+*IPv6*: - ✅ IPv6 Compatibility ON - ✅ IPv4 → IPv6 gateway (temporary
+for transition) - 🎯 *Target*: IPv6-only (disable IPv4 when ready)
+
+*WebSockets*: - ⚠️ Only if needed (disabled for static sites)
+
+*gRPC*: - ❌ Not needed for static sites
+
+*0-RTT Connection Resumption*: - ✅ Enable (performance optimization)
+
+==== 4. Speed Optimizations
+
+*Auto Minify*: - ✅ JavaScript - ✅ CSS - ✅ HTML
+
+*Brotli Compression*: - ✅ Enable (superior to gzip)
+
+*Rocket Loader*: - ❌ Disable (can break inline scripts)
+
+*Mirage*: - ✅ Enable (image optimization)
+
+*Polish*: - ✅ Enable (Lossless for static sites)
+
+*Early Hints*: - ✅ Enable (faster page loads)
+
+==== 5. Caching
+
+*Caching Level*: Standard
+
+*Browser Cache TTL*: 4 hours (for static sites)
+
+*Always Online*: ✅ Enable (serve cached version if origin down)
+
+*Development Mode*: OFF (use for testing only)
+
+==== 6. Page Rules
+
+Create page rules for each domain:
+
+*Rule 1*: HTTPS Redirect - URL: `+http://*example.org/*+` - Setting:
+Always Use HTTPS
+
+*Rule 2*: Cache Everything - URL: `+*example.org/*+` - Settings: - Cache
+Level: Cache Everything - Edge Cache TTL: 1 month - Browser Cache TTL: 4
+hours
+
+*Rule 3*: Security Headers - Already handled by `+_headers+` file
+(Cloudflare Pages reads automatically)
+
+==== 7. Firewall Rules
+
+*Managed Challenge*: - Known bots: Allow (GoogleBot, BingBot, etc.) -
+Malicious bots: Block - Suspicious traffic: Challenge
+
+*Rate Limiting*: - 100 requests per 10 seconds per IP (adjust as needed)
+- Threshold for static sites: Higher (e.g., 1000/10s)
+
+*Bot Fight Mode*: ✅ Enable (free plan)
+
+==== 8. Workers (Optional for http-capability-gateway)
+
+*Use Case*: Implement HTTP 430 (Consent Required)
+
+[source,javascript]
+----
+// HTTP 430 Worker (consent-aware-http)
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+
+    // Check for consent header
+    const consent = request.headers.get('X-Consent-Token');
+
+    if (!consent && url.pathname !== '/.well-known/aibdp.json') {
+      // Return HTTP 430 Consent Required
+      return new Response('Consent required. See /.well-known/aibdp.json', {
+        status: 430,
+        headers: {
+          'Content-Type': 'text/plain',
+          'X-Consent-Required': '/.well-known/aibdp.json'
+        }
+      });
+    }
+
+    // Proceed to origin
+    return fetch(request);
+  }
+}
+----
+
+*Deployment*: One worker per domain (or shared across domains)
+
+==== 9. Cloudflare Pages Configuration
+
+*Build Settings*: - Build command: `+./sites-build/build-all-sites.sh+`
+- Build output directory: `+sites-build/generated/{domain}/+` - Root
+directory: `+/+`
+
+*Environment Variables*: - None needed for static sites
+
+*Branch deployments*: - Production branch: `+main+` - Preview branches:
+All other branches
+
+*Custom Domains*: - Add each of 22 domains via Pages → Custom domains -
+CNAME verification automatic
+
+*Functions* (Optional): - Deploy Cloudflare Pages Functions for feedback
+forms - Path: `+/functions/feedback.js+`
+
+==== 10. DNS Records (Per Zone File)
+
+*Import Zone Files*: 1. Go to DNS → Advanced → Import DNS records 2.
+Upload zone file from `+dns-zones/generated/{domain}.zone+` 3. Verify
+all records imported correctly 4. Update placeholders: - TLSA hashes -
+SSH fingerprints - GitHub verification codes - Cloudflare IPv6 addresses
+
+*Critical Records*: - ✅ AAAA (IPv6 only) - ✅ CAA (restrict CAs) - ✅
+DANE/TLSA (cert pinning) - ✅ SSHFP (SSH fingerprints) - ✅ TXT (SPF,
+DMARC, AIBDP, crypto standards)
+
+==== 11. Analytics & Monitoring
+
+*Cloudflare Web Analytics*: - ✅ Enable (privacy-preserving, no cookies)
+- Compliant with zero-tracking policy
+
+*Security Analytics*: - Monitor firewall events - Track bot traffic -
+Review security threats
+
+*Performance Monitoring*: - Core Web Vitals - Page load times - Cache
+hit ratio
+
+==== 12. HSTS Preload Submission
+
+*After 90 days of HSTS deployment*: 1. Visit https://hstspreload.org 2.
+Enter domain 3. Verify requirements: - HTTPS working - HSTS header with
+max-age ≥ 31536000 (1 year) - includeSubDomains directive present -
+preload directive present 4. Submit domain 5. Wait for inclusion in
+Chrome’s preload list (~3 months)
+
+'''''
+
+=== Checklist for Each Domain
+
+* [ ] Enable DNSSEC
+* [ ] Set SSL/TLS to Full (strict)
+* [ ] Enable TLS 1.3
+* [ ] Enable HTTP/3 (QUIC)
+* [ ] Import DNS zone file
+* [ ] Update zone file placeholders
+* [ ] Add to Cloudflare Pages
+* [ ] Configure custom domain
+* [ ] Create HTTPS redirect page rule
+* [ ] Enable auto-minification
+* [ ] Enable Brotli
+* [ ] Configure firewall rules
+* [ ] Test on securityheaders.com (target: A+)
+* [ ] Test on SSL Labs (target: A+)
+* [ ] Verify WCAG compliance (axe-core)
+* [ ] Submit to HSTS preload (after 90 days)
+
+'''''
+
+=== Testing URLs
+
+*Security Headers*: https://securityheaders.com *SSL/TLS*:
+https://www.ssllabs.com/ssltest/ *DNSSEC*:
+https://dnssec-debugger.verisignlabs.com/ *HSTS Preload*:
+https://hstspreload.org *IPv6*: https://ipv6-test.com/ *HTTP/3*:
+https://http3check.net/ *WCAG*: https://wave.webaim.org/ or
+`+npx axe-core+`
+
+'''''
+
+=== Expected Scores
+
+* *Security Headers*: A+
+* *SSL Labs*: A+ (requires TLS 1.3, HSTS, perfect forward secrecy)
+* *WCAG*: AAA (target)
+* *Lighthouse*: 100/100 (Performance, Accessibility, Best Practices,
+SEO)
+
+'''''
+
+=== References
+
+* Scott Helme’s Security Headers: https://securityheaders.com
+* http-capability-gateway: Verb governance + security headers
+* Cloudflare Docs: https://developers.cloudflare.com/
+* SECURITY-STANDARDS.scm: Crypto requirements
+* DNS Zone Files: `+dns-zones/generated/+`

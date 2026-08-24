@@ -1,0 +1,155 @@
+== poly-ssg
+
+*Polyglot Static Site Generator Metaframework*
+
+image:https://img.shields.io/badge/License-PMPL--1.0-indigo.svg[License:
+PMPL-1.0]
+image:https://img.shields.io/badge/Status-Active-green.svg[Status:
+Active Development]
+
+A metaframework for building and managing polyglot static site
+generators with MCP (Model Context Protocol) integration and formal
+verification capabilities.
+
+=== Philosophy
+
+*poly-ssg* embraces the palimpsest nature of knowledge systems. Like
+manuscript layers building upon each other, static site generators
+should compose, interoperate, and preserve lineage across language
+boundaries.
+
+Traditional SSG ecosystems are siloed by language. poly-ssg breaks these
+barriers by:
+
+* *Language-agnostic orchestration* - Coordinate generators written in
+any language
+* *Formal verification hooks* - Integrate proof systems (a2ml, k9-svc)
+at build time
+* *MCP-native design* - First-class Model Context Protocol support
+* *Provenance preservation* - Track content lineage across
+transformations
+
+=== Current Engines
+
+==== Casket-SSG (Reference Implementation) ✓
+
+*Language:* Haskell *Status:* Production Ready (v2.0.0) *Repository:*
+https://github.com/hyperpolymath/casket-ssg[hyperpolymath/casket-ssg]
+
+First SSG with formal verification integration. Features:
+
+* Markdown, AsciiDoc, RST, Org-mode support (via Pandoc)
+* a2ml integration (typed, verifiable markup)
+* k9-svc validation (self-validating components)
+* Spell checking (hunspell/aspell)
+* i18n support (en, es, fr, de)
+* Gnosis metadata integration
+
+*Deployed sites:* - https://axel-protocol.org[axel-protocol.org] -
+https://stamp-protocol.org[stamp-protocol.org] -
+https://hyperpolymath.github.io/asdf-plugins/[asdf-plugins registry]
+
+==== Planned Engines
+
+* *hackenbush-ssg* (ReScript) - Fast, type-safe with JSX templating
+* *bunsenite-ssg* (Nickel) - Configuration-as-code with type inference
+* *cobalt-ssg* (Rust) - Low-latency with incremental builds
+
+=== MCP Integration
+
+poly-ssg provides a unified MCP server interface:
+
+[source,javascript]
+----
+// Query any engine through MCP
+const result = await mcp.call("poly-ssg/build", {
+  engine: "casket-ssg",
+  input: "content/",
+  output: "_site/"
+});
+----
+
+Engines register capabilities (Markdown, AsciiDoc, i18n, etc.) and
+poly-ssg routes requests to the appropriate implementation.
+
+=== Formal Verification
+
+poly-ssg engines can integrate verification systems:
+
+* *a2ml* - Attested Markup Language with type-level content guarantees
+* *k9-svc* - Self-Validating Components with runtime proofs
+* *Idris2* - Dependent types for provable correctness
+
+Example from Casket-SSG:
+
+[source,haskell]
+----
+-- Verify content compiles with a2ml type checker
+verifyContent :: A2MLDoc -> Either TypeError HTML
+----
+
+=== Use Cases
+
+* *Multi-engine sites* - Use Casket for formal content, hackenbush for
+blogs
+* *Proof-carrying content* - Mathematical papers with verified theorems
+* *Compliance documentation* - Generate sites with provable properties
+* *Research artifacts* - Preserve lineage and attribution chains
+
+=== License
+
+*PMPL-1.0-or-later* (Palimpsest-MPL License)
+
+Like a palimpsest manuscript, poly-ssg recognizes that static site
+generators carry layers of meaning - from original content to
+transformation logic to final presentation. This license protects both
+technical attribution and cultural context.
+
+See the https://github.com/hyperpolymath/palimpsest-license[Palimpsest
+License] for full details.
+
+==== Why PMPL for poly-ssg?
+
+* *Emotional lineage* - Content transformations preserve author intent
+* *Quantum-safe provenance* - Long-term attribution for generated sites
+* *Ethical use framework* - Respect cultural and narrative context
+* *AI training permitted* - With clear attribution obligations
+
+=== Getting Started
+
+==== Using Casket-SSG (Available Now)
+
+[source,bash]
+----
+# Clone the reference implementation
+git clone https://github.com/hyperpolymath/casket-ssg
+cd casket-ssg
+
+# Build
+cabal build
+
+# Generate a site
+cabal run casket-ssg build content/ _site/
+----
+
+==== Contributing an Engine
+
+See
+https://github.com/hyperpolymath/poly-ssg/blob/main/ENGINE-SPEC.adoc[ENGINE-SPEC.adoc]
+for requirements.
+
+=== Resources
+
+* *Repository:*
+https://github.com/hyperpolymath/poly-ssg[github.com/hyperpolymath/poly-ssg]
+* *Casket-SSG:*
+https://github.com/hyperpolymath/casket-ssg[github.com/hyperpolymath/casket-ssg]
+* *License:*
+https://github.com/hyperpolymath/palimpsest-license[github.com/hyperpolymath/palimpsest-license]
+* *Maintainer:* Jonathan D.A. Jewell j.d.a.jewell@open.ac.uk
+
+'''''
+
+Built with 🔮 by https://github.com/hyperpolymath[Jonathan D.A. Jewell]
+| Licensed under
+https://github.com/hyperpolymath/palimpsest-license[PMPL-1.0-or-later]

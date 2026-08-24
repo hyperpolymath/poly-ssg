@@ -1,70 +1,109 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
-// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
-= Contributing to polyglot-ssg-mcp
-:toc:
+== Clone the repository
 
-== Welcome
+git clone https://github.com/hyperpolymath/poly-ssg-mcp.git cd
+poly-ssg-mcp
 
-Thank you for your interest in contributing to polyglot-ssg-mcp!
+== Using Nix (recommended for reproducibility)
 
-== Language Policy
+nix develop
 
-IMPORTANT: This project has a strict language policy:
+== Or using toolbox/distrobox
 
-* **ReScript** is the primary language for core modules
-* **JavaScript** is acceptable for SSG adapters
-* **TypeScript is PROHIBITED** - use ReScript instead
+toolbox create poly-ssg-mcp-dev toolbox enter poly-ssg-mcp-dev # Install
+dependencies manually
 
-== Adding a New SSG Adapter
+== Verify setup
 
-=== Eligibility Criteria
+just check # or: cargo check / mix compile / etc. just test # Run test
+suite
 
-SSGs must be:
+....
 
-* From non-mainstream languages (no JS/Python/Ruby frameworks)
-* Open source
-* Actively maintained
-* Have a CLI interface
+### Repository Structure
+....
 
-=== Steps
+poly-ssg-mcp/ ├── src/ # Source code (Perimeter 1-2) ├── lib/ # Library
+code (Perimeter 1-2) ├── extensions/ # Extensions (Perimeter 2) ├──
+plugins/ # Plugins (Perimeter 2) ├── tools/ # Tooling (Perimeter 2) ├──
+docs/ # Documentation (Perimeter 3) │ ├── architecture/ # ADRs, specs
+(Perimeter 2) │ └── proposals/ # RFCs (Perimeter 3) ├── examples/ #
+Examples (Perimeter 3) ├── spec/ # Spec tests (Perimeter 3) ├── tests/ #
+Test suite (Perimeter 2-3) ├── .well-known/ # Protocol files (Perimeter
+1-3) ├── .github/ # GitHub config (Perimeter 1) │ ├── ISSUE_TEMPLATE/ │
+└── workflows/ ├── CHANGELOG.md ├── CODE_OF_CONDUCT.md ├──
+CONTRIBUTING.md # This file ├── GOVERNANCE.md ├── LICENSE ├──
+MAINTAINERS.md ├── README.adoc ├── SECURITY.md ├── flake.nix # Nix flake
+(Perimeter 1) └── justfile # Task runner (Perimeter 1)
 
-1. Create `adapters/your-ssg.js`
-2. Export required interface:
-** `name` - SSG name
-** `language` - Programming language
-** `description` - Brief description
-** `connect()` - Check if SSG is available
-** `disconnect()` - Cleanup
-** `isConnected()` - Connection status
-** `tools` - Array of tool definitions
-3. Add SPDX header
-4. Import in `index.js`
-5. Update documentation
+....
 
-=== Tool Naming Convention
+---
 
-Tools should follow the pattern: `{ssg}_{action}`
+## How to Contribute
 
-Examples:
-* `zola_build`
-* `hakyll_watch`
-* `franklin_serve`
+### Reporting Bugs
 
-== Code Standards
+**Before reporting**:
+1. Search existing issues
+2. Check if it's already fixed in `main`
+3. Determine which perimeter the bug affects
 
-* SPDX headers on all files
-* Use `deno fmt` for formatting
-* No TypeScript
-* ReScript for type-safe core components
+**When reporting**:
 
-== Pull Requests
+Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md) and include:
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run `just lint` and `just fmt`
-5. Submit PR with clear description
+- Clear, descriptive title
+- Environment details (OS, versions, toolchain)
+- Steps to reproduce
+- Expected vs actual behaviour
+- Logs, screenshots, or minimal reproduction
 
-== Questions?
+### Suggesting Features
 
-Open an issue: https://github.com/hyperpolymath/polyglot-ssg-mcp/issues
+**Before suggesting**:
+1. Check the [roadmap](ROADMAP.md) if available
+2. Search existing issues and discussions
+3. Consider which perimeter the feature belongs to
+
+**When suggesting**:
+
+Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md) and include:
+
+- Problem statement (what pain point does this solve?)
+- Proposed solution
+- Alternatives considered
+- Which perimeter this affects
+
+### Your First Contribution
+
+Look for issues labelled:
+
+- [`good first issue`](https://github.com/hyperpolymath/poly-ssg-mcp/labels/good%20first%20issue) — Simple Perimeter 3 tasks
+- [`help wanted`](https://github.com/hyperpolymath/poly-ssg-mcp/labels/help%20wanted) — Community help needed
+- [`documentation`](https://github.com/hyperpolymath/poly-ssg-mcp/labels/documentation) — Docs improvements
+- [`perimeter-3`](https://github.com/hyperpolymath/poly-ssg-mcp/labels/perimeter-3) — Community sandbox scope
+
+---
+
+## Development Workflow
+
+### Branch Naming
+....
+
+docs/short-description # Documentation (P3) test/what-added # Test
+additions (P3) feat/short-description # New features (P2)
+fix/issue-number-description # Bug fixes (P2) refactor/what-changed #
+Code improvements (P2) security/what-fixed # Security fixes (P1-2)
+
+....
+
+### Commit Messages
+
+We follow [Conventional Commits](https://www.conventionalcommits.org/):
+....
+
+():
+
+{empty}[optional body]
+
+{empty}[optional footer]

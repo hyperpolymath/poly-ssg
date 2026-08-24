@@ -1,76 +1,65 @@
-= casket-ssg
-:toc: auto
-:toclevels: 2
+== Casket SSG
 
-image:https://img.shields.io/badge/RSR-compliant-gold[RSR Compliant,link=https://github.com/hyperpolymath/rhodium-standard-repositories]
-image:https://img.shields.io/badge/poly--ssg-satellite-blue[poly-ssg,link=https://github.com/hyperpolymath/poly-ssg]
-image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[MPL-2.0-or-later,link="https://opensource.org/licenses/MPL-2.0"]
+https://github.com/hyperpolymath/casket-ssg/actions/workflows/ci.yml[image:https://github.com/hyperpolymath/casket-ssg/actions/workflows/ci.yml/badge.svg[CI]]
+image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[MPL-2.0-or-later,link="`https://opensource.org/licenses/MPL-2.0`"]
+https://www.haskell.org/[image:https://img.shields.io/badge/Language-Haskell-purple.svg[Language:
+Haskell]]
 
-**Pure functional static site generator in Haskell.**
+____
+Functional static site generator in Haskell
+____
 
-== Who Is This For?
+*Casket* brings pure functional elegance to static site generation.
+Immutable data, composable functions, lazy evaluation.
 
-* **Haskell developers** who want to build sites with tools they know and love
-* **Functional programming enthusiasts** who appreciate compositional design
-* **Teams requiring reliability** where type safety prevents runtime surprises
-* **Anyone frustrated** by dynamic language site builders that fail at deploy time
+=== Features
 
-== Why casket-ssg?
+* λ Pure functional design
+* 📝 Markdown parser with pattern matching
+* 📋 YAML frontmatter extraction
+* 🎨 Template substitution engine
+* 🔄 Lazy evaluation for efficiency
+* 🔒 Strong static typing
 
-=== Type Safety That Matters
-
-Your site structure is checked at compile time. Missing templates, broken links, malformed frontmatter - all caught before deployment, not discovered by users.
-
-=== Composable Pipelines
-
-Content transformations compose like functions should. Chain markdown processing, templating, and asset handling with confidence that types align.
-
-=== Lazy Large-Site Builds
-
-Haskell's lazy evaluation means casket-ssg only processes what's needed. Incremental builds are natural, not bolted on.
-
-=== Pandoc Integration
-
-Best-in-class document conversion with full Pandoc support. Markdown, reStructuredText, Org-mode - your content, your format.
-
-== Quick Start
+=== Installation
 
 [source,bash]
 ----
-# Install
-cabal update
-cabal install casket-ssg
+# Install GHC
+# Ubuntu/Debian
+sudo apt-get install ghc
 
-# Create a site
-casket-ssg init my-site
-cd my-site
-
-# Build
-casket-ssg build
-
-# Preview locally
-casket-ssg serve
+# Compile
+ghc -o casket Casket.hs
 ----
 
-== Features
+=== Usage
 
-* **Compile-time template validation** - broken templates don't build
-* **Strong frontmatter types** - YAML parsing with schema enforcement
-* **Asset pipeline** - CSS/JS processing with hash-based cache busting
-* **Incremental builds** - only rebuild what changed
-* **Live reload** - instant preview during development
-* **RSS/Atom feeds** - generated automatically from content
-* **Sitemap generation** - SEO-ready output
+[source,bash]
+----
+./casket test-markdown
+./casket test-frontmatter
+./casket test-full
+----
 
-== Requirements
+=== Why Haskell?
 
-* GHC 9.0 or later
-* Cabal 3.0 or Stack 2.0
+* *Purity*: No side effects, predictable behavior
+* *Type inference*: Strong types without verbosity
+* *Pattern matching*: Elegant parsing code
+* *Lazy evaluation*: Process only what you need
 
-== Part of poly-ssg
+=== Part of poly-ssg
 
-casket-ssg is part of the https://github.com/hyperpolymath/poly-ssg[poly-ssg] family of language-native static site generators, unified through https://github.com/hyperpolymath/poly-ssg-mcp[MCP integration].
+This is one of 12 polyglot static site generators. See
+https://github.com/hyperpolymath/poly-ssg[poly-ssg] for the full
+collection.
 
-== License
+=== License
 
-PMPL-1.0-or-later
+MIT © https://github.com/hyperpolymath[hyperpolymath]
+
+=== Topics
+
+`+static-site-generator+` `+ssg+` `+haskell+` `+functional+`
+`+pure-functional+` `+lazy-evaluation+` `+type-safe+` `+polyglot+`

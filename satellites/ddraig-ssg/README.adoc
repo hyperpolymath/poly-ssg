@@ -1,75 +1,62 @@
-= ddraig-ssg
-:toc: auto
-:toclevels: 2
+== Ddraig SSG
 
-image:https://img.shields.io/badge/RSR-compliant-gold[RSR Compliant,link=https://github.com/hyperpolymath/rhodium-standard-repositories]
-image:https://img.shields.io/badge/poly--ssg-satellite-blue[poly-ssg,link=https://github.com/hyperpolymath/poly-ssg]
-image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[MPL-2.0-or-later,link="https://opensource.org/licenses/MPL-2.0"]
+https://github.com/hyperpolymath/ddraig-ssg/actions/workflows/ci.yml[image:https://github.com/hyperpolymath/ddraig-ssg/actions/workflows/ci.yml/badge.svg[CI]]
+image:https://img.shields.io/badge/License-MPL_2.0-blue.svg[MPL-2.0-or-later,link="`https://opensource.org/licenses/MPL-2.0`"]
+https://www.idris-lang.org/[image:https://img.shields.io/badge/Language-Idris%202-blue.svg[Language:
+Idris 2]]
 
-**Dependently-typed static site generator in Idris 2.**
+____
+Dependently typed static site generator in Idris 2
+____
 
-_"ddraig"_ (Welsh: dragon) - A site generator with teeth that bites bugs at compile time.
+*Ddraig* (Welsh for "`Dragon`") uses dependent types to breathe fire
+into your static sites. Types that prove your templates are valid.
 
-== Who Is This For?
+=== Features
 
-* **Idris 2 developers** who want type-safe web content
-* **Type theory researchers** exploring practical dependent types
-* **Teams requiring provable correctness** in their build pipelines
-* **Anyone frustrated** by template errors discovered in production
+* 🐉 Dependent types for compile-time guarantees
+* 📝 Markdown parsing with inline formatting
+* 📋 YAML frontmatter extraction
+* 🎨 Template engine with placeholder substitution
+* 🔒 Type-safe by design
 
-== Why ddraig-ssg?
-
-=== Dependent Types for Templates
-
-Your templates carry their structure in their types. A template expecting a `Post` cannot receive a `Page`. The compiler enforces it.
-
-=== Totality Checking
-
-Prove your templates are total - they handle all possible inputs. No more partial functions silently failing.
-
-=== First-Class Schema Enforcement
-
-Frontmatter schemas are types. Invalid frontmatter doesn't compile. Type errors tell you exactly what's wrong.
-
-=== Refinement Types
-
-Constrain your content with precision. A `NonEmpty String` title can never be empty. A `ValidURL` is always valid.
-
-== Quick Start
+=== Installation
 
 [source,bash]
 ----
-# Install
-pack install ddraig-ssg
+# Install Idris 2
+# See: https://idris2.readthedocs.io/en/latest/tutorial/starting.html
 
-# Create a site
-ddraig init my-site
-cd my-site
-
-# Build
-ddraig build
-
-# Type-check without building
-ddraig check
+# Compile
+idris2 Ddraig.idr -o ddraig
 ----
 
-== Features
+=== Usage
 
-* **Total template functions** - all inputs handled, no runtime errors
-* **Dependent frontmatter types** - schemas as types, not runtime checks
-* **Proof-carrying links** - internal links verified at compile time
-* **Effect tracking** - IO separated from pure transformations
-* **Quantitative types** - track resource usage in templates
+[source,bash]
+----
+./build/exec/ddraig test-markdown
+./build/exec/ddraig test-frontmatter
+./build/exec/ddraig test-full
+----
 
-== Requirements
+=== Why Idris 2?
 
-* Idris 2 (0.6.0 or later)
-* Pack package manager
+* *Dependent types*: Prove properties at compile time
+* *Totality checking*: Functions that always terminate
+* *First-class types*: Types are values, values are types
 
-== Part of poly-ssg
+=== Part of poly-ssg
 
-ddraig-ssg is part of the https://github.com/hyperpolymath/poly-ssg[poly-ssg] family of language-native static site generators, unified through https://github.com/hyperpolymath/poly-ssg-mcp[MCP integration].
+This is one of 12 polyglot static site generators. See
+https://github.com/hyperpolymath/poly-ssg[poly-ssg] for the full
+collection.
 
-== License
+=== License
 
-PMPL-1.0-or-later
+MIT © https://github.com/hyperpolymath[hyperpolymath]
+
+=== Topics
+
+`+static-site-generator+` `+ssg+` `+idris+` `+idris2+`
+`+dependent-types+` `+functional+` `+type-safe+` `+polyglot+`

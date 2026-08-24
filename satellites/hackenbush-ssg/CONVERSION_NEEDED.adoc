@@ -1,0 +1,21 @@
+== npm → Deno Conversion Needed
+
+This repository needs to be converted from npm to Deno per RSR policy.
+
+=== Current State
+
+* Uses npm/package.json
+* Needs Deno configuration
+
+=== Action Required
+
+[arabic]
+. Review package.json dependencies
+. Create deno.json equivalent
+. Update imports to use npm: specifiers or URL imports
+. Remove npm artifacts
+. Test with Deno runtime
+
+=== Priority
+
+See .claude/CLAUDE.md for conversion instructions.

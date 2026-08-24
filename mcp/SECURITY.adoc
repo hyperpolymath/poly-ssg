@@ -1,51 +1,23 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
-// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
-= Security Policy
-:toc:
+== Security Policy
 
-== Supported Versions
+=== Supported Versions
 
-[cols="1,1"]
+Use this section to tell people about which versions of your project are
+currently being supported with security updates.
+
+[cols=",",options="header",]
 |===
 |Version |Supported
-
-|1.x
-|Yes
+|5.1.x |:white_check_mark:
+|5.0.x |:x:
+|4.0.x |:white_check_mark:
+|< 4.0 |:x:
 |===
 
-== Reporting a Vulnerability
+=== Reporting a Vulnerability
 
-Please report security vulnerabilities via:
+Use this section to tell people how to report a vulnerability.
 
-* GitHub Issues: https://github.com/hyperpolymath/polyglot-ssg-mcp/issues
-* Email: See .well-known/security.txt
-
-== Security Model
-
-=== Command Execution
-
-* All SSG commands executed via `Deno.Command` (not shell)
-* Whitelist approach for allowed subcommands
-* Argument sanitization before execution
-* No shell metacharacters allowed
-
-=== Permissions
-
-The server requires these Deno permissions:
-
-* `--allow-run` - Execute SSG CLI commands
-* `--allow-read` - Read project files
-* `--allow-write` - Write generated output
-* `--allow-env` - Access environment variables
-
-=== Container Security
-
-* Non-root user execution
-* Minimal base images (Wolfi, Alpine)
-* No unnecessary packages
-
-== Known Considerations
-
-* SSG CLIs must be trusted and installed separately
-* File system access limited to working directory
-* Network access only through SSG build processes
+Tell them where to go, how often they can expect to get an update on a
+reported vulnerability, what to expect if the vulnerability is accepted
+or declined, etc.
