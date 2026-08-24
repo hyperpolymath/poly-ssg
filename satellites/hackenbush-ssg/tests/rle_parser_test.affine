@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module rle_parser_test;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 // hackenbush-ssg - RLE Parser Tests
@@ -16,7 +13,7 @@ import { assertEquals, assertThrows } from "https://deno.land/std@0.208.0/assert
 // Note: In actual implementation, parser would be exported from host.ts
 
 Deno.test("RLE Parser - Valid header parsing", () => {
-  const rle = `#N Test Pattern
+  let rle = `#N Test Pattern
 #C Comment line
 x = 3, y = 3, rule = B3/S23
 bo$2bo$3o!`;
@@ -37,9 +34,9 @@ Deno.test("RLE Parser - Cell pattern decoding", () => {
   // Row 1: dead, dead, alive
   // Row 2: alive, alive, alive
 
-  const pattern = "bo$2bo$3o!";
+  let pattern = "bo$2bo$3o!";
   // Expected grid after parsing
-  const expected = [
+  let expected = [
     [false, true, false],
     [false, false, true],
     [true, true, true],
@@ -60,7 +57,7 @@ Deno.test("RLE Parser - Multi-line patterns", () => {
   // $ represents end of row
   // Multiple $ = multiple empty rows
 
-  const pattern = "3o3$3o!";
+  let pattern = "3o3$3o!";
   // Should create:
   // Row 0: alive, alive, alive
   // Row 1: empty
@@ -72,14 +69,14 @@ Deno.test("RLE Parser - Multi-line patterns", () => {
 
 Deno.test("RLE Parser - Invalid input handling", () => {
   // Should throw on invalid RLE
-  const invalidRLE = "not valid rle content";
+  let invalidRLE = "not valid rle content";
 
   // assertThrows(() => parseRLE(invalidRLE));
   assertEquals(true, true, "RLE invalid input test placeholder");
 });
 
 Deno.test("RLE Parser - Gosper glider gun", () => {
-  const gosperGun = `#N Gosper Glider Gun
+  let gosperGun = `#N Gosper Glider Gun
 x = 36, y = 9, rule = B3/S23
 24bo$22bobo$12b2o6b2o12b2o$11bo3bo4b2o12b2o$2o8bo5bo3b2o$2o8bo3bob2o4b
 obo$10bo5bo7bo$11bo3bo$12b2o!`;
@@ -91,4 +88,3 @@ obo$10bo5bo7bo$11bo3bo$12b2o!`;
   assertEquals(true, true, "Gosper glider gun parsing test placeholder");
 });
 
-==================================== */

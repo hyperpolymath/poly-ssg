@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module build_test;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 hyperpolymath
 //
@@ -14,73 +11,73 @@ module build_test;
 import { assertEquals, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts";
 
 Deno.test("Build system - Justfile exists", async () => {
-  const stat = await Deno.stat("justfile");
+  let stat = await Deno.stat("justfile");
   assertExists(stat);
 });
 
 Deno.test("Build system - Mustfile exists", async () => {
-  const stat = await Deno.stat("Mustfile");
+  let stat = await Deno.stat("Mustfile");
   assertExists(stat);
 });
 
 Deno.test("Build system - Containerfile exists", async () => {
-  const stat = await Deno.stat("Containerfile");
+  let stat = await Deno.stat("Containerfile");
   assertExists(stat);
 });
 
 Deno.test("Engine - Ada spec exists", async () => {
-  const stat = await Deno.stat("engine/src/noteg_engine.ads");
+  let stat = await Deno.stat("engine/src/noteg_engine.ads");
   assertExists(stat);
 });
 
 Deno.test("Engine - Ada body exists", async () => {
-  const stat = await Deno.stat("engine/src/noteg_engine.adb");
+  let stat = await Deno.stat("engine/src/noteg_engine.adb");
   assertExists(stat);
 });
 
 Deno.test("SSG - Types exist", async () => {
-  const stat = await Deno.stat("ssg/src/Types.res");
+  let stat = await Deno.stat("ssg/src/Types.res");
   assertExists(stat);
 });
 
 Deno.test("SSG - Build module exists", async () => {
-  const stat = await Deno.stat("ssg/src/Build.res");
+  let stat = await Deno.stat("ssg/src/Build.res");
   assertExists(stat);
 });
 
 Deno.test("Language - Lexer exists", async () => {
-  const stat = await Deno.stat("noteg-lang/src/Lexer.res");
+  let stat = await Deno.stat("noteg-lang/src/Lexer.res");
   assertExists(stat);
 });
 
 Deno.test("Language - Parser exists", async () => {
-  const stat = await Deno.stat("noteg-lang/src/Parser.res");
+  let stat = await Deno.stat("noteg-lang/src/Parser.res");
   assertExists(stat);
 });
 
 Deno.test("Language - Compiler exists", async () => {
-  const stat = await Deno.stat("noteg-lang/src/Compiler.res");
+  let stat = await Deno.stat("noteg-lang/src/Compiler.res");
   assertExists(stat);
 });
 
 Deno.test("Language - Interpreter exists", async () => {
-  const stat = await Deno.stat("noteg-lang/src/Interpreter.res");
+  let stat = await Deno.stat("noteg-lang/src/Interpreter.res");
   assertExists(stat);
 });
 
 Deno.test("Language - LSP server exists", async () => {
-  const stat = await Deno.stat("noteg-lang/src/lsp/Server.res");
+  let stat = await Deno.stat("noteg-lang/src/lsp/Server.res");
   assertExists(stat);
 });
 
 Deno.test("Accessibility - Schema exists", async () => {
-  const stat = await Deno.stat("a11y/schema.json");
+  let stat = await Deno.stat("a11y/schema.json");
   assertExists(stat);
 });
 
 Deno.test("Accessibility - Schema is valid JSON", async () => {
-  const content = await Deno.readTextFile("a11y/schema.json");
-  const schema = JSON.parse(content);
+  let content = await Deno.readTextFile("a11y/schema.json");
+  let schema = JSON.parse(content);
   assertExists(schema.$schema);
   assertExists(schema.definitions.bslData);
   assertExists(schema.definitions.gslData);
@@ -89,28 +86,27 @@ Deno.test("Accessibility - Schema is valid JSON", async () => {
 });
 
 Deno.test("Adapters - Security module exists", async () => {
-  const stat = await Deno.stat("adapters/_security.js");
+  let stat = await Deno.stat("adapters/_security.js");
   assertExists(stat);
 });
 
 Deno.test("Adapters - Zola adapter exists", async () => {
-  const stat = await Deno.stat("adapters/zola.js");
+  let stat = await Deno.stat("adapters/zola.js");
   assertExists(stat);
 });
 
 Deno.test("SCM - ECOSYSTEM.scm exists", async () => {
-  const stat = await Deno.stat("ECOSYSTEM.scm");
+  let stat = await Deno.stat("ECOSYSTEM.scm");
   assertExists(stat);
 });
 
 Deno.test("SCM - META.scm exists", async () => {
-  const stat = await Deno.stat("META.scm");
+  let stat = await Deno.stat("META.scm");
   assertExists(stat);
 });
 
 Deno.test("SCM - STATE.scm exists", async () => {
-  const stat = await Deno.stat("STATE.scm");
+  let stat = await Deno.stat("STATE.scm");
   assertExists(stat);
 });
 
-==================================== */

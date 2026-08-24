@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module server;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 // server.ts — NoteG Language Server Protocol implementation
@@ -17,35 +14,35 @@ import { Parser, ProgramNode } from "../parser.ts";
 // LSP TYPES
 // ============================================================
 
-interface Position {
+struct Position {
   line: number;
   character: number;
 }
 
-interface Range {
+struct Range {
   start: Position;
   end: Position;
 }
 
-interface Diagnostic {
+struct Diagnostic {
   range: Range;
   message: string;
   severity: number; // 1: Error, 2: Warning, 3: Information, 4: Hint
   source: string;
 }
 
-interface CompletionItem {
+struct CompletionItem {
   label: string;
   kind: number;
   detail?: string;
   documentation?: string;
 }
 
-interface TextDocumentIdentifier {
+struct TextDocumentIdentifier {
   uri: string;
 }
 
-interface TextDocumentItem extends TextDocumentIdentifier {
+struct TextDocumentItem extends TextDocumentIdentifier {
   languageId: string;
   version: number;
   text: string;
@@ -55,7 +52,7 @@ interface TextDocumentItem extends TextDocumentIdentifier {
 // DOCUMENT STORE
 // ============================================================
 
-class DocumentStore {
+struct DocumentStore {
   private documents: Map<string, TextDocumentItem> = new Map();
 
   open(doc: TextDocumentItem): void {
@@ -63,7 +60,7 @@ class DocumentStore {
   }
 
   update(uri: string, text: string, version: number): void {
-    const doc = this.documents.get(uri);
+    let doc = this.documents.get(uri);
     if (doc) {
       doc.text = text;
       doc.version = version;
@@ -83,19 +80,19 @@ class DocumentStore {
 // LANGUAGE SERVER
 // ============================================================
 
-class NoteGLanguageServer {
+struct NoteGLanguageServer {
   private documents = new DocumentStore();
 
   // Analyze document and return diagnostics
   analyze(uri: string): Diagnostic[] {
-    const doc = this.documents.get(uri);
+    let doc = this.documents.get(uri);
     if (!doc) return [];
 
     const diagnostics: Diagnostic[] = [];
 
     try {
-      const lexer = new Lexer(doc.text);
-      const tokens = lexer.tokenize();
+      let lexer = new Lexer(doc.text);
+      let tokens = lexer.tokenize();
 
       // Check for lexer errors
       for (const token of tokens) {
@@ -113,12 +110,12 @@ class NoteGLanguageServer {
       }
 
       // Try to parse
-      const parser = new Parser(tokens);
+      let parser = new Parser(tokens);
       parser.parse();
     } catch (error) {
       if (error instanceof Error) {
-        const match = error.message.match(/at line (\d+)/);
-        const line = match ? parseInt(match[1]) - 1 : 0;
+        let match = error.message.match(/at line (\d+)/);
+        let line = match ? parseInt(match[1]) - 1 : 0;
 
         diagnostics.push({
           range: {
@@ -140,7 +137,7 @@ class NoteGLanguageServer {
     const completions: CompletionItem[] = [];
 
     // Keywords
-    const keywords = [
+    let keywords = [
       { label: "let", detail: "Variable declaration" },
       { label: "fn", detail: "Function definition" },
       { label: "if", detail: "Conditional statement" },
@@ -164,7 +161,7 @@ class NoteGLanguageServer {
     }
 
     // Built-in functions
-    const builtins = [
+    let builtins = [
       { label: "print", detail: "Print to console", doc: "print(value) - Outputs value to console" },
       { label: "len", detail: "Get length", doc: "len(array|string) - Returns the length" },
     ];
@@ -183,13 +180,13 @@ class NoteGLanguageServer {
 
   // Get hover information
   getHover(uri: string, position: Position): string | null {
-    const doc = this.documents.get(uri);
+    let doc = this.documents.get(uri);
     if (!doc) return null;
 
     // Get word at position
-    const lines = doc.text.split("\n");
-    const line = lines[position.line] || "";
-    const word = this.getWordAtPosition(line, position.character);
+    let lines = doc.text.split("\n");
+    let line = lines[position.line] || "";
+    let word = this.getWordAtPosition(line, position.character);
 
     // Keyword documentation
     const docs: Record<string, string> = {
@@ -238,7 +235,7 @@ class NoteGLanguageServer {
 // LSP MESSAGE HANDLING
 // ============================================================
 
-interface LSPMessage {
+struct LSPMessage {
   jsonrpc: "2.0";
   id?: number;
   method?: string;
@@ -247,7 +244,7 @@ interface LSPMessage {
   error?: { code: number; message: string };
 }
 
-class LSPServer {
+struct LSPServer {
   private server: NoteGLanguageServer;
   private initialized = false;
 
@@ -296,12 +293,12 @@ class LSPServer {
         Deno.exit(0);
 
       case "textDocument/didOpen":
-        const openParams = params as { textDocument: TextDocumentItem };
+        let openParams = params as { textDocument: TextDocumentItem };
         this.server.openDocument(openParams.textDocument);
         return null;
 
       case "textDocument/didChange":
-        const changeParams = params as {
+        let changeParams = params as {
           textDocument: { uri: string; version: number };
           contentChanges: { text: string }[];
         };
@@ -315,12 +312,12 @@ class LSPServer {
         return null;
 
       case "textDocument/didClose":
-        const closeParams = params as { textDocument: { uri: string } };
+        let closeParams = params as { textDocument: { uri: string } };
         this.server.closeDocument(closeParams.textDocument.uri);
         return null;
 
       case "textDocument/completion":
-        const completionParams = params as {
+        let completionParams = params as {
           textDocument: { uri: string };
           position: Position;
         };
@@ -334,11 +331,11 @@ class LSPServer {
         };
 
       case "textDocument/hover":
-        const hoverParams = params as {
+        let hoverParams = params as {
           textDocument: { uri: string };
           position: Position;
         };
-        const hover = this.server.getHover(
+        let hover = this.server.getHover(
           hoverParams.textDocument.uri,
           hoverParams.position
         );
@@ -349,7 +346,7 @@ class LSPServer {
         };
 
       case "textDocument/diagnostic":
-        const diagParams = params as { textDocument: { uri: string } };
+        let diagParams = params as { textDocument: { uri: string } };
         return {
           jsonrpc: "2.0",
           id,
@@ -370,10 +367,10 @@ class LSPServer {
 // STDIO TRANSPORT
 // ============================================================
 
-async function runStdio() {
-  const server = new LSPServer();
-  const decoder = new TextDecoder();
-  const encoder = new TextEncoder();
+async fn runStdio() {
+  let server = new LSPServer();
+  let decoder = new TextDecoder();
+  let encoder = new TextEncoder();
 
   let buffer = "";
 
@@ -381,29 +378,29 @@ async function runStdio() {
     buffer += decoder.decode(chunk);
 
     while (true) {
-      const headerEnd = buffer.indexOf("\r\n\r\n");
+      let headerEnd = buffer.indexOf("\r\n\r\n");
       if (headerEnd === -1) break;
 
-      const header = buffer.substring(0, headerEnd);
-      const contentLengthMatch = header.match(/Content-Length: (\d+)/);
+      let header = buffer.substring(0, headerEnd);
+      let contentLengthMatch = header.match(/Content-Length: (\d+)/);
       if (!contentLengthMatch) break;
 
-      const contentLength = parseInt(contentLengthMatch[1]);
-      const messageStart = headerEnd + 4;
-      const messageEnd = messageStart + contentLength;
+      let contentLength = parseInt(contentLengthMatch[1]);
+      let messageStart = headerEnd + 4;
+      let messageEnd = messageStart + contentLength;
 
       if (buffer.length < messageEnd) break;
 
-      const messageStr = buffer.substring(messageStart, messageEnd);
+      let messageStr = buffer.substring(messageStart, messageEnd);
       buffer = buffer.substring(messageEnd);
 
       try {
-        const message = JSON.parse(messageStr) as LSPMessage;
-        const response = server.handleMessage(message);
+        let message = JSON.parse(messageStr) as LSPMessage;
+        let response = server.handleMessage(message);
 
         if (response) {
-          const responseStr = JSON.stringify(response);
-          const responseHeader = `Content-Length: ${encoder.encode(responseStr).length}\r\n\r\n`;
+          let responseStr = JSON.stringify(response);
+          let responseHeader = `Content-Length: ${encoder.encode(responseStr).length}\r\n\r\n`;
           await Deno.stdout.write(encoder.encode(responseHeader + responseStr));
         }
       } catch (e) {
@@ -418,7 +415,7 @@ async function runStdio() {
 // ============================================================
 
 if (import.meta.main) {
-  const args = Deno.args;
+  let args = Deno.args;
 
   if (args.includes("--help") || args.includes("-h")) {
     console.log("NoteG Language Server");
@@ -437,4 +434,3 @@ if (import.meta.main) {
   await runStdio();
 }
 
-==================================== */

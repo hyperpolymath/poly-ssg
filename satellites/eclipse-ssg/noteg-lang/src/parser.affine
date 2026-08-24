@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module parser;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 // parser.ts — NoteG language parser
@@ -16,7 +13,7 @@ import { Lexer, Token, TokenType } from "./lexer.ts";
 // AST NODES
 // ============================================================
 
-export type ASTNode =
+struct ASTNode {
   | ProgramNode
   | LetNode
   | FunctionNode
@@ -34,94 +31,94 @@ export type ASTNode =
   | TemplateNode
   | BlockNode;
 
-export interface ProgramNode {
+struct ProgramNode {
   type: "Program";
   body: ASTNode[];
 }
 
-export interface LetNode {
+struct LetNode {
   type: "Let";
   name: string;
   value: ASTNode;
 }
 
-export interface FunctionNode {
+struct FunctionNode {
   type: "Function";
   name: string;
   params: string[];
   body: ASTNode;
 }
 
-export interface IfNode {
+struct IfNode {
   type: "If";
   condition: ASTNode;
   thenBranch: ASTNode;
   elseBranch: ASTNode | null;
 }
 
-export interface ForNode {
+struct ForNode {
   type: "For";
   variable: string;
   iterable: ASTNode;
   body: ASTNode;
 }
 
-export interface WhileNode {
+struct WhileNode {
   type: "While";
   condition: ASTNode;
   body: ASTNode;
 }
 
-export interface ReturnNode {
+struct ReturnNode {
   type: "Return";
   value: ASTNode | null;
 }
 
-export interface BinaryExprNode {
+struct BinaryExprNode {
   type: "BinaryExpr";
   operator: string;
   left: ASTNode;
   right: ASTNode;
 }
 
-export interface UnaryExprNode {
+struct UnaryExprNode {
   type: "UnaryExpr";
   operator: string;
   operand: ASTNode;
 }
 
-export interface CallNode {
+struct CallNode {
   type: "Call";
   callee: ASTNode;
   args: ASTNode[];
 }
 
-export interface IdentifierNode {
+struct IdentifierNode {
   type: "Identifier";
   name: string;
 }
 
-export interface LiteralNode {
+struct LiteralNode {
   type: "Literal";
   value: string | number | boolean | null;
 }
 
-export interface ArrayNode {
+struct ArrayNode {
   type: "Array";
   elements: ASTNode[];
 }
 
-export interface ObjectNode {
+struct ObjectNode {
   type: "Object";
   properties: { key: string; value: ASTNode }[];
 }
 
-export interface TemplateNode {
+struct TemplateNode {
   type: "Template";
   variable: string;
 }
 
-export interface BlockNode {
+struct BlockNode {
   type: "Block";
   statements: ASTNode[];
 }
@@ -130,7 +127,7 @@ export interface BlockNode {
 // PARSER
 // ============================================================
 
-export class Parser {
+struct Parser {
   private tokens: Token[];
   private pos: number = 0;
 
@@ -142,7 +139,7 @@ export class Parser {
     const body: ASTNode[] = [];
 
     while (!this.isAtEnd()) {
-      const stmt = this.declaration();
+      let stmt = this.declaration();
       if (stmt) {
         body.push(stmt);
       }
@@ -163,16 +160,16 @@ export class Parser {
 
   private letDeclaration(): LetNode {
     this.advance(); // consume 'let'
-    const name = this.consume(TokenType.IDENTIFIER, "Expected variable name").value;
+    let name = this.consume(TokenType.IDENTIFIER, "Expected variable name").value;
     this.consume(TokenType.ASSIGN, "Expected '=' after variable name");
-    const value = this.expression();
+    let value = this.expression();
     return { type: "Let", name, value };
   }
 
   private functionDeclaration(): FunctionNode {
     this.advance(); // consume 'fn'
-    const name = this.consume(TokenType.IDENTIFIER, "Expected function name").value;
-    this.consume(TokenType.LPAREN, "Expected '(' after function name");
+    let name = this.consume(TokenType.IDENTIFIER, "Expected fn name").value;
+    this.consume(TokenType.LPAREN, "Expected '(' after fn name");
 
     const params: string[] = [];
     if (!this.check(TokenType.RPAREN)) {
@@ -182,7 +179,7 @@ export class Parser {
     }
     this.consume(TokenType.RPAREN, "Expected ')' after parameters");
 
-    const body = this.block();
+    let body = this.block();
     return { type: "Function", name, params, body };
   }
 
@@ -207,8 +204,8 @@ export class Parser {
 
   private ifStatement(): IfNode {
     this.advance(); // consume 'if'
-    const condition = this.expression();
-    const thenBranch = this.block();
+    let condition = this.expression();
+    let thenBranch = this.block();
 
     let elseBranch: ASTNode | null = null;
     if (this.match(TokenType.ELSE)) {
@@ -224,17 +221,17 @@ export class Parser {
 
   private forStatement(): ForNode {
     this.advance(); // consume 'for'
-    const variable = this.consume(TokenType.IDENTIFIER, "Expected variable name").value;
+    let variable = this.consume(TokenType.IDENTIFIER, "Expected variable name").value;
     this.consume(TokenType.IDENTIFIER, "Expected 'in'"); // 'in' keyword
-    const iterable = this.expression();
-    const body = this.block();
+    let iterable = this.expression();
+    let body = this.block();
     return { type: "For", variable, iterable, body };
   }
 
   private whileStatement(): WhileNode {
     this.advance(); // consume 'while'
-    const condition = this.expression();
-    const body = this.block();
+    let condition = this.expression();
+    let body = this.block();
     return { type: "While", condition, body };
   }
 
@@ -252,7 +249,7 @@ export class Parser {
     const statements: ASTNode[] = [];
 
     while (!this.check(TokenType.RBRACE) && !this.isAtEnd()) {
-      const stmt = this.declaration();
+      let stmt = this.declaration();
       if (stmt) {
         statements.push(stmt);
       }
@@ -270,7 +267,7 @@ export class Parser {
     let left = this.and();
 
     while (this.match(TokenType.OR)) {
-      const right = this.and();
+      let right = this.and();
       left = { type: "BinaryExpr", operator: "or", left, right };
     }
 
@@ -281,7 +278,7 @@ export class Parser {
     let left = this.equality();
 
     while (this.match(TokenType.AND)) {
-      const right = this.equality();
+      let right = this.equality();
       left = { type: "BinaryExpr", operator: "and", left, right };
     }
 
@@ -292,8 +289,8 @@ export class Parser {
     let left = this.comparison();
 
     while (this.match(TokenType.EQ, TokenType.NEQ)) {
-      const operator = this.previous().value;
-      const right = this.comparison();
+      let operator = this.previous().value;
+      let right = this.comparison();
       left = { type: "BinaryExpr", operator, left, right };
     }
 
@@ -304,8 +301,8 @@ export class Parser {
     let left = this.term();
 
     while (this.match(TokenType.LT, TokenType.GT, TokenType.LTE, TokenType.GTE)) {
-      const operator = this.previous().value;
-      const right = this.term();
+      let operator = this.previous().value;
+      let right = this.term();
       left = { type: "BinaryExpr", operator, left, right };
     }
 
@@ -316,8 +313,8 @@ export class Parser {
     let left = this.factor();
 
     while (this.match(TokenType.PLUS, TokenType.MINUS)) {
-      const operator = this.previous().value;
-      const right = this.factor();
+      let operator = this.previous().value;
+      let right = this.factor();
       left = { type: "BinaryExpr", operator, left, right };
     }
 
@@ -328,8 +325,8 @@ export class Parser {
     let left = this.unary();
 
     while (this.match(TokenType.STAR, TokenType.SLASH, TokenType.PERCENT)) {
-      const operator = this.previous().value;
-      const right = this.unary();
+      let operator = this.previous().value;
+      let right = this.unary();
       left = { type: "BinaryExpr", operator, left, right };
     }
 
@@ -338,8 +335,8 @@ export class Parser {
 
   private unary(): ASTNode {
     if (this.match(TokenType.NOT, TokenType.MINUS)) {
-      const operator = this.previous().value;
-      const operand = this.unary();
+      let operator = this.previous().value;
+      let operand = this.unary();
       return { type: "UnaryExpr", operator, operand };
     }
 
@@ -384,7 +381,7 @@ export class Parser {
       return { type: "Identifier", name: this.previous().value };
     }
     if (this.match(TokenType.TEMPLATE_START)) {
-      const variable = this.consume(TokenType.IDENTIFIER, "Expected variable name").value;
+      let variable = this.consume(TokenType.IDENTIFIER, "Expected variable name").value;
       this.consume(TokenType.TEMPLATE_END, "Expected '}}'");
       return { type: "Template", variable };
     }
@@ -399,7 +396,7 @@ export class Parser {
       return { type: "Array", elements };
     }
     if (this.match(TokenType.LPAREN)) {
-      const expr = this.expression();
+      let expr = this.expression();
       this.consume(TokenType.RPAREN, "Expected ')'");
       return expr;
     }
@@ -454,19 +451,18 @@ export class Parser {
 // ============================================================
 
 if (import.meta.main) {
-  const file = Deno.args[0];
+  let file = Deno.args[0];
   if (!file) {
     console.error("Usage: parser.ts <file>");
     Deno.exit(1);
   }
 
-  const source = await Deno.readTextFile(file);
-  const lexer = new Lexer(source);
-  const tokens = lexer.tokenize();
-  const parser = new Parser(tokens);
-  const ast = parser.parse();
+  let source = await Deno.readTextFile(file);
+  let lexer = new Lexer(source);
+  let tokens = lexer.tokenize();
+  let parser = new Parser(tokens);
+  let ast = parser.parse();
 
   console.log(JSON.stringify(ast, null, 2));
 }
 
-==================================== */

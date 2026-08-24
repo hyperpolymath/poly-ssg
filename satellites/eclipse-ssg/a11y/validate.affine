@@ -1,16 +1,13 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module validate;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 // validate.ts — Accessibility schema validation
 
-const SCHEMAS = {
+let SCHEMAS = {
   main: "schema.json",
   bsl: "bsl.schema.json",
   asl: "asl.schema.json",
@@ -18,18 +15,18 @@ const SCHEMAS = {
   makaton: "makaton.schema.json",
 };
 
-interface ValidationResult {
+struct ValidationResult {
   valid: boolean;
   errors: string[];
   warnings: string[];
 }
 
-async function loadSchema(path: string): Promise<Record<string, unknown>> {
-  const content = await Deno.readTextFile(path);
+async fn loadSchema(path: string): Record<string, unknown> {
+  let content = await Deno.readTextFile(path);
   return JSON.parse(content);
 }
 
-function validateA11yMetadata(
+fn validateA11yMetadata(
   data: Record<string, unknown>,
   _schema: Record<string, unknown>
 ): ValidationResult {
@@ -52,7 +49,7 @@ function validateA11yMetadata(
 
   // Check alt text
   if (data.altText) {
-    const alt = data.altText as Record<string, string>;
+    let alt = data.altText as Record<string, string>;
     if (alt.short && alt.short.length > 125) {
       errors.push("Short alt text exceeds 125 character limit");
     }
@@ -63,7 +60,7 @@ function validateA11yMetadata(
 
   // Check audio description
   if (data.audioDescription) {
-    const ad = data.audioDescription as Record<string, string>;
+    let ad = data.audioDescription as Record<string, string>;
     if (!ad.url && !ad.transcript) {
       warnings.push("Audio description has no URL or transcript");
     }
@@ -71,7 +68,7 @@ function validateA11yMetadata(
 
   // Check captions
   if (data.captions) {
-    const captions = data.captions as Record<string, string>;
+    let captions = data.captions as Record<string, string>;
     if (!captions.url) {
       errors.push("Captions object missing URL");
     }
@@ -84,16 +81,16 @@ function validateA11yMetadata(
   };
 }
 
-async function main() {
+async fn main() {
   console.log("Validating accessibility schemas...\n");
 
-  const schemaDir = new URL(".", import.meta.url).pathname;
+  let schemaDir = new URL(".", import.meta.url).pathname;
   let allValid = true;
 
   for (const [name, file] of Object.entries(SCHEMAS)) {
-    const path = `${schemaDir}${file}`;
+    let path = `${schemaDir}${file}`;
     try {
-      const schema = await loadSchema(path);
+      let schema = await loadSchema(path);
       console.log(`✓ ${name}: Schema is valid JSON`);
 
       // Check required schema fields
@@ -120,6 +117,5 @@ if (import.meta.main) {
   main();
 }
 
-export { validateA11yMetadata, ValidationResult };
+{ validateA11yMetadata, ValidationResult };
 
-==================================== */

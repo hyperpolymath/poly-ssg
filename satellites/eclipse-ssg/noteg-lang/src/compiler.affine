@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module compiler;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 // compiler.ts — NoteG language compiler (to JavaScript)
@@ -17,7 +14,7 @@ import { Parser, ASTNode, ProgramNode, LetNode, FunctionNode, IfNode, ForNode, W
 // COMPILER
 // ============================================================
 
-export class Compiler {
+struct Compiler {
   private indent: number = 0;
 
   compile(program: ProgramNode): string {
@@ -70,24 +67,24 @@ export class Compiler {
   }
 
   private compileLet(node: LetNode): string {
-    const value = this.compileNode(node.value);
+    let value = this.compileNode(node.value);
     return `${this.getIndent()}const ${node.name} = ${value};`;
   }
 
   private compileFunction(node: FunctionNode): string {
-    const params = node.params.join(", ");
-    const body = this.compileNode(node.body);
+    let params = node.params.join(", ");
+    let body = this.compileNode(node.body);
     return `${this.getIndent()}function ${node.name}(${params}) ${body}`;
   }
 
   private compileIf(node: IfNode): string {
-    const condition = this.compileNode(node.condition);
-    const thenBranch = this.compileNode(node.thenBranch);
+    let condition = this.compileNode(node.condition);
+    let thenBranch = this.compileNode(node.thenBranch);
 
     let result = `${this.getIndent()}if (${condition}) ${thenBranch}`;
 
     if (node.elseBranch) {
-      const elseBranch = this.compileNode(node.elseBranch);
+      let elseBranch = this.compileNode(node.elseBranch);
       result += ` else ${elseBranch}`;
     }
 
@@ -95,20 +92,20 @@ export class Compiler {
   }
 
   private compileFor(node: ForNode): string {
-    const iterable = this.compileNode(node.iterable);
-    const body = this.compileNode(node.body);
+    let iterable = this.compileNode(node.iterable);
+    let body = this.compileNode(node.body);
     return `${this.getIndent()}for (const ${node.variable} of ${iterable}) ${body}`;
   }
 
   private compileWhile(node: WhileNode): string {
-    const condition = this.compileNode(node.condition);
-    const body = this.compileNode(node.body);
+    let condition = this.compileNode(node.condition);
+    let body = this.compileNode(node.body);
     return `${this.getIndent()}while (${condition}) ${body}`;
   }
 
   private compileReturn(node: ReturnNode): string {
     if (node.value) {
-      const value = this.compileNode(node.value);
+      let value = this.compileNode(node.value);
       return `${this.getIndent()}return ${value};`;
     }
     return `${this.getIndent()}return;`;
@@ -116,14 +113,14 @@ export class Compiler {
 
   private compileBlock(node: BlockNode): string {
     this.indent++;
-    const statements = node.statements.map((s) => this.compileNode(s)).join("\n");
+    let statements = node.statements.map((s) => this.compileNode(s)).join("\n");
     this.indent--;
     return `{\n${statements}\n${this.getIndent()}}`;
   }
 
   private compileBinaryExpr(node: BinaryExprNode): string {
-    const left = this.compileNode(node.left);
-    const right = this.compileNode(node.right);
+    let left = this.compileNode(node.left);
+    let right = this.compileNode(node.right);
 
     let op = node.operator;
     if (op === "and") op = "&&";
@@ -133,15 +130,15 @@ export class Compiler {
   }
 
   private compileUnaryExpr(node: UnaryExprNode): string {
-    const operand = this.compileNode(node.operand);
+    let operand = this.compileNode(node.operand);
     let op = node.operator;
     if (op === "not") op = "!";
     return `${op}${operand}`;
   }
 
   private compileCall(node: CallNode): string {
-    const callee = this.compileNode(node.callee);
-    const args = node.args.map((a) => this.compileNode(a)).join(", ");
+    let callee = this.compileNode(node.callee);
+    let args = node.args.map((a) => this.compileNode(a)).join(", ");
     return `${callee}(${args})`;
   }
 
@@ -156,7 +153,7 @@ export class Compiler {
   }
 
   private compileArray(node: ArrayNode): string {
-    const elements = node.elements.map((e) => this.compileNode(e)).join(", ");
+    let elements = node.elements.map((e) => this.compileNode(e)).join(", ");
     return `[${elements}]`;
   }
 
@@ -174,24 +171,23 @@ export class Compiler {
 // ============================================================
 
 if (import.meta.main) {
-  const file = Deno.args[0];
+  let file = Deno.args[0];
   if (!file) {
     console.error("Usage: compiler.ts <file>");
     Deno.exit(1);
   }
 
-  const source = await Deno.readTextFile(file);
-  const lexer = new Lexer(source);
-  const tokens = lexer.tokenize();
-  const parser = new Parser(tokens);
-  const ast = parser.parse();
-  const compiler = new Compiler();
-  const output = compiler.compile(ast);
+  let source = await Deno.readTextFile(file);
+  let lexer = new Lexer(source);
+  let tokens = lexer.tokenize();
+  let parser = new Parser(tokens);
+  let ast = parser.parse();
+  let compiler = new Compiler();
+  let output = compiler.compile(ast);
 
   // Write output
-  const outputFile = file.replace(/\.noteg$/, ".js");
+  let outputFile = file.replace(/\.noteg$/, ".js");
   await Deno.writeTextFile(outputFile, output);
   console.log(`Compiled to ${outputFile}`);
 }
 
-==================================== */

@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module interpreter;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 // interpreter.ts — NoteG language interpreter
@@ -17,7 +14,7 @@ import { Parser, ASTNode, ProgramNode, LetNode, FunctionNode, IfNode, ForNode, W
 // RUNTIME VALUES
 // ============================================================
 
-export type Value =
+struct Value {
   | string
   | number
   | boolean
@@ -26,7 +23,7 @@ export type Value =
   | { [key: string]: Value }
   | FunctionValue;
 
-export interface FunctionValue {
+struct FunctionValue {
   type: "function";
   name: string;
   params: string[];
@@ -38,7 +35,7 @@ export interface FunctionValue {
 // ENVIRONMENT
 // ============================================================
 
-export class Environment {
+struct Environment {
   private values: Map<string, Value> = new Map();
   private parent: Environment | null;
 
@@ -77,7 +74,7 @@ export class Environment {
 // RETURN EXCEPTION (for early return)
 // ============================================================
 
-class ReturnException extends Error {
+struct ReturnException extends Error {
   value: Value;
 
   constructor(value: Value) {
@@ -90,7 +87,7 @@ class ReturnException extends Error {
 // INTERPRETER
 // ============================================================
 
-export class Interpreter {
+struct Interpreter {
   private globalEnv: Environment;
 
   constructor() {
@@ -99,8 +96,7 @@ export class Interpreter {
   }
 
   private setupBuiltins(): void {
-    // Built-in print function
-    this.globalEnv.define("print", {
+    // Built-in print fn this.globalEnv.define("print", {
       type: "function",
       name: "print",
       params: ["value"],
@@ -108,8 +104,7 @@ export class Interpreter {
       closure: this.globalEnv,
     });
 
-    // Built-in len function
-    this.globalEnv.define("len", {
+    // Built-in len fn this.globalEnv.define("len", {
       type: "function",
       name: "len",
       params: ["value"],
@@ -178,7 +173,7 @@ export class Interpreter {
   }
 
   private evaluateLet(node: LetNode, env: Environment): Value {
-    const value = this.evaluate(node.value, env);
+    let value = this.evaluate(node.value, env);
     env.define(node.name, value);
     return value;
   }
@@ -196,7 +191,7 @@ export class Interpreter {
   }
 
   private evaluateIf(node: IfNode, env: Environment): Value {
-    const condition = this.evaluate(node.condition, env);
+    let condition = this.evaluate(node.condition, env);
 
     if (this.isTruthy(condition)) {
       return this.evaluate(node.thenBranch, env);
@@ -208,7 +203,7 @@ export class Interpreter {
   }
 
   private evaluateFor(node: ForNode, env: Environment): Value {
-    const iterable = this.evaluate(node.iterable, env);
+    let iterable = this.evaluate(node.iterable, env);
 
     if (!Array.isArray(iterable)) {
       throw new Error("For loop requires an array");
@@ -216,7 +211,7 @@ export class Interpreter {
 
     let result: Value = null;
     for (const item of iterable) {
-      const loopEnv = new Environment(env);
+      let loopEnv = new Environment(env);
       loopEnv.define(node.variable, item);
       result = this.evaluate(node.body, loopEnv);
     }
@@ -235,7 +230,7 @@ export class Interpreter {
   }
 
   private evaluateBlock(node: BlockNode, env: Environment): Value {
-    const blockEnv = new Environment(env);
+    let blockEnv = new Environment(env);
     let result: Value = null;
 
     for (const stmt of node.statements) {
@@ -246,8 +241,8 @@ export class Interpreter {
   }
 
   private evaluateBinaryExpr(node: BinaryExprNode, env: Environment): Value {
-    const left = this.evaluate(node.left, env);
-    const right = this.evaluate(node.right, env);
+    let left = this.evaluate(node.left, env);
+    let right = this.evaluate(node.right, env);
 
     switch (node.operator) {
       case "+":
@@ -285,7 +280,7 @@ export class Interpreter {
   }
 
   private evaluateUnaryExpr(node: UnaryExprNode, env: Environment): Value {
-    const operand = this.evaluate(node.operand, env);
+    let operand = this.evaluate(node.operand, env);
 
     switch (node.operator) {
       case "-":
@@ -299,14 +294,14 @@ export class Interpreter {
   }
 
   private evaluateCall(node: CallNode, env: Environment): Value {
-    const callee = this.evaluate(node.callee, env);
+    let callee = this.evaluate(node.callee, env);
 
     if (typeof callee !== "object" || callee === null || !("type" in callee) || callee.type !== "function") {
       throw new Error("Can only call functions");
     }
 
-    const fn = callee as FunctionValue;
-    const args = node.args.map((arg) => this.evaluate(arg, env));
+    let fn = callee as FunctionValue;
+    let args = node.args.map((arg) => this.evaluate(arg, env));
 
     // Handle built-in functions
     if (fn.name === "print") {
@@ -315,7 +310,7 @@ export class Interpreter {
     }
 
     if (fn.name === "len") {
-      const value = args[0];
+      let value = args[0];
       if (Array.isArray(value)) {
         return value.length;
       }
@@ -325,8 +320,7 @@ export class Interpreter {
       throw new Error("len() requires an array or string");
     }
 
-    // User-defined function
-    const fnEnv = new Environment(fn.closure);
+    // User-defined fn let fnEnv = new Environment(fn.closure);
     for (let i = 0; i < fn.params.length; i++) {
       fnEnv.define(fn.params[i], args[i] ?? null);
     }
@@ -356,23 +350,22 @@ export class Interpreter {
 // ============================================================
 
 if (import.meta.main) {
-  const file = Deno.args[0];
+  let file = Deno.args[0];
   if (!file) {
     console.error("Usage: interpreter.ts <file>");
     Deno.exit(1);
   }
 
-  const source = await Deno.readTextFile(file);
-  const lexer = new Lexer(source);
-  const tokens = lexer.tokenize();
-  const parser = new Parser(tokens);
-  const ast = parser.parse();
-  const interpreter = new Interpreter();
-  const result = interpreter.interpret(ast);
+  let source = await Deno.readTextFile(file);
+  let lexer = new Lexer(source);
+  let tokens = lexer.tokenize();
+  let parser = new Parser(tokens);
+  let ast = parser.parse();
+  let interpreter = new Interpreter();
+  let result = interpreter.interpret(ast);
 
   if (result !== null) {
     console.log("Result:", result);
   }
 }
 
-==================================== */

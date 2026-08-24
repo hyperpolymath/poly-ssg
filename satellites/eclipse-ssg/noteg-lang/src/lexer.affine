@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module lexer;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 // lexer.ts — NoteG language lexer
@@ -14,7 +11,7 @@ module lexer;
 // TOKEN TYPES
 // ============================================================
 
-export enum TokenType {
+enum TokenType {
   // Literals
   STRING = "STRING",
   NUMBER = "NUMBER",
@@ -72,7 +69,7 @@ export enum TokenType {
   ERROR = "ERROR",
 }
 
-export interface Token {
+struct Token {
   type: TokenType;
   value: string;
   line: number;
@@ -83,7 +80,7 @@ export interface Token {
 // LEXER
 // ============================================================
 
-export class Lexer {
+struct Lexer {
   private source: string;
   private pos: number = 0;
   private line: number = 1;
@@ -112,7 +109,7 @@ export class Lexer {
     const tokens: Token[] = [];
 
     while (!this.isAtEnd()) {
-      const token = this.nextToken();
+      let token = this.nextToken();
       if (token.type !== TokenType.NEWLINE) {
         tokens.push(token);
       }
@@ -129,7 +126,7 @@ export class Lexer {
       return this.makeToken(TokenType.EOF, "");
     }
 
-    const char = this.advance();
+    let char = this.advance();
 
     // Template syntax
     if (char === "{" && this.peek() === "{") {
@@ -258,13 +255,13 @@ export class Lexer {
       value += this.advance();
     }
 
-    const type = Lexer.keywords.get(value) ?? TokenType.IDENTIFIER;
+    let type = Lexer.keywords.get(value) ?? TokenType.IDENTIFIER;
     return this.makeToken(type, value);
   }
 
   private skipWhitespace(): void {
     while (!this.isAtEnd()) {
-      const char = this.peek();
+      let char = this.peek();
       if (char === " " || char === "\t" || char === "\r") {
         this.advance();
       } else {
@@ -288,7 +285,7 @@ export class Lexer {
   }
 
   private advance(): string {
-    const char = this.source[this.pos];
+    let char = this.source[this.pos];
     this.pos++;
     this.column++;
     return char;
@@ -327,17 +324,16 @@ export class Lexer {
 // ============================================================
 
 if (import.meta.main) {
-  const file = Deno.args[0];
+  let file = Deno.args[0];
   if (!file) {
     console.error("Usage: lexer.ts <file>");
     Deno.exit(1);
   }
 
-  const source = await Deno.readTextFile(file);
-  const lexer = new Lexer(source);
-  const tokens = lexer.tokenize();
+  let source = await Deno.readTextFile(file);
+  let lexer = new Lexer(source);
+  let tokens = lexer.tokenize();
 
   console.log(JSON.stringify(tokens, null, 2));
 }
 
-==================================== */

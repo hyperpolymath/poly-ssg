@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module extension;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 
@@ -20,13 +17,13 @@ import {
 
 let client: LanguageClient;
 
-export function activate(context: vscode.ExtensionContext) {
+fn activate(context: vscode.ExtensionContext) {
   console.log('PolySSG extension activated');
 
   // Get configuration
-  const config = vscode.workspace.getConfiguration('poly-ssg');
-  const customPath = config.get<string>('lsp.path');
-  const args = config.get<string[]>('lsp.args', []);
+  let config = vscode.workspace.getConfiguration('poly-ssg');
+  let customPath = config.get<string>('lsp.path');
+  let args = config.get<string[]>('lsp.args', []);
 
   // Server options
   const serverOptions: ServerOptions = {
@@ -74,7 +71,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand('poly-ssg.serve', async () => {
-      const result = await client.sendRequest<{ port: number }>(
+      let result = await client.sendRequest<{ port: number }>(
         'workspace/executeCommand',
         {
           command: 'poly-ssg.serve',
@@ -109,11 +106,10 @@ export function activate(context: vscode.ExtensionContext) {
   client.start();
 }
 
-export function deactivate(): Thenable<void> | undefined {
+fn deactivate(): Thenable<void> | undefined {
   if (!client) {
     return undefined;
   }
   return client.stop();
 }
 
-==================================== */

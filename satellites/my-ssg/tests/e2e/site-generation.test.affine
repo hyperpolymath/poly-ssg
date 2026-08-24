@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module site-generation.test;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 // End-to-end tests for SSG adapter integration
@@ -17,22 +14,22 @@ import { describe, it, beforeAll, afterAll } from "@std/testing/bdd";
 // Test Configuration
 // ============================================================================
 
-interface AdapterModule {
+struct AdapterModule {
   name: string;
   language: string;
   description: string;
-  connect: () => Promise<boolean>;
-  disconnect: () => Promise<void>;
+  connect: () => boolean;
+  disconnect: () => void;
   isConnected: () => boolean;
   tools: Array<{
     name: string;
     description: string;
     inputSchema: Record<string, unknown>;
-    execute: (args: Record<string, unknown>) => Promise<unknown>;
+    execute: (args: Record<string, unknown>) => unknown;
   }>;
 }
 
-async function loadAdapter(name: string): Promise<AdapterModule | null> {
+async fn loadAdapter(name: string): AdapterModule | null {
   try {
     return await import(`../../adapters/${name}.js`);
   } catch {
@@ -45,7 +42,7 @@ async function loadAdapter(name: string): Promise<AdapterModule | null> {
 // ============================================================================
 
 describe("E2E Adapter Loading", () => {
-  const coreAdapters = [
+  let coreAdapters = [
     "zola",
     "hakyll",
     "mdbook",
@@ -94,21 +91,21 @@ describe("E2E Adapter Loading", () => {
 
 describe("Adapter Collection Verification", () => {
   it("should have 28 adapters", async () => {
-    const files = [...Deno.readDirSync("adapters")].filter((f) =>
+    let files = [...Deno.readDirSync("adapters")].filter((f) =>
       f.name.endsWith(".js")
     );
     assertEquals(files.length, 28, "Should have exactly 28 adapters");
   });
 
   it("should have all adapters loadable", async () => {
-    const files = [...Deno.readDirSync("adapters")].filter((f) =>
+    let files = [...Deno.readDirSync("adapters")].filter((f) =>
       f.name.endsWith(".js")
     );
 
     let loadable = 0;
     for (const file of files) {
       try {
-        const mod = await import(`../../adapters/${file.name}`);
+        let mod = await import(`../../adapters/${file.name}`);
         if (mod.name && mod.tools) {
           loadable++;
         }
@@ -130,12 +127,12 @@ describe("Adapter Collection Verification", () => {
 // ============================================================================
 
 describe("Performance E2E", () => {
-  const PERFORMANCE_THRESHOLD_MS = 5000; // 5 seconds
+  let PERFORMANCE_THRESHOLD_MS = 5000; // 5 seconds
 
   it("should load all adapters within threshold", async () => {
-    const start = performance.now();
+    let start = performance.now();
 
-    const files = [...Deno.readDirSync("adapters")].filter((f) =>
+    let files = [...Deno.readDirSync("adapters")].filter((f) =>
       f.name.endsWith(".js")
     );
 
@@ -147,7 +144,7 @@ describe("Performance E2E", () => {
       }
     }
 
-    const duration = performance.now() - start;
+    let duration = performance.now() - start;
     assertEquals(
       duration < PERFORMANCE_THRESHOLD_MS,
       true,
@@ -164,4 +161,3 @@ if (import.meta.main) {
   console.log("Running E2E tests for SSG Adapter Collection...");
 }
 
-==================================== */

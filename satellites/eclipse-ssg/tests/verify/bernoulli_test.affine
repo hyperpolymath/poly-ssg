@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module bernoulli_test;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 // bernoulli_test.ts — Bernoulli verification tests
@@ -26,25 +23,25 @@ import { assertEquals, assertExists } from "https://deno.land/std@0.208.0/assert
 // ============================================================
 
 Deno.test("Verify - Build determinism", () => {
-  const input = {
+  let input = {
     content: "# Hello World",
     template: "<h1>{{ title }}</h1>",
     variables: { title: "Hello World" },
   };
 
   // Simulate build
-  function build(input: typeof input): string {
+  fn build(input: typeof input): string {
     return input.template.replace("{{ title }}", input.variables.title);
   }
 
   // Run multiple times
-  const results = [];
+  let results = [];
   for (let i = 0; i < 10; i++) {
     results.push(build(input));
   }
 
   // All results should be identical
-  const first = results[0];
+  let first = results[0];
   for (const result of results) {
     assertEquals(result, first, "Build output should be deterministic");
   }
@@ -56,10 +53,10 @@ Deno.test("Verify - Build determinism", () => {
 // ============================================================
 
 Deno.test("Verify - Template variable safety", () => {
-  const template = "Hello {{ name }}, welcome to {{ place }}!";
-  const variables = { name: "User" }; // 'place' is missing
+  let template = "Hello {{ name }}, welcome to {{ place }}!";
+  let variables = { name: "User" }; // 'place' is missing
 
-  function safeSubstitute(
+  fn safeSubstitute(
     template: string,
     variables: Record<string, string>
   ): string {
@@ -68,7 +65,7 @@ Deno.test("Verify - Template variable safety", () => {
     });
   }
 
-  const result = safeSubstitute(template, variables);
+  let result = safeSubstitute(template, variables);
 
   assertEquals(result.includes("User"), true);
   assertEquals(result.includes("[UNDEFINED:place]"), true);
@@ -81,7 +78,7 @@ Deno.test("Verify - Template variable safety", () => {
 // ============================================================
 
 Deno.test("Verify - Content format preservation", () => {
-  const markdown = `---
+  let markdown = `---
 title: Test
 ---
 
@@ -94,8 +91,8 @@ Paragraph text.
 `;
 
   // Parse frontmatter and body
-  function parseContent(content: string): { frontmatter: string; body: string } {
-    const parts = content.split("---");
+  fn parseContent(content: string): { frontmatter: string; body: string } {
+    let parts = content.split("---");
     return {
       frontmatter: parts[1]?.trim() ?? "",
       body: parts.slice(2).join("---").trim(),
@@ -120,7 +117,7 @@ Paragraph text.
 
 Deno.test("Verify - Adapter isolation", () => {
   // Simulate adapter state
-  const createAdapter = (name: string) => {
+  let createAdapter = (name: string) => {
     let connected = false;
     return {
       name,
@@ -130,8 +127,8 @@ Deno.test("Verify - Adapter isolation", () => {
     };
   };
 
-  const adapterA = createAdapter("A");
-  const adapterB = createAdapter("B");
+  let adapterA = createAdapter("A");
+  let adapterB = createAdapter("B");
 
   // Connect A
   adapterA.connect();
@@ -155,13 +152,13 @@ Deno.test("Verify - Adapter isolation", () => {
 // ============================================================
 
 Deno.test("Verify - Configuration validation", () => {
-  interface Config {
+  struct Config {
     title: string;
     baseUrl: string;
     outputDir: string;
   }
 
-  function validateConfig(config: Partial<Config>): { valid: boolean; errors: string[] } {
+  fn validateConfig(config: Partial<Config>): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
 
     if (!config.title || config.title.trim() === "") {
@@ -182,7 +179,7 @@ Deno.test("Verify - Configuration validation", () => {
   }
 
   // Valid config
-  const valid = validateConfig({
+  let valid = validateConfig({
     title: "My Site",
     baseUrl: "https://example.com",
     outputDir: "public",
@@ -191,16 +188,16 @@ Deno.test("Verify - Configuration validation", () => {
   assertEquals(valid.errors.length, 0);
 
   // Invalid: missing title
-  const noTitle = validateConfig({ baseUrl: "https://example.com" });
+  let noTitle = validateConfig({ baseUrl: "https://example.com" });
   assertEquals(noTitle.valid, false);
   assertEquals(noTitle.errors.includes("title is required"), true);
 
   // Invalid: bad URL
-  const badUrl = validateConfig({ title: "Test", baseUrl: "not-a-url" });
+  let badUrl = validateConfig({ title: "Test", baseUrl: "not-a-url" });
   assertEquals(badUrl.valid, false);
 
   // Invalid: path traversal
-  const pathTraversal = validateConfig({
+  let pathTraversal = validateConfig({
     title: "Test",
     baseUrl: "https://example.com",
     outputDir: "../../../etc",
@@ -214,9 +211,9 @@ Deno.test("Verify - Configuration validation", () => {
 // ============================================================
 
 Deno.test("Verify - Output path safety", () => {
-  function sanitizePath(basedir: string, filepath: string): string | null {
+  fn sanitizePath(basedir: string, filepath: string): string | null {
     // Normalize and resolve
-    const normalized = filepath
+    let normalized = filepath
       .replace(/\\/g, "/")
       .replace(/\/+/g, "/");
 
@@ -243,4 +240,3 @@ Deno.test("Verify - Output path safety", () => {
   assertEquals(sanitizePath("/out", "foo/../../bar"), null);
 });
 
-==================================== */

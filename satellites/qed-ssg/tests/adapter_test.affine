@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module adapter_test;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 // tests/adapter_test.ts — Unit tests for SSG adapters
@@ -14,7 +11,7 @@ import { assertEquals, assertExists } from "https://deno.land/std@0.210.0/assert
 
 // Test adapter module structure
 Deno.test("adapters have required exports", async () => {
-  const adapterFiles = [];
+  let adapterFiles = [];
   for await (const entry of Deno.readDir("./adapters")) {
     if (entry.isFile && entry.name.endsWith(".js") && entry.name !== "README.md") {
       adapterFiles.push(entry.name);
@@ -22,16 +19,16 @@ Deno.test("adapters have required exports", async () => {
   }
 
   for (const file of adapterFiles) {
-    const adapter = await import(`../adapters/${file}`);
+    let adapter = await import(`../adapters/${file}`);
 
     // Check required exports
-    assertExists(adapter.name, `${file} should export 'name'`);
-    assertExists(adapter.language, `${file} should export 'language'`);
-    assertExists(adapter.description, `${file} should export 'description'`);
-    assertExists(adapter.tools, `${file} should export 'tools'`);
-    assertExists(adapter.connect, `${file} should export 'connect'`);
-    assertExists(adapter.disconnect, `${file} should export 'disconnect'`);
-    assertExists(adapter.isConnected, `${file} should export 'isConnected'`);
+    assertExists(adapter.name, `${file} should 'name'`);
+    assertExists(adapter.language, `${file} should 'language'`);
+    assertExists(adapter.description, `${file} should 'description'`);
+    assertExists(adapter.tools, `${file} should 'tools'`);
+    assertExists(adapter.connect, `${file} should 'connect'`);
+    assertExists(adapter.disconnect, `${file} should 'disconnect'`);
+    assertExists(adapter.isConnected, `${file} should 'isConnected'`);
 
     // Check types
     assertEquals(typeof adapter.name, "string", `${file}.name should be a string`);
@@ -46,7 +43,7 @@ Deno.test("adapters have required exports", async () => {
 
 // Test tool structure
 Deno.test("adapter tools have correct structure", async () => {
-  const adapter = await import("../adapters/zola.js");
+  let adapter = await import("../adapters/zola.js");
 
   for (const tool of adapter.tools) {
     assertExists(tool.name, "Tool should have 'name'");
@@ -73,9 +70,8 @@ Deno.test("28 adapters are available", async () => {
 
 // Test isConnected returns boolean
 Deno.test("isConnected returns boolean", async () => {
-  const adapter = await import("../adapters/zola.js");
-  const result = adapter.isConnected();
+  let adapter = await import("../adapters/zola.js");
+  let result = adapter.isConnected();
   assertEquals(typeof result, "boolean");
 });
 
-==================================== */

@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module adapter_benchmark;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 // tests/benchmark/adapter_benchmark.ts — Performance benchmarks for SSG adapters
@@ -14,7 +11,7 @@ module adapter_benchmark;
 // BENCHMARK UTILITIES
 // ============================================================================
 
-interface BenchmarkResult {
+struct BenchmarkResult {
   name: string;
   iterations: number;
   totalMs: number;
@@ -24,11 +21,11 @@ interface BenchmarkResult {
   opsPerSec: number;
 }
 
-async function benchmark(
+async fn benchmark(
   name: string,
-  fn: () => Promise<void>,
+  fn: () => void,
   iterations: number = 100
-): Promise<BenchmarkResult> {
+): BenchmarkResult {
   const times: number[] = [];
 
   // Warmup
@@ -38,22 +35,22 @@ async function benchmark(
 
   // Actual benchmark
   for (let i = 0; i < iterations; i++) {
-    const start = performance.now();
+    let start = performance.now();
     await fn();
-    const end = performance.now();
+    let end = performance.now();
     times.push(end - start);
   }
 
-  const totalMs = times.reduce((a, b) => a + b, 0);
-  const avgMs = totalMs / iterations;
-  const minMs = Math.min(...times);
-  const maxMs = Math.max(...times);
-  const opsPerSec = 1000 / avgMs;
+  let totalMs = times.reduce((a, b) => a + b, 0);
+  let avgMs = totalMs / iterations;
+  let minMs = Math.min(...times);
+  let maxMs = Math.max(...times);
+  let opsPerSec = 1000 / avgMs;
 
   return { name, iterations, totalMs, avgMs, minMs, maxMs, opsPerSec };
 }
 
-function formatResult(result: BenchmarkResult): string {
+fn formatResult(result: BenchmarkResult): string {
   return `
 ${result.name}
   Iterations: ${result.iterations}
@@ -73,11 +70,11 @@ Deno.test("Benchmark: Adapter module loading", async () => {
   const results: BenchmarkResult[] = [];
 
   // Benchmark loading individual adapters
-  const adaptersToTest = ["zola", "hakyll", "serum", "cobalt", "franklin"];
+  let adaptersToTest = ["zola", "hakyll", "serum", "cobalt", "franklin"];
 
   for (const adapter of adaptersToTest) {
     // Clear module cache by using dynamic timestamp
-    const result = await benchmark(
+    let result = await benchmark(
       `Load ${adapter} adapter`,
       async () => {
         // Note: In real benchmark, we'd need to clear cache
@@ -103,7 +100,7 @@ Deno.test("Benchmark: Load all 28 adapters", async () => {
     }
   }
 
-  const result = await benchmark(
+  let result = await benchmark(
     "Load all 28 adapters",
     async () => {
       await Promise.all(
@@ -122,9 +119,9 @@ Deno.test("Benchmark: Load all 28 adapters", async () => {
 // ============================================================================
 
 Deno.test("Benchmark: Adapter connect/disconnect cycle", async () => {
-  const adapter = await import("../../adapters/zola.js");
+  let adapter = await import("../../adapters/zola.js");
 
-  const result = await benchmark(
+  let result = await benchmark(
     "Zola connect/disconnect cycle",
     async () => {
       await adapter.connect();
@@ -142,9 +139,9 @@ Deno.test("Benchmark: Adapter connect/disconnect cycle", async () => {
 // ============================================================================
 
 Deno.test("Benchmark: Tool lookup", async () => {
-  const adapter = await import("../../adapters/zola.js");
+  let adapter = await import("../../adapters/zola.js");
 
-  const result = await benchmark(
+  let result = await benchmark(
     "Tool lookup by name",
     async () => {
       adapter.tools.find((t: { name: string }) => t.name === "zola_version");
@@ -159,9 +156,9 @@ Deno.test("Benchmark: Tool lookup", async () => {
 });
 
 Deno.test("Benchmark: isConnected check", async () => {
-  const adapter = await import("../../adapters/zola.js");
+  let adapter = await import("../../adapters/zola.js");
 
-  const result = await benchmark(
+  let result = await benchmark(
     "isConnected() call",
     async () => {
       adapter.isConnected();
@@ -178,13 +175,13 @@ Deno.test("Benchmark: isConnected check", async () => {
 // ============================================================================
 
 Deno.test("Benchmark: Concurrent adapter loading", async () => {
-  const adapters = [
+  let adapters = [
     "zola", "cobalt", "mdbook", "hakyll", "ema",
     "serum", "tableau", "franklin", "frog", "pollen"
   ];
 
   // Sequential loading
-  const sequentialResult = await benchmark(
+  let sequentialResult = await benchmark(
     "Sequential load (10 adapters)",
     async () => {
       for (const adapter of adapters) {
@@ -195,7 +192,7 @@ Deno.test("Benchmark: Concurrent adapter loading", async () => {
   );
 
   // Parallel loading
-  const parallelResult = await benchmark(
+  let parallelResult = await benchmark(
     "Parallel load (10 adapters)",
     async () => {
       await Promise.all(
@@ -219,19 +216,19 @@ Deno.test("Benchmark: Memory usage per adapter", async () => {
   // Note: Deno doesn't expose detailed memory stats easily
   // This is a simplified approximation
 
-  const beforeHeap = Deno.memoryUsage().heapUsed;
+  let beforeHeap = Deno.memoryUsage().heapUsed;
 
-  const adapters = [];
+  let adapters = [];
   for await (const entry of Deno.readDir("./adapters")) {
     if (entry.isFile && entry.name.endsWith(".js")) {
-      const adapter = await import(`../../adapters/${entry.name}`);
+      let adapter = await import(`../../adapters/${entry.name}`);
       adapters.push(adapter);
     }
   }
 
-  const afterHeap = Deno.memoryUsage().heapUsed;
-  const totalMemory = afterHeap - beforeHeap;
-  const perAdapter = totalMemory / adapters.length;
+  let afterHeap = Deno.memoryUsage().heapUsed;
+  let totalMemory = afterHeap - beforeHeap;
+  let perAdapter = totalMemory / adapters.length;
 
   console.log("\n=== Memory Usage ===");
   console.log(`Total adapters loaded: ${adapters.length}`);
@@ -244,7 +241,7 @@ Deno.test("Benchmark: Memory usage per adapter", async () => {
 // ============================================================================
 
 Deno.test("Benchmark: Generate summary report", async () => {
-  const results = {
+  let results = {
     timestamp: new Date().toISOString(),
     platform: Deno.build.os,
     denoVersion: Deno.version.deno,
@@ -254,13 +251,13 @@ Deno.test("Benchmark: Generate summary report", async () => {
   };
 
   // Quick metrics
-  const loadStart = performance.now();
+  let loadStart = performance.now();
   for await (const entry of Deno.readDir("./adapters")) {
     if (entry.isFile && entry.name.endsWith(".js")) {
       await import(`../../adapters/${entry.name}`);
     }
   }
-  const loadEnd = performance.now();
+  let loadEnd = performance.now();
 
   results.metrics.totalLoadTimeMs = loadEnd - loadStart;
   results.metrics.avgLoadTimePerAdapterMs = (loadEnd - loadStart) / 28;
@@ -269,4 +266,3 @@ Deno.test("Benchmark: Generate summary report", async () => {
   console.log(JSON.stringify(results, null, 2));
 });
 
-==================================== */

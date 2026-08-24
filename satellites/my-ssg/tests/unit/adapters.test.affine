@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module adapters.test;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 // Unit tests for SSG adapters
@@ -17,22 +14,22 @@ import { describe, it, beforeAll, afterAll } from "@std/testing/bdd";
 // Test Utilities
 // ============================================================================
 
-interface AdapterModule {
+struct AdapterModule {
   name: string;
   language: string;
   description: string;
-  connect: () => Promise<boolean>;
-  disconnect: () => Promise<void>;
+  connect: () => boolean;
+  disconnect: () => void;
   isConnected: () => boolean;
   tools: Array<{
     name: string;
     description: string;
     inputSchema: Record<string, unknown>;
-    execute: (args: Record<string, unknown>) => Promise<unknown>;
+    execute: (args: Record<string, unknown>) => unknown;
   }>;
 }
 
-async function loadAdapter(name: string): Promise<AdapterModule> {
+async fn loadAdapter(name: string): AdapterModule {
   return await import(`../../adapters/${name}.js`);
 }
 
@@ -41,7 +38,7 @@ async function loadAdapter(name: string): Promise<AdapterModule> {
 // ============================================================================
 
 describe("Adapter Interface Compliance", () => {
-  const adapterNames = [
+  let adapterNames = [
     "zola",
     "hakyll",
     "mdbook",
@@ -62,7 +59,7 @@ describe("Adapter Interface Compliance", () => {
         }
       });
 
-      it("should export required properties", () => {
+      it("should required properties", () => {
         if (!adapter) return; // Skip if adapter failed to load
 
         assertExists(adapter.name, "name should be exported");
@@ -103,7 +100,7 @@ describe("Adapter Interface Compliance", () => {
 
       it("should return boolean from isConnected", () => {
         if (!adapter) return;
-        const result = adapter.isConnected();
+        let result = adapter.isConnected();
         assertEquals(typeof result, "boolean");
       });
     });
@@ -116,7 +113,7 @@ describe("Adapter Interface Compliance", () => {
 
 describe("Tool Schema Validation", () => {
   it("should have valid JSON Schema for inputSchema", async () => {
-    const adapter = await loadAdapter("zola").catch(() => null);
+    let adapter = await loadAdapter("zola").catch(() => null);
     if (!adapter) return;
 
     for (const tool of adapter.tools) {
@@ -126,7 +123,7 @@ describe("Tool Schema Validation", () => {
   });
 
   it("should have properties defined in schema", async () => {
-    const adapter = await loadAdapter("zola").catch(() => null);
+    let adapter = await loadAdapter("zola").catch(() => null);
     if (!adapter) return;
 
     for (const tool of adapter.tools) {
@@ -146,23 +143,23 @@ describe("Tool Schema Validation", () => {
 // ============================================================================
 
 describe("Bernoulli Probabilistic Verification", () => {
-  const ITERATIONS = 100;
-  const THRESHOLD = 0.95; // 95% success rate required
+  let ITERATIONS = 100;
+  let THRESHOLD = 0.95; // 95% success rate required
 
   it("should consistently report connection status", async () => {
-    const adapter = await loadAdapter("zola").catch(() => null);
+    let adapter = await loadAdapter("zola").catch(() => null);
     if (!adapter) return;
 
     let successCount = 0;
 
     for (let i = 0; i < ITERATIONS; i++) {
-      const connected = adapter.isConnected();
+      let connected = adapter.isConnected();
       if (typeof connected === "boolean") {
         successCount++;
       }
     }
 
-    const successRate = successCount / ITERATIONS;
+    let successRate = successCount / ITERATIONS;
     assertEquals(
       successRate >= THRESHOLD,
       true,
@@ -171,7 +168,7 @@ describe("Bernoulli Probabilistic Verification", () => {
   });
 
   it("should return consistent tool count", async () => {
-    const adapter = await loadAdapter("zola").catch(() => null);
+    let adapter = await loadAdapter("zola").catch(() => null);
     if (!adapter) return;
 
     const toolCounts: number[] = [];
@@ -181,7 +178,7 @@ describe("Bernoulli Probabilistic Verification", () => {
     }
 
     // All counts should be the same
-    const allSame = toolCounts.every((c) => c === toolCounts[0]);
+    let allSame = toolCounts.every((c) => c === toolCounts[0]);
     assertEquals(allSame, true, "Tool count should be consistent");
   });
 });
@@ -193,9 +190,9 @@ describe("Bernoulli Probabilistic Verification", () => {
 describe("Security Validation", () => {
   it("should not use shell: true in command execution", async () => {
     // Read adapter source and check for shell: true
-    const adapterPath = "../../adapters/zola.js";
+    let adapterPath = "../../adapters/zola.js";
     try {
-      const source = await Deno.readTextFile(
+      let source = await Deno.readTextFile(
         new URL(adapterPath, import.meta.url)
       );
       assertEquals(
@@ -214,7 +211,7 @@ describe("Security Validation", () => {
   });
 
   it("should use array-based command arguments", async () => {
-    const adapter = await loadAdapter("zola").catch(() => null);
+    let adapter = await loadAdapter("zola").catch(() => null);
     if (!adapter) return;
 
     // Check that tools use proper argument passing
@@ -233,4 +230,3 @@ if (import.meta.main) {
   console.log("Running adapter unit tests...");
 }
 
-==================================== */

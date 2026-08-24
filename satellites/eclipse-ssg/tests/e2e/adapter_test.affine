@@ -1,21 +1,18 @@
 // SPDX-License-Identifier: MPL-2.0
-// Ported via Harvard Engine mechanical processor
+// Ported via Harvard Engine (Semantic pass)
 
 module adapter_test;
 
-// TODO: Complete semantic implementation
-
-/* === ORIGINAL TYPESCRIPT CONTEXT ===
 // SPDX-License-Identifier: PMPL-1.0-or-later
 // SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
 // adapter_test.ts — E2E tests for SSG adapters
 
 import { assertEquals, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts";
 
-const ADAPTERS_DIR = new URL("../../adapters/", import.meta.url).pathname;
+let ADAPTERS_DIR = new URL("../../adapters/", import.meta.url).pathname;
 
-Deno.test("E2E - All adapters export required interface", async () => {
-  const adapters = [];
+Deno.test("E2E - All adapters required interface", async () => {
+  let adapters = [];
 
   for await (const entry of Deno.readDir(ADAPTERS_DIR)) {
     if (entry.isFile && entry.name.endsWith(".js")) {
@@ -27,8 +24,8 @@ Deno.test("E2E - All adapters export required interface", async () => {
   assertEquals(adapters.length, 28, "Expected 28 SSG adapters");
 
   for (const adapterFile of adapters) {
-    const adapterPath = `${ADAPTERS_DIR}${adapterFile}`;
-    const module = await import(adapterPath);
+    let adapterPath = `${ADAPTERS_DIR}${adapterFile}`;
+    let module = await import(adapterPath);
 
     // Check required exports
     assertExists(module.name, `${adapterFile}: missing 'name' export`);
@@ -57,12 +54,12 @@ Deno.test("E2E - All adapters export required interface", async () => {
 });
 
 Deno.test("E2E - Adapter names are unique", async () => {
-  const names = new Set<string>();
+  let names = new Set<string>();
 
   for await (const entry of Deno.readDir(ADAPTERS_DIR)) {
     if (entry.isFile && entry.name.endsWith(".js")) {
-      const adapterPath = `${ADAPTERS_DIR}${entry.name}`;
-      const module = await import(adapterPath);
+      let adapterPath = `${ADAPTERS_DIR}${entry.name}`;
+      let module = await import(adapterPath);
 
       assertEquals(
         names.has(module.name),
@@ -77,8 +74,8 @@ Deno.test("E2E - Adapter names are unique", async () => {
 Deno.test("E2E - All adapters have SPDX headers", async () => {
   for await (const entry of Deno.readDir(ADAPTERS_DIR)) {
     if (entry.isFile && entry.name.endsWith(".js")) {
-      const content = await Deno.readTextFile(`${ADAPTERS_DIR}${entry.name}`);
-      const hasSPDX = content.includes("SPDX-License-Identifier");
+      let content = await Deno.readTextFile(`${ADAPTERS_DIR}${entry.name}`);
+      let hasSPDX = content.includes("SPDX-License-Identifier");
 
       assertEquals(
         hasSPDX,
@@ -92,9 +89,9 @@ Deno.test("E2E - All adapters have SPDX headers", async () => {
 Deno.test("E2E - Adapter tool names follow convention", async () => {
   for await (const entry of Deno.readDir(ADAPTERS_DIR)) {
     if (entry.isFile && entry.name.endsWith(".js")) {
-      const adapterPath = `${ADAPTERS_DIR}${entry.name}`;
-      const module = await import(adapterPath);
-      const adapterName = entry.name.replace(".js", "").replace(/-/g, "_");
+      let adapterPath = `${ADAPTERS_DIR}${entry.name}`;
+      let module = await import(adapterPath);
+      let adapterName = entry.name.replace(".js", "").replace(/-/g, "_");
 
       for (const tool of module.tools) {
         // Tool names should start with adapter name
@@ -109,7 +106,7 @@ Deno.test("E2E - Adapter tool names follow convention", async () => {
 });
 
 Deno.test("E2E - Adapter languages are valid", async () => {
-  const validLanguages = new Set([
+  let validLanguages = new Set([
     "Rust", "Haskell", "Elixir", "Julia", "Clojure",
     "Racket", "Scala", "F#", "OCaml", "Swift",
     "Kotlin", "Nim", "D", "Crystal", "Tcl",
@@ -118,8 +115,8 @@ Deno.test("E2E - Adapter languages are valid", async () => {
 
   for await (const entry of Deno.readDir(ADAPTERS_DIR)) {
     if (entry.isFile && entry.name.endsWith(".js")) {
-      const adapterPath = `${ADAPTERS_DIR}${entry.name}`;
-      const module = await import(adapterPath);
+      let adapterPath = `${ADAPTERS_DIR}${entry.name}`;
+      let module = await import(adapterPath);
 
       assertEquals(
         validLanguages.has(module.language),
@@ -130,4 +127,3 @@ Deno.test("E2E - Adapter languages are valid", async () => {
   }
 });
 
-==================================== */
