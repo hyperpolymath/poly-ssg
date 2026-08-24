@@ -1,7 +1,518 @@
 // SPDX-License-Identifier: MPL-2.0
-// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
-// Ported via Harvard Engine bulk-processor
+// Ported via Harvard Engine (Semantic pass)
 
 module StreamableHttp;
 
-// TODO: Complete semantic implementation
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+
+// Streamable HTTP Transport for MCP
+// Implements the MCP Streamable HTTP transport (June 2025 spec)
+// https://modelcontextprotocol.io/specification/2025-06-18/basic/transports
+
+open Http
+
+fn protocolVersion = "2025-06-18"
+
+// ============================================================================
+// Logging
+// ============================================================================
+
+module LogLevel = {
+  fn debug = 0
+  fn info = 1
+  fn warn = 2
+  fn error = 3
+}
+
+fn currentLogLevel = ref(LogLevel.info)
+
+fn setLogLevel = level => {
+  currentLogLevel := level
+}
+
+fn log = (level: int, message: string, context: option<JSON.t>) => {
+  if level >= currentLogLevel.contents {
+    fn levelName = switch level {
+    | 0 => "DEBUG"
+    | 1 => "INFO"
+    | 2 => "WARN"
+    | _ => "ERROR"
+    }
+    fn entry = Dict.make()
+    Dict.set(entry, "timestamp", JSON.Encode.string(Date.make()->Date.toISOString))
+    Dict.set(entry, "level", JSON.Encode.string(levelName))
+    Dict.set(entry, "message", JSON.Encode.string(message))
+    switch context {
+    | Some(ctx) => Dict.set(entry, "context", ctx)
+    | None => ()
+    }
+    Console.error(JSON.stringify(JSON.Encode.object(entry)))
+  }
+}
+
+// ============================================================================
+// Circuit Breaker (Fault Tolerance)
+// ============================================================================
+
+struct circuitState { Closed | Open | HalfOpen
+
+struct circuitBreakerConfig { {
+  failureThreshold: int,
+  resetTimeoutMs: int,
+  halfOpenRequests: int,
+}
+
+struct circuitBreaker { {
+  mutable state: circuitState,
+  mutable failures: int,
+  mutable lastFailureTime: option<float>,
+  mutable halfOpenAttempts: int,
+  config: circuitBreakerConfig,
+}
+
+fn makeCircuitBreaker = (~failureThreshold=5, ~resetTimeoutMs=30000, ~halfOpenRequests=1, ()) => {
+  state: Closed,
+  failures: 0,
+  lastFailureTime: None,
+  halfOpenAttempts: 0,
+  config: {
+    failureThreshold,
+    resetTimeoutMs,
+    halfOpenRequests,
+  },
+}
+
+fn canExecute = (cb: circuitBreaker) => {
+  switch cb.state {
+  | Closed => true
+  | Open =>
+    switch cb.lastFailureTime {
+    | Some(lastTime) =>
+      if Date.now() -. lastTime > Float.fromInt(cb.config.resetTimeoutMs) {
+        cb.state = HalfOpen
+        cb.halfOpenAttempts = 0
+        log(LogLevel.info, "Circuit breaker transitioning to HALF_OPEN", None)
+        true
+      } else {
+        false
+      }
+    | None => false
+    }
+  | HalfOpen => cb.halfOpenAttempts < cb.config.halfOpenRequests
+  }
+}
+
+fn recordSuccess = (cb: circuitBreaker) => {
+  if cb.state == HalfOpen {
+    log(LogLevel.info, "Circuit breaker closing after successful request", None)
+  }
+  cb.failures = 0
+  cb.state = Closed
+  cb.halfOpenAttempts = 0
+}
+
+fn recordFailure = (cb: circuitBreaker) => {
+  cb.failures = cb.failures + 1
+  cb.lastFailureTime = Some(Date.now())
+  if cb.state == HalfOpen {
+    cb.halfOpenAttempts = cb.halfOpenAttempts + 1
+  }
+  if cb.failures >= cb.config.failureThreshold {
+    cb.state = Open
+    fn ctx = Dict.make()
+    Dict.set(ctx, "failures", JSON.Encode.int(cb.failures))
+    log(LogLevel.warn, "Circuit breaker OPEN", Some(JSON.Encode.object(ctx)))
+  }
+}
+
+fn getCircuitState = (cb: circuitBreaker) => {
+  fn result = Dict.make()
+  fn stateStr = switch cb.state {
+  | Closed => "CLOSED"
+  | Open => "OPEN"
+  | HalfOpen => "HALF_OPEN"
+  }
+  Dict.set(result, "state", JSON.Encode.string(stateStr))
+  Dict.set(result, "failures", JSON.Encode.int(cb.failures))
+  JSON.Encode.object(result)
+}
+
+// ============================================================================
+// Rate Limiter
+// ============================================================================
+
+struct rateLimiterConfig { {
+  windowMs: int,
+  maxRequests: int,
+}
+
+struct rateLimiter { {
+  config: rateLimiterConfig,
+  requests: Dict.t<array<float>>,
+}
+
+fn makeRateLimiter = (~windowMs=60000, ~maxRequests=100, ()) => {
+  config: {windowMs, maxRequests},
+  requests: Dict.make(),
+}
+
+fn isAllowed = (rl: rateLimiter, sessionId: string) => {
+  fn now = Date.now()
+  fn windowStart = now -. Float.fromInt(rl.config.windowMs)
+  fn timestamps = switch Dict.get(rl.requests, sessionId) {
+  | Some(ts) => Array.filter(ts, t => t > windowStart)
+  | None => []
+  }
+  if Array.length(timestamps) >= rl.config.maxRequests {
+    false
+  } else {
+    fn newTimestamps = Array.concat(timestamps, [now])
+    Dict.set(rl.requests, sessionId, newTimestamps)
+    true
+  }
+}
+
+fn cleanupRateLimiter = (rl: rateLimiter) => {
+  fn now = Date.now()
+  fn windowStart = now -. Float.fromInt(rl.config.windowMs)
+  fn keys = Dict.keysToArray(rl.requests)
+  Array.forEach(keys, sessionId => {
+    switch Dict.get(rl.requests, sessionId) {
+    | Some(timestamps) =>
+      fn valid = Array.filter(timestamps, t => t > windowStart)
+      if Array.length(valid) == 0 {
+        Dict.delete(rl.requests, sessionId)
+      } else {
+        Dict.set(rl.requests, sessionId, valid)
+      }
+    | None => ()
+    }
+  })
+}
+
+// ============================================================================
+// Session Store
+// ============================================================================
+
+struct session { {
+  id: string,
+  createdAt: float,
+  mutable lastAccess: float,
+  mutable initialized: bool,
+  mutable pendingMessages: array<JSON.t>,
+  mutable eventCounter: int,
+  mutable requestCount: int,
+  mutable errorCount: int,
+}
+
+struct sessionStore { {
+  sessions: Dict.t<session>,
+  ttlMs: int,
+}
+
+fn makeSessionStore = (~ttlMs=1800000, ()) => {
+  sessions: Dict.make(),
+  ttlMs,
+}
+
+fn createSession = (store: sessionStore) => {
+  fn sessionId = generateSessionId()
+  fn now = Date.now()
+  fn session = {
+    id: sessionId,
+    createdAt: now,
+    lastAccess: now,
+    initialized: false,
+    pendingMessages: [],
+    eventCounter: 0,
+    requestCount: 0,
+    errorCount: 0,
+  }
+  Dict.set(store.sessions, sessionId, session)
+  fn ctx = Dict.make()
+  Dict.set(ctx, "sessionId", JSON.Encode.string(sessionId))
+  log(LogLevel.debug, "Session created", Some(JSON.Encode.object(ctx)))
+  session
+}
+
+fn getSession = (store: sessionStore, sessionId: string) => {
+  switch Dict.get(store.sessions, sessionId) {
+  | Some(session) =>
+    session.lastAccess = Date.now()
+    Some(session)
+  | None => None
+  }
+}
+
+fn deleteSession = (store: sessionStore, sessionId: string) => {
+  fn ctx = Dict.make()
+  Dict.set(ctx, "sessionId", JSON.Encode.string(sessionId))
+  log(LogLevel.debug, "Session deleted", Some(JSON.Encode.object(ctx)))
+  Dict.delete(store.sessions, sessionId)
+}
+
+fn cleanupSessions = (store: sessionStore) => {
+  fn now = Date.now()
+  fn ttl = Float.fromInt(store.ttlMs)
+  fn keys = Dict.keysToArray(store.sessions)
+  fn cleaned = ref(0)
+  Array.forEach(keys, id => {
+    switch Dict.get(store.sessions, id) {
+    | Some(session) =>
+      if now -. session.lastAccess > ttl {
+        Dict.delete(store.sessions, id)
+        cleaned := cleaned.contents + 1
+      }
+    | None => ()
+    }
+  })
+  if cleaned.contents > 0 {
+    fn ctx = Dict.make()
+    Dict.set(ctx, "count", JSON.Encode.int(cleaned.contents))
+    log(LogLevel.debug, "Sessions cleaned up", Some(JSON.Encode.object(ctx)))
+  }
+}
+
+fn nextEventId = (session: session) => {
+  session.eventCounter = session.eventCounter + 1
+  session.id ++ "-" ++ Int.toString(session.eventCounter)
+}
+
+fn getSessionStats = (store: sessionStore) => {
+  fn result = Dict.make()
+  Dict.set(result, "activeSessions", JSON.Encode.int(Dict.keysToArray(store.sessions)->Array.length))
+  JSON.Encode.object(result)
+}
+
+// ============================================================================
+// SSE Utilities
+// ============================================================================
+
+fn formatSSEEvent = (data: JSON.t, eventId: option<string>) => {
+  fn event = "event: message\n"
+  fn event = event ++ "data: " ++ JSON.stringify(data) ++ "\n"
+  fn event = switch eventId {
+  | Some(id) => event ++ "id: " ++ id ++ "\n"
+  | None => event
+  }
+  event ++ "\n"
+}
+
+struct sseStream { {
+  stream: readableStream<Js.TypedArray2.Uint8Array.t>,
+  send: (JSON.t, option<string>) => unit,
+  close: unit => unit,
+}
+
+fn createSSEStream = () => {
+  fn encoder = makeTextEncoder()
+  fn controllerRef: ref<option<readableStreamController<Js.TypedArray2.Uint8Array.t>>> = ref(None)
+
+  fn stream = makeReadableStream({
+    start: controller => {
+      controllerRef := Some(controller)
+    },
+  })
+
+  fn send = (data: JSON.t, eventId: option<string>) => {
+    switch controllerRef.contents {
+    | Some(controller) =>
+      fn event = formatSSEEvent(data, eventId)
+      enqueue(controller, encode(encoder, event))
+    | None => ()
+    }
+  }
+
+  fn closeStream = () => {
+    switch controllerRef.contents {
+    | Some(controller) => close(controller)
+    | None => ()
+    }
+  }
+
+  {stream, send, close: closeStream}
+}
+
+// ============================================================================
+// Transport Options
+// ============================================================================
+
+struct transportOptions { {
+  path: string,
+  allowedOrigins: option<array<string>>,
+  enableCors: bool,
+  sessionTtlMs: int,
+  requestTimeoutMs: int,
+  enableRateLimiting: bool,
+  rateLimitWindowMs: int,
+  rateLimitMaxRequests: int,
+  enableCircuitBreaker: bool,
+}
+
+fn defaultOptions: transportOptions = {
+  path: "/mcp",
+  allowedOrigins: None,
+  enableCors: true,
+  sessionTtlMs: 1800000,
+  requestTimeoutMs: 30000,
+  enableRateLimiting: true,
+  rateLimitWindowMs: 60000,
+  rateLimitMaxRequests: 100,
+  enableCircuitBreaker: true,
+}
+
+// ============================================================================
+// Transport State
+// ============================================================================
+
+struct messageHandler { JSON.t => promise<option<JSON.t>>
+struct closeHandler { unit => unit
+
+struct transportState { {
+  options: transportOptions,
+  sessions: sessionStore,
+  circuitBreaker: circuitBreaker,
+  rateLimiter: rateLimiter,
+  mutable messageHandler: option<messageHandler>,
+  mutable closeHandler: option<closeHandler>,
+}
+
+fn makeTransport = (~options=defaultOptions, ()) => {
+  options,
+  sessions: makeSessionStore(~ttlMs=options.sessionTtlMs, ()),
+  circuitBreaker: makeCircuitBreaker(),
+  rateLimiter: makeRateLimiter(
+    ~windowMs=options.rateLimitWindowMs,
+    ~maxRequests=options.rateLimitMaxRequests,
+    (),
+  ),
+  messageHandler: None,
+  closeHandler: None,
+}
+
+fn onMessage = (transport: transportState, handler: messageHandler) => {
+  transport.messageHandler = Some(handler)
+}
+
+fn onClose = (transport: transportState, handler: closeHandler) => {
+  transport.closeHandler = Some(handler)
+}
+
+// ============================================================================
+// Response Helpers
+// ============================================================================
+
+fn jsonResponse = (
+  ~transport: transportState,
+  ~data: JSON.t,
+  ~status=200,
+  ~sessionId: option<string>=None,
+) => {
+  fn headers = Dict.make()
+  Dict.set(headers, "Content-Type", "application/json")
+  Dict.set(headers, "MCP-Protocol-Version", protocolVersion)
+
+  switch sessionId {
+  | Some(id) => Dict.set(headers, "Mcp-Session-Id", id)
+  | None => ()
+  }
+
+  if transport.options.enableCors {
+    Dict.set(headers, "Access-Control-Allow-Origin", "*")
+    Dict.set(
+      headers,
+      "Access-Control-Allow-Headers",
+      "Content-Type, Mcp-Session-Id, MCP-Protocol-Version, Accept",
+    )
+    Dict.set(headers, "Access-Control-Expose-Headers", "Mcp-Session-Id, MCP-Protocol-Version")
+  }
+
+  makeResponse(Nullable.make(JSON.stringify(data)), {"status": status, "headers": headers})
+}
+
+fn acceptedResponse = (~transport: transportState, ~sessionId: option<string>=None) => {
+  fn headers = Dict.make()
+  Dict.set(headers, "MCP-Protocol-Version", protocolVersion)
+
+  switch sessionId {
+  | Some(id) => Dict.set(headers, "Mcp-Session-Id", id)
+  | None => ()
+  }
+
+  if transport.options.enableCors {
+    Dict.set(headers, "Access-Control-Allow-Origin", "*")
+  }
+
+  makeResponse(Nullable.null, {"status": 202, "headers": headers})
+}
+
+fn sseResponse = (~transport: transportState, ~session: session, ~messages: array<JSON.t>) => {
+  fn sse = createSSEStream()
+
+  Array.forEach(messages, msg => {
+    sse.send(msg, Some(nextEventId(session)))
+  })
+  sse.close()
+
+  fn headers = Dict.make()
+  Dict.set(headers, "Content-Type", "text/event-stream")
+  Dict.set(headers, "Cache-Control", "no-cache")
+  Dict.set(headers, "Mcp-Session-Id", session.id)
+  Dict.set(headers, "MCP-Protocol-Version", protocolVersion)
+
+  if transport.options.enableCors {
+    Dict.set(headers, "Access-Control-Allow-Origin", "*")
+    Dict.set(headers, "Access-Control-Expose-Headers", "Mcp-Session-Id, MCP-Protocol-Version")
+  }
+
+  makeResponse(Nullable.null, {"status": 200, "headers": headers})
+}
+
+fn corsResponse = (
+  ~transport: transportState,
+  ~request: request,
+  ~status=200,
+  ~extraHeaders=Dict.make(),
+) => {
+  fn headers = extraHeaders
+  if transport.options.enableCors {
+    fn origin = switch get(request.headers, "Origin")->Nullable.toOption {
+    | Some(o) => o
+    | None => "*"
+    }
+    Dict.set(headers, "Access-Control-Allow-Origin", origin)
+    Dict.set(headers, "Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+    Dict.set(
+      headers,
+      "Access-Control-Allow-Headers",
+      "Content-Type, Mcp-Session-Id, MCP-Protocol-Version, Accept, Last-Event-ID",
+    )
+    Dict.set(headers, "Access-Control-Expose-Headers", "Mcp-Session-Id, MCP-Protocol-Version")
+    Dict.set(headers, "Access-Control-Max-Age", "86400")
+  }
+  makeResponse(Nullable.null, {"status": status, "headers": headers})
+}
+
+fn errorResponse = (~transport: transportState, ~message: string, ~status: int) => {
+  fn data = Dict.make()
+  Dict.set(data, "error", JSON.Encode.string(message))
+  jsonResponse(~transport, ~data=JSON.Encode.object(data), ~status)
+}
+
+// ============================================================================
+// Health Check
+// ============================================================================
+
+fn getHealth = (transport: transportState) => {
+  fn status = switch transport.circuitBreaker.state {
+  | Open => "degraded"
+  | _ => "healthy"
+  }
+  fn result = Dict.make()
+  Dict.set(result, "status", JSON.Encode.string(status))
+  Dict.set(result, "circuitBreaker", getCircuitState(transport.circuitBreaker))
+  Dict.set(result, "sessions", getSessionStats(transport.sessions))
+  JSON.Encode.object(result)
+}
+

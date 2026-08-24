@@ -1,7 +1,38 @@
 // SPDX-License-Identifier: MPL-2.0
-// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
-// Ported via Harvard Engine bulk-processor
+// Ported via Harvard Engine (Semantic pass)
 
 module Config;
 
-// TODO: Complete semantic implementation
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+// Config.res - Server configuration
+
+open Types
+open Bindings.Deno
+
+fn parseIntOr = (s: option<string>, default: int): int => {
+  switch s {
+  | Some(str) =>
+    switch Belt.Int.fromString(str) {
+    | Some(n) => n
+    | None => default
+    }
+  | None => default
+  }
+}
+
+fn getOrDefault = (opt: option<string>, default: string): string => {
+  switch opt {
+  | Some(s) => s
+  | None => default
+  }
+}
+
+fn make = (): config => {
+  {
+    port: parseIntOr(Env.get("RATS_PORT"), 3000),
+    host: getOrDefault(Env.get("RATS_HOST"), "127.0.0.1"),
+    logLevel: getOrDefault(Env.get("RATS_LOG_LEVEL"), "info"),
+  }
+}
+

@@ -1,7 +1,140 @@
 // SPDX-License-Identifier: MPL-2.0
-// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
-// Ported via Harvard Engine bulk-processor
+// Ported via Harvard Engine (Semantic pass)
 
 module lexer;
 
-// TODO: Complete semantic implementation
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+// hackenbush-ssg - RLE Pattern Lexer (ReScript)
+
+// Token structs for RLE format parsing
+struct token {
+  | Header(string)        // #N, #C, #O, #R lines
+  | Dimensions(int, int)  // x = W, y = H
+  | Rule(string)          // rule = B3/S23
+  | RunCount(int)         // Number prefix (e.g., "3" in "3o")
+  | Alive                 // 'o' - alive cell
+  | Dead                  // 'b' - dead cell
+  | EndRow                // '$' - end of row
+  | EndPattern            // '!' - end of pattern
+  | Newline               // Line break in RLE data
+  | Unknown(string)       // Unrecognized token
+
+// Lexer state
+struct lexerState { {
+  input: string,
+  position: int,
+  line: int,
+  column: int,
+}
+
+// Create initial lexer state
+fn make = (input: string): lexerState => {
+  input,
+  position: 0,
+  line: 1,
+  column: 1,
+}
+
+// Check if at end of input
+fn isAtEnd = (state: lexerState): bool => {
+  state.position >= String.length(state.input)
+}
+
+// Peek current character
+fn peek = (state: lexerState): option<string> => {
+  if isAtEnd(state) {
+    None
+  } else {
+    Some(String.sub(state.input, state.position, 1))
+  }
+}
+
+// Advance lexer position
+fn advance = (state: lexerState): lexerState => {
+  fn char = peek(state)
+  fn (newLine, newColumn) = switch char {
+  | Some("\n") => (state.line + 1, 1)
+  | Some(_) => (state.line, state.column + 1)
+  | None => (state.line, state.column)
+  }
+
+  {
+    ...state,
+    position: state.position + 1,
+    line: newLine,
+    column: newColumn,
+  }
+}
+
+// Check if character is digit
+fn isDigit = (c: string): bool => {
+  c >= "0" && c <= "9"
+}
+
+// Parse run count (sequence of digits)
+fn parseRunCount = (state: lexerState): (token, lexerState) => {
+  fn rec loop = (s, acc) => {
+    switch peek(s) {
+    | Some(c) if isDigit(c) => loop(advance(s), acc ++ c)
+    | _ => (acc, s)
+    }
+  }
+
+  fn (digits, newState) = loop(state, "")
+  fn count = switch Int.fromString(digits) {
+  | Some(n) => n
+  | None => 1
+  }
+
+  (RunCount(count), newState)
+}
+
+// Parse header line (starts with #)
+fn parseHeader = (state: lexerState): (token, lexerState) => {
+  fn rec loop = (s, acc) => {
+    switch peek(s) {
+    | Some("\n") | None => (acc, s)
+    | Some(c) => loop(advance(s), acc ++ c)
+    }
+  }
+
+  fn (content, newState) = loop(advance(state), "#")
+  (Header(content), newState)
+}
+
+// Get next token
+fn nextToken = (state: lexerState): option<(token, lexerState)> => {
+  if isAtEnd(state) {
+    None
+  } else {
+    switch peek(state) {
+    | Some("#") => Some(parseHeader(state))
+    | Some("o") => Some((Alive, advance(state)))
+    | Some("b") => Some((Dead, advance(state)))
+    | Some("$") => Some((EndRow, advance(state)))
+    | Some("!") => Some((EndPattern, advance(state)))
+    | Some("\n") => Some((Newline, advance(state)))
+    | Some(" ") | Some("\t") | Some("\r") => nextToken(advance(state))
+    | Some(c) if isDigit(c) => Some(parseRunCount(state))
+    | Some(c) => Some((Unknown(c), advance(state)))
+    | None => None
+    }
+  }
+}
+
+// Tokenize entire input
+fn tokenize = (input: string): array<token> => {
+  fn state = make(input)
+  fn tokens = []
+
+  fn rec loop = (s, acc) => {
+    switch nextToken(s) {
+    | Some((token, newState)) => loop(newState, Array.concat(acc, [token]))
+    | None => acc
+    }
+  }
+
+  loop(state, tokens)
+}
+

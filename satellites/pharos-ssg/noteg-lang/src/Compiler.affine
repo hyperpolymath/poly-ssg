@@ -1,7 +1,383 @@
 // SPDX-License-Identifier: MPL-2.0
-// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
-// Ported via Harvard Engine bulk-processor
+// Ported via Harvard Engine (Semantic pass)
 
 module Compiler;
 
-// TODO: Complete semantic implementation
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 hyperpolymath
+//
+// NoteG Language - Compiler (to JavaScript)
+
+open Parser
+
+struct compileError { {
+  message: string,
+  line: option<int>,
+}
+
+struct compilerState { {
+  mutable output: string,
+  mutable indent: int,
+  mutable errors: array<compileError>,
+}
+
+fn createCompiler = (): compilerState => {
+  output: "",
+  indent: 0,
+  errors: [],
+}
+
+fn emit = (compiler: compilerState, code: string): unit => {
+  compiler.output = compiler.output ++ code
+}
+
+fn emitLine = (compiler: compilerState, code: string): unit => {
+  fn indentation = Js.String2.repeat("  ", compiler.indent)
+  compiler.output = compiler.output ++ indentation ++ code ++ "\n"
+}
+
+fn emitNewline = (compiler: compilerState): unit => {
+  compiler.output = compiler.output ++ "\n"
+}
+
+fn increaseIndent = (compiler: compilerState): unit => {
+  compiler.indent = compiler.indent + 1
+}
+
+fn decreaseIndent = (compiler: compilerState): unit => {
+  if compiler.indent > 0 {
+    compiler.indent = compiler.indent - 1
+  }
+}
+
+// Expression compilation
+fn rec compileExpr = (compiler: compilerState, expr: expr): string => {
+  switch expr {
+  | Literal(StringLit(s)) => {
+      fn escaped = s
+        ->Js.String2.replaceByRe(%re("/\\/g"), "\\\\")
+        ->Js.String2.replaceByRe(%re("/\"/g"), "\\\"")
+        ->Js.String2.replaceByRe(%re("/\n/g"), "\\n")
+        ->Js.String2.replaceByRe(%re("/\t/g"), "\\t")
+      `"${escaped}"`
+    }
+  | Literal(NumberLit(n)) => Js.Float.toString(n)
+  | Literal(BoolLit(true)) => "true"
+  | Literal(BoolLit(false)) => "false"
+  | Literal(NullLit) => "null"
+
+  | Identifier(name) => sanitizeIdentifier(name)
+
+  | Binary(left, op, right) => {
+      fn l = compileExpr(compiler, left)
+      fn r = compileExpr(compiler, right)
+      fn opStr = switch op {
+      | Add => "+"
+      | Sub => "-"
+      | Mul => "*"
+      | Div => "/"
+      | Mod => "%"
+      | Eq => "==="
+      | Neq => "!=="
+      | Lt => "<"
+      | Lte => "<="
+      | Gt => ">"
+      | Gte => ">="
+      | AndOp => "&&"
+      | OrOp => "||"
+      }
+      `(${l} ${opStr} ${r})`
+    }
+
+  | Unary(op, operand) => {
+      fn o = compileExpr(compiler, operand)
+      fn opStr = switch op {
+      | Neg => "-"
+      | NotOp => "!"
+      }
+      `(${opStr}${o})`
+    }
+
+  | Call(callee, args) => {
+      fn fn = compileExpr(compiler, callee)
+      fn argStrs = args->Array.map(a => compileExpr(compiler, a))->Array.joinWith(", ")
+      `${fn}(${argStrs})`
+    }
+
+  | Member(obj, prop) => {
+      fn o = compileExpr(compiler, obj)
+      `${o}.${sanitizeIdentifier(prop)}`
+    }
+
+  | Index(obj, index) => {
+      fn o = compileExpr(compiler, obj)
+      fn i = compileExpr(compiler, index)
+      `${o}[${i}]`
+    }
+
+  | Array_(elements) => {
+      fn elems = elements->Array.map(e => compileExpr(compiler, e))->Array.joinWith(", ")
+      `[${elems}]`
+    }
+
+  | Object(entries) => {
+      fn props = entries->Array.map(((key, value)) => {
+        fn v = compileExpr(compiler, value)
+        `"${key}": ${v}`
+      })->Array.joinWith(", ")
+      `{${props}}`
+    }
+
+  | Lambda(params, body) => {
+      fn paramStrs = params->Array.map(sanitizeIdentifier)->Array.joinWith(", ")
+      fn bodyStr = compileExpr(compiler, body)
+      `((${paramStrs}) => ${bodyStr})`
+    }
+
+  | Conditional(cond, then_, else_) => {
+      fn c = compileExpr(compiler, cond)
+      fn t = compileExpr(compiler, then_)
+      fn e = compileExpr(compiler, else_)
+      `(${c} ? ${t} : ${e})`
+    }
+
+  | Template(parts) => {
+      fn compiled = parts->Array.map(part => {
+        switch part {
+        | TextPart(s) => {
+            fn escaped = s
+              ->Js.String2.replaceByRe(%re("/`/g"), "\\`")
+              ->Js.String2.replaceByRe(%re("/\\$/g"), "\\$")
+            escaped
+          }
+        | ExprPart(e) => "${" ++ compileExpr(compiler, e) ++ "}"
+        }
+      })->Array.joinWith("")
+      "`" ++ compiled ++ "`"
+    }
+
+  | Pipe(left, right) => {
+      // Compile pipe as function call
+      switch right {
+      | Call(fn, args) => {
+          fn fnStr = compileExpr(compiler, fn)
+          fn leftStr = compileExpr(compiler, left)
+          fn argStrs = args->Array.map(a => compileExpr(compiler, a))->Array.joinWith(", ")
+          if argStrs == "" {
+            `${fnStr}(${leftStr})`
+          } else {
+            `${fnStr}(${leftStr}, ${argStrs})`
+          }
+        }
+      | Identifier(name) => {
+          fn leftStr = compileExpr(compiler, left)
+          `${sanitizeIdentifier(name)}(${leftStr})`
+        }
+      | _ => {
+          compiler.errors = compiler.errors->Array.concat([{message: "Invalid pipe target", line: None}])
+          "/* error */"
+        }
+      }
+    }
+  }
+}
+
+and sanitizeIdentifier = (name: string): string => {
+  // Reserved words in JavaScript that need escaping
+  fn reserved = [
+    "break", "case", "catch", "continue", "debugger", "default", "delete",
+    "do", "else", "finally", "for", "function", "if", "in", "instanceof",
+    "new", "return", "switch", "this", "throw", "try", "structof", "var",
+    "void", "while", "with", "class", "const", "enum", "export", "extends",
+    "import", "super", "implements", "interface", "let", "package", "private",
+    "protected", "public", "static", "yield", "await"
+  ]
+
+  if reserved->Array.includes(name) {
+    "_" ++ name
+  } else {
+    name
+  }
+}
+
+// Statement compilation
+fn rec compileStmt = (compiler: compilerState, stmt: stmt): unit => {
+  switch stmt {
+  | ExprStmt(e) => {
+      fn code = compileExpr(compiler, e)
+      emitLine(compiler, code ++ ";")
+    }
+
+  | LetStmt(name, _, value) => {
+      fn valueCode = compileExpr(compiler, value)
+      emitLine(compiler, `fn ${sanitizeIdentifier(name)} = ${valueCode};`)
+    }
+
+  | ConstStmt(name, _, value) => {
+      fn valueCode = compileExpr(compiler, value)
+      emitLine(compiler, `const ${sanitizeIdentifier(name)} = ${valueCode};`)
+    }
+
+  | FnStmt(name, params, _, body) => {
+      fn paramStrs = params->Array.map(p => sanitizeIdentifier(p.name))->Array.joinWith(", ")
+      emitLine(compiler, `function ${sanitizeIdentifier(name)}(${paramStrs}) {`)
+      increaseIndent(compiler)
+      compileBlock(compiler, body)
+      decreaseIndent(compiler)
+      emitLine(compiler, "}")
+    }
+
+  | IfStmt(cond, thenBlock, elseBlock) => {
+      fn condCode = compileExpr(compiler, cond)
+      emitLine(compiler, `if (${condCode}) {`)
+      increaseIndent(compiler)
+      compileBlock(compiler, thenBlock)
+      decreaseIndent(compiler)
+      switch elseBlock {
+      | Some(block) => {
+          emitLine(compiler, "} else {")
+          increaseIndent(compiler)
+          compileBlock(compiler, block)
+          decreaseIndent(compiler)
+          emitLine(compiler, "}")
+        }
+      | None => emitLine(compiler, "}")
+      }
+    }
+
+  | ForStmt(name, iterable, body) => {
+      fn iterCode = compileExpr(compiler, iterable)
+      emitLine(compiler, `for (const ${sanitizeIdentifier(name)} of ${iterCode}) {`)
+      increaseIndent(compiler)
+      compileBlock(compiler, body)
+      decreaseIndent(compiler)
+      emitLine(compiler, "}")
+    }
+
+  | WhileStmt(cond, body) => {
+      fn condCode = compileExpr(compiler, cond)
+      emitLine(compiler, `while (${condCode}) {`)
+      increaseIndent(compiler)
+      compileBlock(compiler, body)
+      decreaseIndent(compiler)
+      emitLine(compiler, "}")
+    }
+
+  | ReturnStmt(valueOpt) =>
+    switch valueOpt {
+    | Some(e) => {
+        fn valueCode = compileExpr(compiler, e)
+        emitLine(compiler, `return ${valueCode};`)
+      }
+    | None => emitLine(compiler, "return;")
+    }
+
+  | YieldStmt(e) => {
+      fn valueCode = compileExpr(compiler, e)
+      emitLine(compiler, `yield ${valueCode};`)
+    }
+
+  | ImportStmt(names, source) => {
+      fn nameStr = names->Array.map(sanitizeIdentifier)->Array.joinWith(", ")
+      fn sanitizedSource = source
+        ->Js.String2.replaceByRe(%re("/\"/g"), "")
+        ->Js.String2.replaceByRe(%re("/'/g"), "")
+      emitLine(compiler, `import { ${nameStr} } from "${sanitizedSource}";`)
+    }
+
+  | ExportStmt(inner) => {
+      emit(compiler, "export ")
+      compileStmt(compiler, inner)
+    }
+
+  | TypeStmt(_, _) => {
+      // Types are erased at runtime
+      emitLine(compiler, "// struct declaration (erased)")
+    }
+
+  | TemplateStmt(name, body) => {
+      emitLine(compiler, `function ${sanitizeIdentifier(name)}(context) {`)
+      increaseIndent(compiler)
+      emitLine(compiler, "fn __output = '';")
+      compileBlock(compiler, body)
+      emitLine(compiler, "return __output;")
+      decreaseIndent(compiler)
+      emitLine(compiler, "}")
+    }
+
+  | ContentStmt(frontmatter, body) => {
+      emitLine(compiler, "// Content block")
+      fn titleCode = compileExpr(compiler, frontmatter.title)
+      emitLine(compiler, `const __title = ${titleCode};`)
+      switch frontmatter.meta {
+      | Some(m) => {
+          fn metaCode = compileExpr(compiler, m)
+          emitLine(compiler, `const __meta = ${metaCode};`)
+        }
+      | None => ()
+      }
+      compileBlock(compiler, body)
+    }
+
+  | A11yStmt(kind, value) => {
+      fn kindStr = switch kind {
+      | BslA11y => "bsl"
+      | GslA11y => "gsl"
+      | AslA11y => "asl"
+      | MakatonA11y => "makaton"
+      }
+      fn valueCode = compileExpr(compiler, value)
+      emitLine(compiler, `__a11y.${kindStr} = ${valueCode};`)
+    }
+  }
+}
+
+and compileBlock = (compiler: compilerState, block: block): unit => {
+  block->Array.forEach(stmt => compileStmt(compiler, stmt))
+}
+
+// Main compile function
+fn compile = (program: program): result<string, array<compileError>> => {
+  fn compiler = createCompiler()
+
+  // Emit runtime preamble
+  emitLine(compiler, "// Generated by NoteG Compiler")
+  emitLine(compiler, "// SPDX-License-Identifier: PMPL-1.0-or-later")
+  emitLine(compiler, "'use strict';")
+  emitNewline(compiler)
+
+  // Emit runtime helpers
+  emitLine(compiler, "const print = (...args) => console.log(...args);")
+  emitLine(compiler, "const len = (x) => x.length;")
+  emitLine(compiler, "const struct = (x) => structof x;")
+  emitNewline(compiler)
+
+  // Compile program
+  compileBlock(compiler, program)
+
+  if compiler.errors->Array.length > 0 {
+    Error(compiler.errors)
+  } else {
+    Ok(compiler.output)
+  }
+}
+
+// Compile to module format
+fn compileModule = (program: program): result<string, array<compileError>> => {
+  fn compiler = createCompiler()
+
+  // Emit module preamble
+  emitLine(compiler, "// Generated by NoteG Compiler (ES Module)")
+  emitLine(compiler, "// SPDX-License-Identifier: PMPL-1.0-or-later")
+  emitNewline(compiler)
+
+  // Compile program
+  compileBlock(compiler, program)
+
+  if compiler.errors->Array.length > 0 {
+    Error(compiler.errors)
+  } else {
+    Ok(compiler.output)
+  }
+}
+

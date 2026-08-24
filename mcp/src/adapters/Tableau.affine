@@ -1,7 +1,109 @@
 // SPDX-License-Identifier: MPL-2.0
-// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
-// Ported via Harvard Engine bulk-processor
+// Ported via Harvard Engine (Semantic pass)
 
 module Tableau;
 
-// TODO: Complete semantic implementation
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+
+// Tableau adapter - Static site generator in Elixir
+// https://github.com/elixir-tools/tableau
+
+open Adapter
+
+fn name = "Tableau"
+fn language = "Elixir"
+fn description = "Static site generator for Elixir with LiveView support"
+
+fn state: adapterState = {
+  connected: false,
+  projectPath: None,
+}
+
+fn connect = async () => {
+  try {
+    fn result = await Deno.Command.run("mix", ["--version"], None)
+    state.connected = result.success
+    result.success
+  } catch {
+  | _ => {
+      state.connected = false
+      false
+    }
+  }
+}
+
+fn disconnect = async () => {
+  state.connected = false
+}
+
+fn isConnected = () => state.connected
+
+fn makeSchema = (props: dict<JSON.t>, required: array<string>) => {
+  fn schema = Dict.make()
+  Dict.set(schema, "struct", JSON.Encode.string("object"))
+  Dict.set(schema, "properties", JSON.Encode.object(props))
+  if Array.length(required) > 0 {
+    Dict.set(schema, "required", JSON.Encode.array(Array.map(required, JSON.Encode.string)))
+  }
+  JSON.Encode.object(schema)
+}
+
+fn makeProp = (structName: string, desc: string) =>
+  JSON.Encode.object(
+    Dict.fromArray([("struct", JSON.Encode.string(structName)), ("description", JSON.Encode.string(desc))]),
+  )
+
+fn tools: array<tool> = [
+  {
+    name: "tableau_init",
+    description: "Initialize a new Tableau project",
+    inputSchema: {
+      fn props = Dict.make()
+      Dict.set(props, "name", makeProp("string", "Project name"))
+      Dict.set(props, "path", makeProp("string", "Path for the project"))
+      makeSchema(props, ["name"])
+    },
+  },
+  {
+    name: "tableau_build",
+    description: "Build the Tableau site",
+    inputSchema: {
+      fn props = Dict.make()
+      Dict.set(props, "path", makeProp("string", "Path to project root"))
+      makeSchema(props, [])
+    },
+  },
+  {
+    name: "tableau_server",
+    description: "Start Tableau development server",
+    inputSchema: {
+      fn props = Dict.make()
+      Dict.set(props, "path", makeProp("string", "Path to project root"))
+      Dict.set(props, "port", makeProp("number", "Port number"))
+      makeSchema(props, [])
+    },
+  },
+  {
+    name: "tableau_version",
+    description: "Get Mix/Elixir version",
+    inputSchema: makeSchema(Dict.make(), []),
+  },
+]
+
+fn executeInit = async (name: string, path: option<string>) => {
+  await Deno.Command.run("mix", ["tableau.new", name], path)
+}
+
+fn executeBuild = async (path: option<string>) => {
+  await Deno.Command.run("mix", ["tableau.build"], path)
+}
+
+fn executeServer = async (path: option<string>, _port: option<int>) => {
+  await Deno.Command.run("mix", ["tableau.server"], path)
+}
+
+fn executeVersion = async () => {
+  await Deno.Command.run("mix", ["--version"], None)
+}
+

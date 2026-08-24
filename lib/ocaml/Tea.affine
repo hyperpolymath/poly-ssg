@@ -1,7 +1,75 @@
 // SPDX-License-Identifier: MPL-2.0
-// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
-// Ported via Harvard Engine bulk-processor
+// Ported via Harvard Engine (Semantic pass)
 
 module Tea;
 
-// TODO: Complete semantic implementation
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// Minimal TEA implementation for STAMP
+// Compatible with full rescript-tea architecture
+
+module Cmd = {
+  struct t<'msg> = unit
+  fn none = ()
+  fn msg = (_msg: 'msg) => ()
+}
+
+module Sub = {
+  struct t<'msg> = unit
+  fn none = ()
+}
+
+module Html = {
+  struct node
+  struct attribute
+
+  @val external document: 'a = "document"
+  @send external getElementById: ('a, string) => Js.Nullable.t<Dom.element> = "getElementById"
+  @set external setInnerHTML: (Dom.element, string) => unit = "innerHTML"
+
+  fn noNode: node = Obj.magic("")
+
+  fn text = (str: string): node => Obj.magic(str)
+
+  fn tag = (tagName: string, _attrs: array<attribute>, children: array<node>): node => {
+    // Use raw JavaScript to concatenate children
+    fn childrenHtml: string = %raw(`
+      children.map(c => c).join('')
+    `)
+    Obj.magic(`<${tagName}>${childrenHtml}</${tagName}>`)
+  }
+
+  fn div = (attrs, children) => tag("div", attrs, children)
+  fn p = (attrs, children) => tag("p", attrs, children)
+  fn h2 = (attrs, children) => tag("h2", attrs, children)
+  fn h3 = (attrs, children) => tag("h3", attrs, children)
+  fn h4 = (attrs, children) => tag("h4", attrs, children)
+  fn pre = (attrs, children) => tag("pre", attrs, children)
+  fn code = (attrs, children) => tag("code", attrs, children)
+  fn button = (attrs, children) => tag("button", attrs, children)
+  fn section = (attrs, children) => tag("section", attrs, children)
+
+  fn class' = (name: string): attribute => Obj.magic(`class="${name}"`)
+  fn id = (name: string): attribute => Obj.magic(`id="${name}"`)
+  fn onClick = (_handler: 'msg): attribute => Obj.magic("")
+}
+
+module App = {
+  struct program<'model, 'msg> = {
+    init: unit => ('model, Cmd.t<'msg>),
+    update: ('model, 'msg) => ('model, Cmd.t<'msg>),
+    view: 'model => Html.node,
+    subscriptions: 'model => Sub.t<'msg>,
+  }
+
+  fn standardProgram = (program: program<'model, 'msg>) => {
+    fn (model, _cmd) = program.init()
+    fn html = program.view(model)
+
+    // Mount to DOM
+    switch Html.document->Html.getElementById("tea-app")->Js.Nullable.toOption {
+    | Some(el) => el->Html.setInnerHTML(Obj.magic(html))
+    | None => Js.log("TEA mount point #tea-app not found")
+    }
+  }
+}
+

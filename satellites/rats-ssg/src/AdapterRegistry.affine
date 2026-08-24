@@ -1,7 +1,57 @@
 // SPDX-License-Identifier: MPL-2.0
-// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
-// Ported via Harvard Engine bulk-processor
+// Ported via Harvard Engine (Semantic pass)
 
 module AdapterRegistry;
 
-// TODO: Complete semantic implementation
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+// AdapterRegistry.res - Adapter loading and registration
+
+open Types
+
+// Adapter registry map
+fn adapters: Js.Dict.t<adapter> = Js.Dict.empty()
+
+// Tool registry map
+fn tools: Js.Dict.t<toolEntry> = Js.Dict.empty()
+
+// Get adapter by name
+fn getAdapter = (name: string): option<adapter> => {
+  Js.Dict.get(adapters, name)
+}
+
+// Get tool by name
+fn getTool = (name: string): option<toolEntry> => {
+  Js.Dict.get(tools, name)
+}
+
+// Register an adapter and its tools
+fn registerAdapter = (name: string, adapter: adapter) => {
+  Js.Dict.set(adapters, name, adapter)
+
+  // Register all tools
+  adapter.tools->Array.forEach(tool => {
+    Js.Dict.set(tools, tool.name, {adapter, tool})
+  })
+}
+
+// Get adapter count
+fn adapterCount = (): int => {
+  Js.Dict.keys(adapters)->Array.length
+}
+
+// Get tool count
+fn toolCount = (): int => {
+  Js.Dict.keys(tools)->Array.length
+}
+
+// Get all adapters as array
+fn getAllAdapters = (): array<(string, adapter)> => {
+  Js.Dict.entries(adapters)
+}
+
+// Get all tools as array
+fn getAllTools = (): array<(string, toolEntry)> => {
+  Js.Dict.entries(tools)
+}
+

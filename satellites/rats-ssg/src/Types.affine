@@ -1,7 +1,100 @@
 // SPDX-License-Identifier: MPL-2.0
-// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
-// Ported via Harvard Engine bulk-processor
+// Ported via Harvard Engine (Semantic pass)
 
 module Types;
 
-// TODO: Complete semantic implementation
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+// Types.res - Shared struct definitions for rats-ssg MCP Server
+
+// Command execution result
+struct commandResult { {
+  success: bool,
+  stdout: string,
+  stderr: string,
+  code: int,
+}
+
+// Tool input schema (JSON Schema format)
+struct inputSchema { {
+  @as("struct") schemaType: string,
+  properties: Js.Dict.t<Js.Json.t>,
+  required: option<array<string>>,
+}
+
+// Tool definition
+struct tool { {
+  name: string,
+  description: string,
+  inputSchema: inputSchema,
+  execute: Js.Dict.t<Js.Json.t> => promise<commandResult>,
+}
+
+// SSG Adapter interface
+struct adapter { {
+  name: string,
+  language: string,
+  description: string,
+  tools: array<tool>,
+  connect: unit => promise<bool>,
+  disconnect: unit => promise<unit>,
+  isConnected: unit => bool,
+}
+
+// Tool entry in registry
+struct toolEntry { {
+  adapter: adapter,
+  tool: tool,
+}
+
+// MCP Request
+struct mcpRequest { {
+  jsonrpc: string,
+  id: Js.Json.t, // Can be number or string
+  method: string,
+  params: option<Js.Dict.t<Js.Json.t>>,
+}
+
+// MCP Error
+struct mcpError { {
+  code: int,
+  message: string,
+}
+
+// MCP Response
+struct mcpResponse { {
+  jsonrpc: string,
+  id: Js.Json.t,
+  result: option<Js.Json.t>,
+  error: option<mcpError>,
+}
+
+// Server configuration
+struct config { {
+  port: int,
+  host: string,
+  logLevel: string,
+}
+
+// Log level enum
+struct logLevel { Debug | Info | Warn | Error
+
+fn logLevelFromString = (s: string): logLevel => {
+  switch s {
+  | "debug" => Debug
+  | "info" => Info
+  | "warn" => Warn
+  | "error" => Error
+  | _ => Info
+  }
+}
+
+fn logLevelToInt = (l: logLevel): int => {
+  switch l {
+  | Debug => 0
+  | Info => 1
+  | Warn => 2
+  | Error => 3
+  }
+}
+

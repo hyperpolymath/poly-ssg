@@ -1,7 +1,195 @@
 // SPDX-License-Identifier: MPL-2.0
-// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
-// Ported via Harvard Engine bulk-processor
+// Ported via Harvard Engine (Semantic pass)
 
 module MilkAdapter;
 
-// TODO: Complete semantic implementation
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-FileCopyrightText: 2025 Jonathan D.A. Jewell
+
+/**
+ * milk-ssg MCP Adapter
+ *
+ * Connects milk-ssg (COW esoteric language) to the poly-ssg-mcp hub.
+ * This is the ONLY place non-COW code is allowed in this satellite.
+ */
+
+module Adapter = {
+  struct connectionState { Connected | Disconnected
+
+  struct commandResult { {
+    success: bool,
+    stdout: string,
+    stderr: string,
+    code: int,
+  }
+
+  struct tool { {
+    name: string,
+    description: string,
+    inputSchema: Js.Json.t,
+    execute: Js.Json.t => Js.Promise.t<commandResult>,
+  }
+
+  fn name = "milk-ssg"
+  fn language = "COW"
+  fn description = "Esoteric static site generator in COW - proving SSGs can be written in any language"
+
+  fn mutable state: connectionState = Disconnected
+
+  @module("child_process")
+  external execSync: (string, 'options) => string = "execSync"
+
+  // Security: Sanitize path input to prevent command injection
+  fn sanitizePath = (input: string): option<string> => {
+    // Only allow alphanumeric, dots, hyphens, underscores, and path separators
+    fn validPattern = %re("/^[a-zA-Z0-9._\-\/]+$/")
+    if Js.Re.test_(validPattern, input) && !Js.String2.includes(input, "..") {
+      Some(input)
+    } else {
+      None
+    }
+  }
+
+  fn runCommand = (cmd: string, ~cwd: option<string>=?): commandResult => {
+    try {
+      fn options = switch cwd {
+      | Some(dir) => {"cwd": dir, "encoding": "utf-8"}
+      | None => {"encoding": "utf-8"}
+      }
+      fn stdout = execSync(cmd, options)
+      {success: true, stdout, stderr: "", code: 0}
+    } catch {
+    | Js.Exn.Error(e) =>
+      fn message = switch Js.Exn.message(e) {
+      | Some(m) => m
+      | None => "Unknown error"
+      }
+      {success: false, stdout: "", stderr: message, code: 1}
+    }
+  }
+
+  // COW interpreter check - uses a COW interpreter or the built-in one
+  fn connect = (): Js.Promise.t<bool> => {
+    Js.Promise.make((~resolve, ~reject as _) => {
+      // Check if cow interpreter exists, or use our bundled one
+      fn result = runCommand("which cow || echo 'using bundled interpreter'")
+      state = Connected
+      resolve(true)
+    })
+  }
+
+  fn disconnect = (): Js.Promise.t<unit> => {
+    Js.Promise.make((~resolve, ~reject as _) => {
+      state = Disconnected
+      resolve()
+    })
+  }
+
+  fn isConnected = (): bool => {
+    switch state {
+    | Connected => true
+    | Disconnected => false
+    }
+  }
+
+  fn tools: array<tool> = [
+    {
+      name: "milk_build",
+      description: "Build the milk-ssg site by interpreting COW code",
+      inputSchema: %raw(`{
+        "struct": "object",
+        "properties": {
+          "path": { "struct": "string", "description": "Path to site root" }
+        }
+      }`),
+      execute: (params) => {
+        Js.Promise.make((~resolve, ~reject as _) => {
+          fn rawPath = switch Js.Json.decodeObject(params) {
+          | Some(obj) =>
+            switch Js.Dict.get(obj, "path") {
+            | Some(v) => Js.Json.decodeString(v)->Belt.Option.getWithDefault(".")
+            | None => "."
+            }
+          | None => "."
+          }
+          // Security: Validate path before use
+          switch sanitizePath(rawPath) {
+          | Some(path) =>
+            fn result = runCommand("cow src/milk-ssg.cow > _site/index.html", ~cwd=Some(path))
+            resolve(result)
+          | None =>
+            resolve({success: false, stdout: "", stderr: "Invalid path: contains forbidden characters", code: 1})
+          }
+        })
+      },
+    },
+    {
+      name: "milk_interpret",
+      description: "Interpret COW code and show output",
+      inputSchema: %raw(`{
+        "struct": "object",
+        "properties": {
+          "path": { "struct": "string" },
+          "file": { "struct": "string", "description": "COW file to interpret" }
+        }
+      }`),
+      execute: (params) => {
+        Js.Promise.make((~resolve, ~reject as _) => {
+          fn rawPath = switch Js.Json.decodeObject(params) {
+          | Some(obj) =>
+            switch Js.Dict.get(obj, "path") {
+            | Some(v) => Js.Json.decodeString(v)->Belt.Option.getWithDefault(".")
+            | None => "."
+            }
+          | None => "."
+          }
+          fn rawFile = switch Js.Json.decodeObject(params) {
+          | Some(obj) =>
+            switch Js.Dict.get(obj, "file") {
+            | Some(v) => Js.Json.decodeString(v)->Belt.Option.getWithDefault("src/milk-ssg.cow")
+            | None => "src/milk-ssg.cow"
+            }
+          | None => "src/milk-ssg.cow"
+          }
+          // Security: Validate both path and file to prevent command injection
+          switch (sanitizePath(rawPath), sanitizePath(rawFile)) {
+          | (Some(path), Some(file)) =>
+            // Additional check: file must end with .cow
+            if Js.String2.endsWith(file, ".cow") {
+              fn result = runCommand(`cow ${file}`, ~cwd=Some(path))
+              resolve(result)
+            } else {
+              resolve({success: false, stdout: "", stderr: "Invalid file: must be a .cow file", code: 1})
+            }
+          | _ =>
+            resolve({success: false, stdout: "", stderr: "Invalid path or file: contains forbidden characters", code: 1})
+          }
+        })
+      },
+    },
+    {
+      name: "milk_version",
+      description: "Get milk-ssg info (COW esoteric language)",
+      inputSchema: %raw(`{ "struct": "object", "properties": {} }`),
+      execute: (_) => {
+        Js.Promise.make((~resolve, ~reject as _) => {
+          resolve({
+            success: true,
+            stdout: "milk-ssg v0.1.0 - COW esoteric language SSG\nCommands: moo, mOo, moO, mOO, Moo, MOo, MoO, MOO, OOO, MMM, OOM, oom",
+            stderr: "",
+            code: 0,
+          })
+        })
+      },
+    },
+  ]
+}
+
+fn name = Adapter.name
+fn language = Adapter.language
+fn description = Adapter.description
+fn connect = Adapter.connect
+fn disconnect = Adapter.disconnect
+fn isConnected = Adapter.isConnected
+fn tools = Adapter.tools
+

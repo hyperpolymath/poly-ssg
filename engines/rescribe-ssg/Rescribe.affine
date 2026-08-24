@@ -1,7 +1,318 @@
 // SPDX-License-Identifier: MPL-2.0
-// SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
-// Ported via Harvard Engine bulk-processor
+// Ported via Harvard Engine (Semantic pass)
 
 module Rescribe;
 
-// TODO: Complete semantic implementation
+// Rescribe.res - ReScript-powered static site generator
+//
+// "Rescribe" - Type-safe site generation with JavaScript output
+//
+// ReScript's sound struct system compiles to efficient JavaScript.
+// Perfect for static sites that need both safety and web compatibility.
+
+// ============================================================================
+// Types
+// ============================================================================
+
+struct frontmatter { {
+  title: string,
+  date: string,
+  tags: array<string>,
+  draft: bool,
+  template: string,
+}
+
+struct parserState { {
+  mutable html: string,
+  mutable inPara: bool,
+  mutable inCode: bool,
+  mutable inList: bool,
+}
+
+fn emptyFrontmatter = {
+  title: "",
+  date: "",
+  tags: [],
+  draft: false,
+  template: "default",
+}
+
+fn initState = () => {
+  html: "",
+  inPara: false,
+  inCode: false,
+  inList: false,
+}
+
+// ============================================================================
+// String Utilities
+// ============================================================================
+
+fn startsWith = (str, prefix) => {
+  Js.String2.startsWith(str, prefix)
+}
+
+fn trim = str => Js.String2.trim(str)
+
+fn stripPrefix = (str, prefix) => {
+  if startsWith(str, prefix) {
+    Js.String2.substr(str, ~from=Js.String2.length(prefix))
+  } else {
+    str
+  }
+}
+
+fn escapeHtml = str => {
+  str
+  ->Js.String2.replaceByRe(%re("/&/g"), "&amp;")
+  ->Js.String2.replaceByRe(%re("/</g"), "&lt;")
+  ->Js.String2.replaceByRe(%re("/>/g"), "&gt;")
+  ->Js.String2.replaceByRe(%re("/\"/g"), "&quot;")
+}
+
+fn split = (str, sep) => Js.String2.split(str, sep)
+
+// ============================================================================
+// Frontmatter Parser
+// ============================================================================
+
+fn parseFmLine = (line, fm) => {
+  switch Js.String2.indexOf(line, ":") {
+  | -1 => fm
+  | colonIdx =>
+    fn key = trim(Js.String2.substring(line, ~from=0, ~to_=colonIdx))
+    fn value = trim(Js.String2.substr(line, ~from=colonIdx + 1))
+    switch key {
+    | "title" => {...fm, title: value}
+    | "date" => {...fm, date: value}
+    | "template" => {...fm, template: value}
+    | "draft" => {...fm, draft: value == "true" || value == "yes"}
+    | "tags" =>
+      fn tagStr = if startsWith(value, "[") {
+        Js.String2.substring(value, ~from=1, ~to_=Js.String2.length(value) - 1)
+      } else {
+        value
+      }
+      fn tags = split(tagStr, ",")
+        ->Js.Array2.map(trim)
+        ->Js.Array2.filter(s => Js.String2.length(s) > 0)
+      {...fm, tags}
+    | _ => fm
+    }
+  }
+}
+
+fn parseFrontmatter = content => {
+  fn lines = split(content, "\n")
+  switch lines[0] {
+  | Some(first) if trim(first) == "---" =>
+    fn rec findEnd = (idx, fm) => {
+      switch lines[idx] {
+      | None => (fm, "")
+      | Some(line) if trim(line) == "---" =>
+        fn body = lines
+          ->Js.Array2.sliceFrom(idx + 1)
+          ->Js.Array2.joinWith("\n")
+        (fm, body)
+      | Some(line) => findEnd(idx + 1, parseFmLine(line, fm))
+      }
+    }
+    findEnd(1, emptyFrontmatter)
+  | _ => (emptyFrontmatter, content)
+  }
+}
+
+// ============================================================================
+// Markdown Parser
+// ============================================================================
+
+fn processInline = text => {
+  text
+  ->Js.String2.replaceByRe(%re("/\*\*([^*]+)\*\*/g"), "<strong>$1</strong>")
+  ->Js.String2.replaceByRe(%re("/\*([^*]+)\*/g"), "<em>$1</em>")
+  ->Js.String2.replaceByRe(%re("/`([^`]+)`/g"), "<code>$1</code>")
+}
+
+fn closePara = st => {
+  if st.inPara {
+    st.html = st.html ++ "</p>\n"
+    st.inPara = false
+  }
+}
+
+fn closeList = st => {
+  if st.inList {
+    st.html = st.html ++ "</ul>\n"
+    st.inList = false
+  }
+}
+
+fn processLine = (line, st) => {
+  fn tr = trim(line)
+
+  // Code fence
+  if startsWith(tr, "```") {
+    if st.inCode {
+      st.html = st.html ++ "</code></pre>\n"
+      st.inCode = false
+    } else {
+      closePara(st)
+      closeList(st)
+      st.html = st.html ++ "<pre><code>"
+      st.inCode = true
+    }
+  }
+  // Inside code block
+  else if st.inCode {
+    st.html = st.html ++ escapeHtml(line) ++ "\n"
+  }
+  // Empty line
+  else if tr == "" {
+    closePara(st)
+    closeList(st)
+  }
+  // Headers
+  else if startsWith(tr, "### ") {
+    closePara(st)
+    closeList(st)
+    fn content = processInline(trim(stripPrefix(tr, "### ")))
+    st.html = st.html ++ "<h3>" ++ content ++ "</h3>\n"
+  } else if startsWith(tr, "## ") {
+    closePara(st)
+    closeList(st)
+    fn content = processInline(trim(stripPrefix(tr, "## ")))
+    st.html = st.html ++ "<h2>" ++ content ++ "</h2>\n"
+  } else if startsWith(tr, "# ") {
+    closePara(st)
+    closeList(st)
+    fn content = processInline(trim(stripPrefix(tr, "# ")))
+    st.html = st.html ++ "<h1>" ++ content ++ "</h1>\n"
+  }
+  // List items
+  else if startsWith(tr, "- ") || startsWith(tr, "* ") {
+    closePara(st)
+    if !st.inList {
+      st.html = st.html ++ "<ul>\n"
+      st.inList = true
+    }
+    fn item = processInline(trim(Js.String2.substr(tr, ~from=2)))
+    st.html = st.html ++ "<li>" ++ item ++ "</li>\n"
+  }
+  // Paragraph
+  else {
+    if !st.inPara {
+      st.html = st.html ++ "<p>"
+      st.inPara = true
+    } else {
+      st.html = st.html ++ " "
+    }
+    st.html = st.html ++ processInline(tr)
+  }
+}
+
+fn parseMarkdown = content => {
+  fn st = initState()
+  fn lines = split(content, "\n")
+  lines->Js.Array2.forEach(line => processLine(line, st))
+  closePara(st)
+  closeList(st)
+  if st.inCode {
+    st.html = st.html ++ "</code></pre>\n"
+  }
+  st.html
+}
+
+// ============================================================================
+// Template Engine
+// ============================================================================
+
+fn defaultTemplate = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>{{title}}</title>
+<style>body{font-family:system-ui;max-width:800px;margin:0 auto;padding:2rem}pre{background:#f4f4f4;padding:1rem}</style>
+</head><body><article><h1>{{title}}</h1><time>{{date}}</time>
+{{content}}
+</article></body></html>`
+
+fn applyTemplate = (fm, html) => {
+  defaultTemplate
+  ->Js.String2.replace("{{title}}", fm.title)
+  ->Js.String2.replace("{{title}}", fm.title)
+  ->Js.String2.replace("{{date}}", fm.date)
+  ->Js.String2.replace("{{content}}", html)
+}
+
+// ============================================================================
+// Tests
+// ============================================================================
+
+fn testMarkdown = () => {
+  Js.log("=== Test: Markdown ===")
+  fn md = `# Hello World
+
+This is a **bold** test with *italic* text.
+
+- Item 1
+- Item 2
+
+\`\`\`
+code block
+\`\`\`
+`
+  Js.log(parseMarkdown(md))
+}
+
+fn testFrontmatter = () => {
+  Js.log("=== Test: Frontmatter ===")
+  fn content = `---
+title: My Post
+date: 2024-01-15
+tags: [rescript, ssg]
+draft: false
+---
+
+Content here
+`
+  fn (fm, body) = parseFrontmatter(content)
+  Js.log("Title: " ++ fm.title)
+  Js.log("Date: " ++ fm.date)
+  Js.log("Tags: " ++ Js.Array2.joinWith(fm.tags, ", "))
+  Js.log("Draft: " ++ (fm.draft ? "true" : "false"))
+  Js.log("Body: " ++ body)
+}
+
+fn testFull = () => {
+  Js.log("=== Test: Full Pipeline ===")
+  fn content = `---
+title: Welcome
+date: 2024-01-15
+---
+
+# Welcome
+
+This is **Rescribe**, a ReScript SSG.
+
+- Type safe
+- JavaScript output
+- Fast compilation
+`
+  fn (fm, body) = parseFrontmatter(content)
+  fn html = parseMarkdown(body)
+  fn output = applyTemplate(fm, html)
+  Js.log(output)
+}
+
+// ============================================================================
+// Main
+// ============================================================================
+
+fn args = Node.Process.argv
+
+switch args[2] {
+| Some("test-markdown") => testMarkdown()
+| Some("test-frontmatter") => testFrontmatter()
+| Some("test-full") => testFull()
+| _ =>
+  Js.log("Rescribe SSG - ReScript powered")
+  Js.log("Commands: test-markdown test-frontmatter test-full")
+}
+
