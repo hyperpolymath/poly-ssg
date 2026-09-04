@@ -211,6 +211,8 @@ cat << 'HTML_NAV'
                 <li><strong>General Feedback:</strong> <a href="/contact.html">Contact Form</a></li>
                 <li><strong>Bug Reports:</strong> <a href="https://github.com/hyperpolymath/HTML
 
+HTML_NAV
+
 cat << HTML
 $REPO/issues">GitHub Issues</a></li>
                 <li><strong>Security Issues:</strong> See <a href="/.well-known/security.txt">security.txt</a></li>
