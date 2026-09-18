@@ -8,6 +8,7 @@ updates:
       actions:
         patterns:
           - "*"
+    open-pull-requests-limit: 2
   
   - package-ecosystem: "cargo"
     directory: "/"
@@ -16,5 +17,6 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
+    open-pull-requests-limit: 0
   
   # Note: npm/pip removed per RSR - use Deno (deno.json) for JS, Julia/Rust for data processing
