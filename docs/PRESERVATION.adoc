@@ -1,0 +1,39 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Poly SSG — provenance, qualification and release gate
+:toc: left
+
+*Current disposition:* PRIVATE SOURCE-PRESERVATION STAGING. Do not use as a production dependency solely because this repository exists.
+
+== Exact provenance
+
+* Original repository: https://github.com/hyperpolymath/polystack[hyperpolymath/polystack]
+* Original source commit: `e1af43bb102106b08cb694402bd1c04b96f1677c` (main, inspected 2026-11-03)
+* Original prefix: `poly-ssg/`
+* Git history extraction: `git subtree split --prefix=poly-ssg --branch preservation-poly-ssg` in Debian WSL (Git for Windows' shell failed, so WSL was used)
+* Extracted initial commit: `9302dfcc3aedb7c52edf2867a2fcbf2c735878b4`
+* Original retained in Polystack unchanged. Source root/subtree correspondence should be verified independently via Git object tree hashes.
+
+The extracted history is not a new implementation. The original prefix path has become this repository root. This preserves previous authors/commit history for the subtree; it does not establish its executable behaviour.
+
+== Important environmental warnings
+
+* The Windows source checkout flagged case-sensitive path collisions in `poly-ssg/satellites/rats-ssg/{Justfile,justfile}`, which cannot both appear correctly on a case-insensitive checkout. Compare Git trees, not just Windows worktree files.
+* `.gitmodules` refers to multiple individual historical SSG repositories; many are now consolidated into https://github.com/hyperpolymath/ssg-collection[ssg-collection]. The references and whether they are actual gitlinks or merely stale metadata need review before automated checkouts.
+* `sites-build/` includes historical DNS, security-policy and generator outputs, not an approved current deployment configuration. Do not deploy or distribute generated DNS zones unreviewed.
+* The historical README still contains claims originating in early 2026. Those claims are not current assurance.
+* GitHub Actions were explicitly disabled **in this newly created staging repository** before the extraction was pushed to prevent an unreviewed legacy workflow storm. They MUST be replaced/validated and re-enabled before any qualification, release or default branch merge is called complete. Do not use zero jobs as a successful gate.
+
+== Successor relationships are still open
+
+* https://github.com/hyperpolymath/ssg-collection[ssg-collection] contains overlapping experimental engines, variants and scaffolds; the file-level differences are catalogued at https://github.com/hyperpolymath/polystack/pull/31[Polystack PR #31].
+* https://github.com/hyperpolymath/boj-server-cartridges/tree/main/cartridges/domains/web/ssg-mcp[BoJ ssg-mcp] currently declares five operations and delegates to a separate HTTP backend (default `127.0.0.1:7742`). Backend presence and runtime equivalence remain unverified.
+* https://github.com/hyperpolymath/boj-server-cartridges/tree/main/cartridges/domains/web/ssg-lsp[BoJ ssg-lsp] is described as scaffolded; it preserves the original Elixir LSP source as source material, not a finished port.
+* https://github.com/stuff-of-awe/awesome-ssgs[stuff-of-awe/awesome-ssgs] is an independent **curation collection**, not an SSG framework or backend.
+
+== Release acceptance
+
+https://github.com/hyperpolymath/poly-ssg/issues/2[Qualification issue #2] is the authoritative evidence checklist. The minimum gate is correct source correspondence; a tracked ownership/licence and dependency inventory; clean, non-vacuous CI on the latest SHA; one fully demonstrated site build with negative controls; an accepted consumer adapter; and all applicable app reviews and conversations resolved.
+
+Only after those tests and reviews may the owner decide on publication, supported status or closing https://github.com/hyperpolymath/polystack/issues/30[Polystack's archive blocker].
+
+*No archival, deployment, or release approval is implied by this document.*
