@@ -6,10 +6,15 @@ image:https://img.shields.io/badge/Idris-Inside-5E5086[Idris Inside,link="https:
 // SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
 
 = Poly SSG Comparison Site
+
+[CAUTION]
+====
+*Preservation staging, not an accepted migration.* This repository is a history-preserving extraction of `hyperpolymath/polystack/poly-ssg`. It is currently private; inherited GitHub Actions are **disabled pending a reviewed, real CI replacement**. No BoJ backend, build parity, deployment, security or proof claims are independently validated by the extraction. See link:docs/PRESERVATION.adoc[provenance and qualification ledger] and link:https://github.com/hyperpolymath/poly-ssg/issues/2[qualification issue #2]. Polystack remains the fallback while link:https://github.com/hyperpolymath/polystack/issues/30[Polystack #30] is open.
+====
 :toc: auto
 
 image:https://img.shields.io/badge/RSR-compliant-blue[RSR Compliant]
-image:https://img.shields.io/badge/status-active-green[Status: Active]
+image:https://img.shields.io/badge/status-unqualified-lightgrey[Status: Unqualified preservation staging]
 
 Interactive comparison of SSG engines (Casket, Hackenbush, Bunsenite, Cobalt) built with ReScript, Deno, and formally verified components from proven.
 
@@ -78,7 +83,7 @@ echo "axiom.metadatasticaian.art" > ../../_site/CNAME
 * *Feature Comparison* - Understand engine capabilities
 * *Safe String Operations* - Formally verified config building
 
-== Project Status (2026-01-30)
+== Historical Project Status (2026-01-30 — not a current verification)
 
 * ✅ ReScript compilation with Deno
 * ✅ proven integration for safe strings
