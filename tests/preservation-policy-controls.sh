@@ -18,6 +18,7 @@ git add .; git commit -qm import
 base=$(git rev-parse HEAD); tree=$(git rev-parse HEAD^{tree})
 object_violation='VIOLATION: prohibited source object differs in path, blob, mode or retained area'
 current_finding='current or unqualified finding(s)'
+no_file_location='no file associated with this alert'
 expect() {
   local wanted=$1 marker=$2; shift 2
   local actual=0
@@ -76,12 +77,12 @@ printf '%s\n' '# current mutation' >> "$retained_path"
 git add .; git commit -qm current
 expect 1 "$current_finding" "${review[@]}" codeql "$sarif" "$tmp/receipt" "$base" "$tree"
 git reset --hard -q "$base"
-make_result Scorecard FuzzingID 'no file associated with this alert' 'score is 0: project is not fuzzed: fixture'
+make_result Scorecard FuzzingID "$no_file_location" 'score is 0: project is not fuzzed: fixture'
 expect 0 'Preservation advisory' "${review[@]}" scorecard "$sarif" "$tmp/receipt" "$base" "$tree"
 jq -e '.counts.preservation_advisory == 1 and .counts.actionable == 0' "$tmp/receipt.json" >/dev/null
-make_result Scorecard SecurityPolicyID 'no file associated with this alert'
+make_result Scorecard SecurityPolicyID "$no_file_location"
 expect 1 "$current_finding" "${review[@]}" scorecard "$sarif" "$tmp/receipt" "$base" "$tree"
-make_result Scorecard FuzzingID 'no file associated with this alert' 'a different failure'
+make_result Scorecard FuzzingID "$no_file_location" 'a different failure'
 expect 1 "$current_finding" "${review[@]}" scorecard "$sarif" "$tmp/receipt" "$base" "$tree"
 make_result Scorecard fixture "$retained_path"
 SCORECARD_ANALYSIS_SCOPE=remote-default-branch expect 1 "$current_finding" "${review[@]}" scorecard "$sarif" "$tmp/receipt" "$base" "$tree"
@@ -155,10 +156,10 @@ done <<'JQ'
 .relatedLocations=[{physicalLocation:{artifactLocation:{uri:"engines/example/archive.py\nother"}}}]
 JQ
 
-make_result Scorecard FuzzingID 'no file associated with this alert' 'score is 0: project is not fuzzed: fixture'
+make_result Scorecard FuzzingID "$no_file_location" 'score is 0: project is not fuzzed: fixture'
 extend_result '.relatedLocations=[loc]'
 expect 1 "$current_finding" "${review[@]}" scorecard "$sarif" "$tmp/receipt" "$base" "$tree"
-make_result Scorecard FuzzingID 'no file associated with this alert' 'score is 0: project is not fuzzed: fixture'
+make_result Scorecard FuzzingID "$no_file_location" 'score is 0: project is not fuzzed: fixture'
 extend_result '.locations=[]'
 expect 1 "$current_finding" "${review[@]}" scorecard "$sarif" "$tmp/receipt" "$base" "$tree"
 make_result CodeQL fixture "$retained_path"
