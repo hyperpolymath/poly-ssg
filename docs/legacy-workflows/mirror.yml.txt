@@ -142,4 +142,3 @@ jobs:
           echo "${{ secrets.RADICLE_KEY }}" > ~/.radicle/keys/radicle
           chmod 600 ~/.radicle/keys/radicle
           rad sync --announce || echo "Radicle sync attempted"
-

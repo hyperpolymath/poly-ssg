@@ -16,18 +16,21 @@ if [[ "$reporter" == scorecard ]]; then
   esac
 fi
 command -v jq >/dev/null || { echo 'jq is required' >&2; exit 2; }
-source "$(dirname -- "${BASH_SOURCE[0]}")/preservation-scope.sh"
+checker_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+source "$checker_dir/preservation-scope.sh"
 preservation_scope_init "$@" || exit 2
 [[ -f "$input" && ! -L "$input" && -s "$input" ]] || { echo 'Missing or unsafe SARIF input' >&2; exit 2; }
 if ! jq -se --arg reporter "$reporter" '
   length == 1 and (.[0] |
     .version == "2.1.0" and (.runs | type == "array" and length > 0) and
+    (.inlineExternalProperties == null or .inlineExternalProperties == []) and
     all(.runs[];
       (.tool.driver.name | type == "string" and length > 0) and
       (if $reporter == "codeql" then .tool.driver.name == "CodeQL"
        elif $reporter == "scorecard" then .tool.driver.name == "Scorecard"
        else (.tool.driver.name | ascii_downcase | startswith("semgrep")) end) and
       (.results | type == "array") and
+      (.externalPropertyFileReferences == null or .externalPropertyFileReferences == {}) and
       all(.invocations[]?; .executionSuccessful == true and
         all(.toolExecutionNotifications[]?; .level != "error")) and
       all(.results[];
@@ -50,20 +53,26 @@ while IFS= read -r result; do
   rule=$(jq -r '.ruleId' <<< "$result")
   disposition=actionable
   reason='Current, changed, unlocated or unqualified source requires review.'
-  location_count=$(jq '(.locations // []) | length' <<< "$result")
+  if ! locations=$(jq -c -f "$checker_dir/preservation-sarif-locations.jq" <<< "$result"); then
+    echo 'Cannot evaluate complete SARIF location evidence' >&2; exit 2
+  fi
+  location_count=$(jq '.artifact_locations | length' <<< "$locations")
+  if [[ $(jq -r '.complete' <<< "$locations") != true ]]; then
+    reason="Unqualified location evidence: $(jq -r '.reason' <<< "$locations")"
+  fi
   # Only this observed repository-level condition has a staging disposition.
   # Missing security policy and every other Scorecard rule remain actionable.
   if [[ "$reporter" == scorecard && "$rule" == FuzzingID ]] &&
-    jq -e '.message.text | startswith("score is 0: project is not fuzzed:")' <<< "$result" >/dev/null &&
-    jq -e '(.locations // []) | all(.[]; .physicalLocation.artifactLocation.uri == "no file associated with this alert")' <<< "$result" >/dev/null; then
+    jq -e '(.message.text | startswith("score is 0: project is not fuzzed:")) and
+      (.locations | type == "array" and length > 0)' <<< "$result" >/dev/null &&
+    jq -e '.complete and (.artifact_locations | length > 0 and all(.[]; .uri == "no file associated with this alert"))' <<< "$locations" >/dev/null; then
     disposition=preservation-advisory
     reason='No supported executable release is provided by this preservation repository; no fuzzing qualification is claimed. A selected runtime successor must qualify its own fuzzing.'
     advisory=$((advisory + 1))
   elif [[ "$analysis_scope" == checked-out-subject ]] && (( location_count > 0 )); then
     all_preserved=true
     for (( index=0; index<location_count; index++ )); do
-      if ! path=$(jq -er --argjson i "$index" '.locations[$i].physicalLocation.artifactLocation |
-          select(.uriBaseId == null or .uriBaseId == "%SRCROOT%") | .uri | select(type == "string" and length > 0)' <<< "$result"); then
+      if ! path=$(jq -er --argjson i "$index" '.artifact_locations[$i].uri' <<< "$locations"); then
         all_preserved=false; break
       fi
       path=${path#./}
@@ -77,7 +86,8 @@ while IFS= read -r result; do
   fi
   [[ "$disposition" != actionable ]] || actionable=$((actionable + 1))
   jq -cn --arg reporter "$reporter" --arg disposition "$disposition" --arg reason "$reason" \
-    --argjson result "$result" '{reporter:$reporter,disposition:$disposition,reason:$reason,result:$result}' >> "$rows"
+    --argjson locations "$locations" --argjson result "$result" \
+    '{reporter:$reporter,disposition:$disposition,reason:$reason,location_evidence:$locations,result:$result}' >> "$rows"
 done < "$results"
 jq -s --arg reporter "$reporter" --arg subject "$SUBJECT_SHA" --arg import "$PRESERVED_IMPORT" \
   --arg analysis_scope "$analysis_scope" \

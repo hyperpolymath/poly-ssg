@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MPL-2.0-or-later
-# Preserve exact historical objects; reject newly introduced prohibited source.
+# Source-object delta check; execution references are outside this gate's scope.
 set -euo pipefail
 (( $# == 0 || $# == 2 )) || { echo 'usage: check-preserved-language-policy.sh [import-commit expected-tree]' >&2; exit 2; }
 source "$(dirname -- "${BASH_SOURCE[0]}")/preservation-scope.sh"
@@ -17,14 +17,15 @@ for path in "${!SUBJECT_OBJECTS[@]}"; do
     printf 'HISTORICAL unsupported source: %s [%s]\n' "$path" "${SUBJECT_OBJECTS["$path"]}"
     historical=$((historical + 1))
   else
-    printf 'VIOLATION: new, changed, relocated or active prohibited source: %s\n' "$path" >&2
+    printf 'VIOLATION: prohibited source object differs in path, blob, mode or retained area: %s\n' "$path" >&2
     violations=$((violations + 1))
   fi
 done
 printf 'Language preservation check: subject=%s historical=%s violations=%s\n' "$SUBJECT_SHA" "$historical" "$violations"
 echo 'Historical means exact retained source, not current language approval or runtime/security qualification.'
+echo 'Execution references and activation are not analyzed by this source-object delta check.'
 if [[ -n ${GITHUB_STEP_SUMMARY:-} ]]; then
-  printf '### Language preservation scope\n\nSubject: `%s`\n\nRetained prohibited-language objects: **%s**. New/changed violations: **%s**. Historical objects remain unsupported.\n' \
+  printf '### Language preservation scope\n\nSubject: `%s`\n\nRetained prohibited-language objects: **%s**. Object-delta violations: **%s**. Historical objects remain unsupported. Execution references and activation are not analyzed by this check.\n' \
     "$SUBJECT_SHA" "$historical" "$violations" >> "$GITHUB_STEP_SUMMARY"
 fi
 (( violations == 0 ))

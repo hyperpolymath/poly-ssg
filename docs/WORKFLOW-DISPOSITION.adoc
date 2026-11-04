@@ -38,6 +38,15 @@ They remain unsupported historical experiments. This is not permission to
 introduce or develop Python runtime code, and neither file is deleted to
 make a language check pass.
 
+This gate checks a *source-object delta*, not execution or activation. An added
+shell wrapper could invoke an unchanged historical file while the exact
+path/blob/mode comparison still passes. A regression fixture records that
+boundary, and both console and job-summary output state it explicitly. Reviews
+of workflow, script, build and package entry points remain a separate activation
+boundary: retaining an object does not authorize running it. No automated
+whole-program non-activation guarantee is claimed. A maintained successor must
+qualify its selected runtime and dependencies before enabling those entry points.
+
 == Complete security evidence
 
 The previous runs successfully produced analysis, then failed to upload it to
@@ -75,6 +84,24 @@ original result with one of three decisions:
   changed source, missing source locations, unrecognised paths and missing
   security policy. These findings fail the job and remain in the artifact.
 
+Location collection follows the source-bearing result structures in the
+https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/schemas/sarif-schema-2.1.0.json[SARIF 2.1.0 schema].
+It includes primary and related locations, the analysis target, nested code-flow
+locations and stacks, result stacks, graph nodes and children, fixes,
+attachments, suppression locations and conversion-source provenance. Every
+collected artifact must independently satisfy the exact imported-object check.
+A retained primary location cannot cover a current secondary location.
+
+The supported form is an explicit source-relative URI, optionally based at
+`%SRCROOT%`. Missing and logical-only locations, cached indices, unresolved
+location relationships or graph traversals, address-based/runtime evidence,
+unknown source bases and opaque extension fields remain actionable. The script
+does not guess their referents. Externalized report data is rejected as an
+incomplete analysis. The narrow `FuzzingID` advisory requires a nonempty primary
+location population and every collected location to be the observed no-file
+placeholder; an added real-file location prevents that advisory. Each receipt
+retains both the original result and its collected location evidence.
+
 The newly supplied root `SECURITY.md` resolves the missing reporting-policy
 document by using the contact already recorded in `.well-known/security.txt`.
 Hosted execution must confirm the resulting Scorecard finding set. No response
@@ -107,8 +134,11 @@ floating scanner implementation, jq-to-zero fallback or unsupported fleet
 submission. The canonical verdict grid and artifacts report missing evidence
 and findings. Its default advisory mode is not a clean-security attestation.
 
-The workflow linter parses actual YAML job and step `uses` keys. Full action
-SHAs, container digests, explicit permissions and SPDX headers are required.
+The workflow linter parses actual YAML job and step `uses` keys, job containers
+in string or object form, and every service container image. Full action SHAs,
+literal SHA-256 image digests, explicit permissions and SPDX headers are required.
+Missing, malformed, floating or expression-derived image references fail the
+contract; a dynamic expression is not treated as proof of a digest pin.
 Comments and script string literals cannot masquerade as action references;
 `actions/github-script` no longer receives an implicit pinning exemption.
 
@@ -119,6 +149,10 @@ The following exact files, including their notices, are retained as inert text:
 [cols="3,3,4",options="header"]
 |===
 |Former active workflow |Retained path |Disposition
+|`.github/workflows/ci.yml`
+|`docs/legacy-workflows/ci.yml.txt`
+|The former unqualified runtime build is retained as an inert record. The active
+replacement checks preservation and independent regression controls.
 |`.github/workflows/deploy-casket.yml`
 |`docs/legacy-workflows/deploy-casket.yml.txt`
 |Unsupported manual deployment referenced missing `casket-simple`. Retain the
@@ -142,12 +176,32 @@ It does not remove source history or claim that the former deployments worked.
 Any maintained successor must establish its own deployment and runtime gates.
 No remote forge history or mirror is deleted or rewritten by this change.
 
+`scripts/verify-archived-workflows.sh` checks exact archive bytes against the
+original Git blobs. The CI original is taken from
+`7ab68dddd6bfd01f3f4d62fff9ed6804835ea2e0`, the parent of its archive-creation
+commit. The other four originals are taken from
+`f82227bcbd13f27eab207ff791aa79639decefd4`, the parent of their archival commit.
+These are identity checks, not use of Git's object hash as a security attestation.
+
+[cols="2,4",options="header"]
+|===
+|Original workflow |Exact original blob retained
+|`ci.yml` |`10835026204a248fd671748b2215b1bccc38a771`
+|`deploy-casket.yml` |`a865df41062cb761bbeb7a7f04b9e7e91e75deb5`
+|`deploy-ddraig.yml` |`8d4ed07ca40fb96dd5be39622a9614256d9b42a1`
+|`instant-sync.yml` |`3c784538bf4c1b434ec913874ba4b45e7f91b185`
+|`mirror.yml` |`a7b1547af5637dacea5690deb0c1d492d7b56370`
+|===
+
 == Validation and remaining evidence
 
 Local controls exercise actual Git object comparisons and reject changed source,
 copied/relocated paths, changed modes, wrong trees, malformed reports, failed
-analysis and wrong reporter identities. Parser controls reject floating action
-refs while accepting inert comments. Those synthetic controls validate gate
+analysis and wrong reporter identities. Mixed current/historical secondary
+locations and unresolved references cannot inherit a historical disposition.
+Parser controls reject floating action and job/service image refs while accepting
+inert comments. Archive controls reject appended bytes, absent files and symlinks.
+Those synthetic controls validate gate
 behaviour; they do not substitute for real scans of the final PR SHA.
 
 The final branch still needs hosted checks, complete findings review,

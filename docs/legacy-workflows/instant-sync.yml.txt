@@ -31,4 +31,3 @@ jobs:
 
       - name: Confirm
         run: echo "::notice::Propagation triggered for ${{ github.event.repository.name }}"
-

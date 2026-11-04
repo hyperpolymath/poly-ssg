@@ -26,6 +26,10 @@ jobs:
         run: bash scripts/verify-preservation.sh
       - name: Reject corrupt provenance and unrelated history
         run: bash tests/preservation-controls.sh
+      - name: Verify retired workflow bytes and reject changed archives
+        run: |
+          bash scripts/verify-archived-workflows.sh
+          bash tests/archived-workflow-controls.sh
       - name: Validate output checker with independent positive and negative inputs
         run: bash tests/output-validation-controls.sh
       - name: Record qualification scope

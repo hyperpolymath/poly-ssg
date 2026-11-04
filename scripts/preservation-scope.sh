@@ -43,7 +43,10 @@ preserved_source_area() {
 preserved_source_matches() {
   local path=$1 old current
   [[ -n "$path" && "$path" != /* && "$path" != *$'\n'* && "$path" != *$'\r'* ]] || return 1
-  case "/$path/" in */../*|*/./*|*//*|*%*|*\\*) return 1 ;; esac
+  case "/$path/" in
+    */../*|*/./*|*//*|*%*|*\\*) return 1 ;;
+    *) ;; # A canonical relative path proceeds to exact object comparison.
+  esac
   preserved_source_area "$path" || return 1
   old=${PRESERVED_OBJECTS["$path"]-}; current=${SUBJECT_OBJECTS["$path"]-}
   [[ -n "$old" && "$old" == "$current" && "$old" =~ ^100(644|755)\ blob\ [0-9a-f]{40}$ ]]
