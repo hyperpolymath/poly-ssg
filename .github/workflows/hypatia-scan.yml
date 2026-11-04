@@ -11,10 +11,13 @@ on:
 permissions:
   actions: read
   contents: read
-  security-events: write
 jobs:
   scan:
     uses: metadatastician/standards/.github/workflows/hypatia-scan-reusable.yml@d3e4b485a2af90c92a8e18af0888cd19cb132cd9
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
     with:
       # The canonical grid reports all evidence and unavailable integrations.
       # No broad path exclusions or caller-local scanner implementation.

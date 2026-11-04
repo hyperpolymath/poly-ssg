@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0-or-later
 # Dependabot configuration for poly-ssg
 # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
 
@@ -6,6 +7,8 @@ updates:
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
+    cooldown:
+      default-days: 7
     schedule:
       interval: "weekly"
       day: "monday"
@@ -19,6 +22,8 @@ updates:
   # OCaml/opam dependencies (rescript-wasm)
   - package-ecosystem: "npm"
     directory: "/engines/rescript-wasm"
+    cooldown:
+      default-days: 7
     schedule:
       interval: "weekly"
       day: "monday"
@@ -34,6 +39,8 @@ updates:
   # Forth Estate (if any npm deps added)
   - package-ecosystem: "npm"
     directory: "/engines/forth-estate"
+    cooldown:
+      default-days: 7
     schedule:
       interval: "weekly"
     commit-message:
@@ -45,6 +52,8 @@ updates:
   # Root project dependencies
   - package-ecosystem: "npm"
     directory: "/"
+    cooldown:
+      default-days: 7
     schedule:
       interval: "weekly"
     commit-message:
