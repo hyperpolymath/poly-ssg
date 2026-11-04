@@ -11,7 +11,7 @@
 * Original prefix: `poly-ssg/`
 * Git history extraction: `git subtree split --prefix=poly-ssg --branch preservation-poly-ssg` in Debian WSL (Git for Windows' shell failed, so WSL was used)
 * Extracted initial commit: `9302dfcc3aedb7c52edf2867a2fcbf2c735878b4`
-* Original retained in Polystack unchanged. Source root/subtree correspondence should be verified independently via Git object tree hashes.
+* Original retained in Polystack unchanged. Independent Git API reads on 2026-11-04 confirmed that the original `poly-ssg/` subtree and extracted initial commit both name tree `6a8aa93222c8261c3e81b37acd7d1bd59f42bdc4`. The active preservation job also verifies the import remains an ancestor and its objects remain connected.
 
 The extracted history is not a new implementation. The original prefix path has become this repository root. This preserves previous authors/commit history for the subtree; it does not establish its executable behaviour.
 
@@ -21,7 +21,7 @@ The extracted history is not a new implementation. The original prefix path has 
 * `.gitmodules` refers to multiple individual historical SSG repositories; many are now consolidated into https://github.com/hyperpolymath/ssg-collection[ssg-collection]. The references and whether they are actual gitlinks or merely stale metadata need review before automated checkouts.
 * `sites-build/` includes historical DNS, security-policy and generator outputs, not an approved current deployment configuration. Do not deploy or distribute generated DNS zones unreviewed.
 * The historical README still contains claims originating in early 2026. Those claims are not current assurance.
-* GitHub Actions were explicitly disabled **in this newly created staging repository** before the extraction was pushed to prevent an unreviewed legacy workflow storm. They MUST be replaced/validated and re-enabled before any qualification, release or default branch merge is called complete. Do not use zero jobs as a successful gate.
+* Actions were initially disabled before import. Runs inspected on 2026-11-04 establish that inherited scheduled workflows are executing again. The current preservation CI exercises Git provenance and positive/negative output-checker controls; it does not establish generator or consumer qualification. The former root build matrix is retained at `docs/legacy-workflows/ci.yml.txt` because it referenced absent Ddraig/Forth implementations and could report tests without running them. Do not use zero jobs as a successful gate.
 
 == Successor relationships are still open
 
@@ -37,3 +37,11 @@ https://github.com/hyperpolymath/poly-ssg/issues/2[Qualification issue #2] is th
 Only after those tests and reviews may the owner decide on publication, supported status or closing https://github.com/hyperpolymath/polystack/issues/30[Polystack's archive blocker].
 
 *No archival, deployment, or release approval is implied by this document.*
+
+
+== Workflow recovery receipt (2026-11-04)
+
+* Semgrep run 41777623670 scanned 2,351 targets with 503 rules and reported 313 findings. Its final SARIF upload failed because the job omitted `actions: read`; adding that read permission repairs report publication. The scan remains a findings report, not a clean-security attestation. Its image is pinned to the digest observed in that executed run. Findings remain to be triaged or covered by an explicit historical-source disposition.
+* Scorecard run 41771377426 failed before scanning because its old GCR image could not be pulled. The replacement is upstream v2.5.0 at `fa7117db83c52d787ae5a89f350999701505d78e`, which uses GHCR; its tag was verified by GitHub. Hosted execution must still establish this repair works.
+* The output checker previously treated every nonempty file as containing NUL, exited on the first zero-valued arithmetic increment, lost directory counters in a subshell, and could lose early grep matches under pipefail. Positive and negative controls now cover those failures, including large input, empty populations and malformed encoding. The checker remains a heuristic for listed patterns.
+* Polystack PR #31 has merged at `218ccc9b9e458c36a8ff783fd762941abd4a4439`; its structural comparison is retained evidence, not runtime parity.

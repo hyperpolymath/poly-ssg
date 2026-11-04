@@ -14,12 +14,14 @@ permissions: read-all
 
 jobs:
   semgrep:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
       security-events: write
+      actions: read
       contents: read
     container:
-      image: semgrep/semgrep
+      image: semgrep/semgrep@sha256:451b3d875c00dac7ed5db5293e584a07de11449a409c10b3c2d2652f429630b6
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
@@ -33,3 +35,4 @@ jobs:
         with:
           sarif_file: semgrep.sarif
         if: always()
+

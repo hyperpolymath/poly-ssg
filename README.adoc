@@ -9,7 +9,7 @@ image:https://img.shields.io/badge/Idris-Inside-5E5086[Idris Inside,link="https:
 
 [CAUTION]
 ====
-*Preservation staging, not an accepted migration.* This repository is a history-preserving extraction of `hyperpolymath/polystack/poly-ssg`. It is currently private; inherited GitHub Actions are **disabled pending a reviewed, real CI replacement**. No BoJ backend, build parity, deployment, security or proof claims are independently validated by the extraction. See link:docs/PRESERVATION.adoc[provenance and qualification ledger] and link:https://github.com/hyperpolymath/poly-ssg/issues/2[qualification issue #2]. Polystack remains the fallback while link:https://github.com/hyperpolymath/polystack/issues/30[Polystack #30] is open.
+*Preservation staging, not an accepted migration.* This repository is a history-preserving extraction of `hyperpolymath/polystack/poly-ssg`. It is currently private; the preservation workflow checks retained Git history and output-checker regressions; runtime qualification remains open. No BoJ backend, build parity, deployment, security or proof claims are independently validated by the extraction. See link:docs/PRESERVATION.adoc[provenance and qualification ledger] and link:https://github.com/hyperpolymath/poly-ssg/issues/2[qualification issue #2]. Polystack remains the fallback while link:https://github.com/hyperpolymath/polystack/issues/30[Polystack #30] is open.
 ====
 :toc: auto
 
@@ -18,14 +18,14 @@ image:https://img.shields.io/badge/status-unqualified-lightgrey[Status: Unqualif
 
 Interactive comparison of SSG engines (Casket, Hackenbush, Bunsenite, Cobalt) built with ReScript, Deno, and formally verified components from proven.
 
-== Architecture
+== Historical architecture claims
 
 * *ReScript* - Type-safe frontend compilation
 * *Deno* - Modern runtime (no Node.js per RSR)
 * *proven* - Formally verified string operations
 * *TEA* - The Elm Architecture for state management
 
-=== Formally Verified Components
+=== Historical verification claims
 
 This site uses *ProvenSafeString* from the proven library for safe config generation, ensuring:
 
@@ -33,7 +33,7 @@ This site uses *ProvenSafeString* from the proven library for safe config genera
 * Memory-safe concatenation
 * Proven correctness of output format
 
-== Development
+== Historical development instructions
 
 === Build
 
@@ -58,7 +58,7 @@ deno run -A jsr:@std/http/file-server .
 python3 -m http.server 8000
 ----
 
-=== GitHub Pages Deployment (Ddraig)
+=== Historical GitHub Pages deployment instructions (unqualified)
 
 Primary Pages deploy now uses `ddraig-ssg` (Idris 2) via:
 
@@ -93,6 +93,10 @@ echo "axiom.metadatasticaian.art" > ../../_site/CNAME
 * ⏳ Visual comparison table
 * ⏳ Interactive feature filtering
 
+== Retention and retirement
+
+See link:docs/RETENTION-PLAN.adoc[the retention and retirement plan]. Curation belongs in `stuff-of-awe/awesome-ssgs`; implementation history stays in source repositories. The source snapshot has been checked by matching Git tree IDs. A passing preservation workflow does not close the runtime or security findings in qualification issue #2.
+
 == Related Projects
 
 * link:https://github.com/hyperpolymath/casket-ssg[Casket SSG] - Haskell implementation
@@ -106,3 +110,4 @@ echo "axiom.metadatasticaian.art" > ../../_site/CNAME
 PMPL-1.0-or-later (Palimpsest-MPL)
 
 Philosophy: _One contract. Many paradigms. Every paradigm teaches._
+
