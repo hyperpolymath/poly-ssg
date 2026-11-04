@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0-or-later
 name: Semgrep SAST
-
 on:
   push:
     branches: [main, master]
@@ -9,30 +8,36 @@ on:
   schedule:
     - cron: '0 5 * * *'
   workflow_dispatch:
-
-permissions: read-all
-
+permissions:
+  contents: read
 jobs:
   semgrep:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    permissions:
-      security-events: write
-      actions: read
-      contents: read
-    container:
-      image: semgrep/semgrep@sha256:451b3d875c00dac7ed5db5293e584a07de11449a409c10b3c2d2652f429630b6
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-
-      - name: Run Semgrep
-        run: semgrep scan --sarif --output=semgrep.sarif --config=auto .
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Run pinned Semgrep against the complete subject
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
-
-      - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@5d4e8d1aca955e8d8589aabd499c5cae939e33c7 # v4.31.9
-        with:
-          sarif_file: semgrep.sarif
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/semgrep"
+          docker run --rm --entrypoint sh \
+            -v "$PWD:/src:ro" -v "$RUNNER_TEMP/semgrep:/out" -w /src \
+            -e SEMGREP_APP_TOKEN \
+            semgrep/semgrep@sha256:451b3d875c00dac7ed5db5293e584a07de11449a409c10b3c2d2652f429630b6 \
+            -c 'git config --global --add safe.directory /src && exec semgrep scan --sarif --output=/out/semgrep.sarif --config=auto .'
+      - name: Classify retained findings and block current findings
+        run: bash scripts/review-preservation-sarif.sh semgrep "$RUNNER_TEMP/semgrep/semgrep.sarif" "$RUNNER_TEMP/semgrep/disposition"
+      - name: Retain complete SARIF without unavailable hosted upload
         if: always()
-
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: semgrep-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/semgrep
+          if-no-files-found: error
+          retention-days: 90

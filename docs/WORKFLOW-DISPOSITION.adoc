@@ -1,0 +1,155 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Preservation workflow and findings disposition
+:revdate: 2026-11-04
+
+This repository retains unqualified historical source. The active work is source
+preservation, review and explicit retirement; it supplies no supported generator
+release. `PRESERVATION.adoc`, `RETENTION-PLAN.adoc` and qualification issue #2
+remain the scope records. This document records workflow decisions, not a claim
+that their new hosted executions have already passed.
+
+== Identity before historical classification
+
+The immutable import is `9302dfcc3aedb7c52edf2867a2fcbf2c735878b4`, with tree
+`6a8aa93222c8261c3e81b37acd7d1bd59f42bdc4`. The active checks verify that tree,
+its object connectivity and its ancestry in the exact checked-out subject.
+
+The language gate enumerates the complete committed subject tree. Prohibited
+source is retained only when the exact path, regular-file mode and Git blob
+match that import and the path is in an explicitly retained source area.
+Changed modes, relocated copies and newly added files cannot inherit the
+historical disposition. TypeScript implementation, Go, Python, Java/Kotlin,
+Swift, Dart, npm/yarn/pnpm lockfiles and tsconfig are checked; declaration-only
+`.d.ts` files retain the existing FFI exception. Bun manifests are allowed by
+the current repository language instructions. The obsolete Deno policy runner
+remains available in source history but is not the active policy authority.
+
+At the inspected PR subject `f82227bcbd13f27eab207ff791aa79639decefd4`, the two
+prohibited-language objects were:
+
+[cols="3,1,3",options="header"]
+|===
+|Path |Mode |Imported and current blob
+|`engines/milk-ssg/milk-ssg.py` |`100755` |`1024c994bf5ea704d2c9c791815b34ddba7e133e`
+|`engines/terrapin-ssg/terrapin-ssg.py` |`100755` |`b6ee989e6176c775c7b95aa56f2fa32df800a8e6`
+|===
+
+They remain unsupported historical experiments. This is not permission to
+introduce or develop Python runtime code, and neither file is deleted to
+make a language check pass.
+
+== Complete security evidence
+
+The previous runs successfully produced analysis, then failed to upload it to
+GitHub code scanning, which is unavailable for this private repository:
+
+* https://github.com/hyperpolymath/poly-ssg/actions/runs/41878049639[CodeQL]
+  exported JavaScript/TypeScript SARIF before the integration API rejected it.
+* https://github.com/hyperpolymath/poly-ssg/actions/runs/41878049561[Semgrep]
+  ran 503 rules against 2,355 targets and reported 313 findings. Those findings
+  were not thereby fixed or established as false positives.
+* https://github.com/hyperpolymath/poly-ssg/actions/runs/41878049542[Scorecard]
+  reported `SecurityPolicyID` and `FuzzingID`; its later upload was rejected.
+
+The repaired jobs continue the real analyses and retain complete raw SARIF in
+90-day artifacts. CodeQL uses upstream v4.39.1 and its documented `upload:
+never` and `upload-database: false` controls. Semgrep retains the exact image
+digest observed in the executed scan and the existing `--config=auto` rule
+selection. That rule registry can change; the artifact describes its actual
+run, not a permanently frozen rule corpus. Scorecard publishing remains off.
+No private source or result is published to a public destination by this change.
+
+The disposition script does not remove results from SARIF. It records each
+original result with one of three decisions:
+
+. *Retained historical source*: every reported location is in an enumerated
+  unsupported source area and has the exact imported path, blob and file mode.
+  The finding remains present and unremediated. The areas are `engines/`,
+  `satellites/`, `casket-ssg/`, `src/`, `lib/`, `public/`, `content/`, `mcp/`,
+  `lsp/`, `test-corpus/` and `sites-build/`. A prefix alone is insufficient.
+. *Preservation advisory*: only Scorecard's exact observed `FuzzingID` condition
+  that no fuzzing integration exists. This repository provides no supported
+  executable release. A selected runtime successor must qualify its own fuzzing;
+  this disposition does not claim that fuzzing ran.
+. *Actionable*: every other finding, including current automation, new or
+  changed source, missing source locations, unrecognised paths and missing
+  security policy. These findings fail the job and remain in the artifact.
+
+The newly supplied root `SECURITY.md` resolves the missing reporting-policy
+document by using the contact already recorded in `.well-known/security.txt`.
+Hosted execution must confirm the resulting Scorecard finding set. No response
+SLA or supported historical release is invented.
+
+Missing, malformed or failed analyses return an infrastructure/configuration
+failure rather than a clean result. Each disposition binds the raw report's
+SHA-256 and the checked-out subject SHA. CodeQL and Semgrep analyze that checkout.
+Upstream Scorecard v2.5.0 scans the local checkout on pull requests but queries
+the remote default branch for other events. The latter reports explicitly leave
+the analyzed SHA unknown and do not classify source findings against a possibly
+different checkout. The reports explicitly say hosted
+upload is unavailable and make no clean-security claim. Accepted evidence needed
+for permanent closure must be retained beyond the finite artifact lifetime in
+qualification issue #2's closure record.
+
+== Other scanner and policy repairs
+
+The Secret Scanner directly calls the published CI-suite implementation at
+`52a90c24bf183437b887dd182c5a9406af02c5dd`, with full history and `fast-pr:
+false`. Its required contexts are `scan / gitleaks`, `scan / rust-secrets` and
+`scan / shell-secrets`; the latter two validate actual detector receipts.
+Independent TruffleHog verified-credential scanning is retained. Secret findings
+are not covered by the historical SARIF disposition and still block.
+
+Hypatia uses the canonical standards reusable at
+`d3e4b485a2af90c92a8e18af0888cd19cb132cd9`, with its declared permissions and
+only its declared optional scan secret. There is no caller-local scanner clone,
+floating scanner implementation, jq-to-zero fallback or unsupported fleet
+submission. The canonical verdict grid and artifacts report missing evidence
+and findings. Its default advisory mode is not a clean-security attestation.
+
+The workflow linter parses actual YAML job and step `uses` keys. Full action
+SHAs, container digests, explicit permissions and SPDX headers are required.
+Comments and script string literals cannot masquerade as action references;
+`actions/github-script` no longer receives an implicit pinning exemption.
+
+== Retired deployment and propagation effects
+
+The following exact files, including their notices, are retained as inert text:
+
+[cols="3,3,4",options="header"]
+|===
+|Former active workflow |Retained path |Disposition
+|`.github/workflows/deploy-casket.yml`
+|`docs/legacy-workflows/deploy-casket.yml.txt`
+|Unsupported manual deployment referenced missing `casket-simple`. Retain the
+source record; no current deployment is supplied.
+|`.github/workflows/deploy-ddraig.yml`
+|`docs/legacy-workflows/deploy-ddraig.yml.txt`
+|Unsupported automatic/manual deployment used an unqualified Ddraig build and
+a floating image. Retain the source record; no current deployment is supplied.
+|`.github/workflows/instant-sync.yml`
+|`docs/legacy-workflows/instant-sync.yml.txt`
+|Push/release dispatch into `.git-private-farm` is retired for this preservation
+repository. No propagation event is emitted by the archival workflow surface.
+|`.github/workflows/mirror.yml`
+|`docs/legacy-workflows/mirror.yml.txt`
+|Seven-forge propagation, including force-push jobs and an unqualified Radicle
+installer, is retired. Its exact original source remains available for review.
+|===
+
+This removes unsupported deployment and propagation effects from the active workflow surface.
+It does not remove source history or claim that the former deployments worked.
+Any maintained successor must establish its own deployment and runtime gates.
+No remote forge history or mirror is deleted or rewritten by this change.
+
+== Validation and remaining evidence
+
+Local controls exercise actual Git object comparisons and reject changed source,
+copied/relocated paths, changed modes, wrong trees, malformed reports, failed
+analysis and wrong reporter identities. Parser controls reject floating action
+refs while accepting inert comments. Those synthetic controls validate gate
+behaviour; they do not substitute for real scans of the final PR SHA.
+
+The final branch still needs hosted checks, complete findings review,
+required-context consistency and applicable app reviews. Actual repository
+archival and permanent closure remain separately recorded actions.

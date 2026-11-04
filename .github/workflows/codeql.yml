@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MPL-2.0-or-later
 name: CodeQL Security Analysis
-
 on:
   push:
     branches: [main, master]
@@ -8,14 +7,16 @@ on:
     branches: [main, master]
   schedule:
     - cron: '0 6 * * 1'
-
-permissions: read-all
-
+permissions:
+  contents: read
+  actions: read
 jobs:
   analyze:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     permissions:
       contents: read
+      actions: read
       security-events: write
     strategy:
       fail-fast: false
@@ -23,18 +24,34 @@ jobs:
         include:
           - language: javascript-typescript
             build-mode: none
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-
+      - name: Checkout immutable subject and retained ancestry
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@662472033e021d55d94146f66f6058822b0b39fd # v3.28.1
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
-
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@662472033e021d55d94146f66f6058822b0b39fd # v3.28.1
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
-          category: "/language:${{ matrix.language }}"
+          category: /language:${{ matrix.language }}
+          output: ${{ runner.temp }}/codeql-sarif
+          # This private repository has no hosted code-scanning entitlement.
+          # Keep actual analysis and complete SARIF; do not turn upload errors into success.
+          upload: never
+          upload-database: false
+      - name: Classify retained findings and block current findings
+        run: bash scripts/review-preservation-sarif.sh codeql "$RUNNER_TEMP/codeql-sarif/javascript.sarif" "$RUNNER_TEMP/codeql-sarif/disposition"
+      - name: Retain complete analysis and disposition
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: codeql-${{ matrix.language }}-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/codeql-sarif
+          if-no-files-found: error
+          retention-days: 90
