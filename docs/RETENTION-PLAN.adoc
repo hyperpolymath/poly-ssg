@@ -1,0 +1,344 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Poly SSG: preserve the useful work and retire the original cleanly
+:revdate: 2026-11-04
+:toc:
+:toclevels: 2
+
+*Status: proposed component dispositions, prepared for Poly SSG PR #3.*
+This plan records a finite route to retirement. The independent Git tree
+comparison is recorded in `PRESERVATION.adoc`: the original `poly-ssg/` subtree
+and the extracted root both identify tree
+`6a8aa93222c8261c3e81b37acd7d1bd59f42bdc4`. That establishes source-tree
+correspondence, including file modes; it does not report an archive, release,
+working replacement, or completed runtime qualification. The preservation gate
+checks the imported commit's tree identity, ancestry and object connectivity.
+
+== Intended outcome
+
+Retain the original Git history and useful experiments in an identified source
+snapshot; publish useful, original educational and discovery material in
+`stuff-of-awe/awesome-ssgs`; assign any selected runtime work to a maintained
+successor; and explicitly discontinue the remaining experiments. Close the
+retirement work when those decisions and their evidence are recorded.
+
+There is no requirement to finish every proposed generator, implement every
+historical feature, or make every archived experiment build. A functioning
+successor needs execution evidence. A discontinued experiment needs preserved
+source, an honest status, and removal of any claim that a live consumer can
+depend on it. These are different outcomes and should be recorded separately.
+
+The proposed end state uses GitHub archival, with history and a clear successor
+notice retained. Repository deletion is outside this plan. Retirement of Poly
+SSG and archival of its parent Polystack are separate repository decisions;
+the SSG work alone cannot establish that every other Polystack domain is ready.
+
+== Inspection baseline and source references
+
+The following refs were read on 2026-11-04. Freeze the final refs again when
+recording completion; these values are evidence baselines, not moving-branch
+guarantees.
+
+[cols="2,3,3",options="header"]
+|===
+|Repository or item |Observed ref/state |Meaning
+|Original Polystack source
+|`e1af43bb102106b08cb694402bd1c04b96f1677c`, prefix `poly-ssg/`
+|Frozen extraction source recorded in the preservation documents.
+|Extracted `hyperpolymath/poly-ssg` main
+|`9302dfcc3aedb7c52edf2867a2fcbf2c735878b4`
+|Existing private source-preservation snapshot. Its root tree matches the
+frozen original prefix tree; see `PRESERVATION.adoc`. Runtime and full historical
+authorship qualification remain separate from that comparison.
+|Poly SSG PR #3, initial inspection
+|`7ab68dddd6bfd01f3f4d62fff9ed6804835ea2e0`
+|Documentation branch before the present workflow repairs. Use its eventual
+final head for CI and review evidence.
+|Polystack current main / PR #31
+|`218ccc9b9e458c36a8ff783fd762941abd4a4439`; PR #31 merged
+|The initial source-hash preservation ledger is already on main. It is no
+longer a draft PR, and merging it did not complete migration.
+|`hyperpolymath/ssg-collection` main
+|`e5b7e7fd9af511a1c339cfbd2824e0cccd03fada`
+|Existing experiments collection used by the structural comparison.
+|`hyperpolymath/boj-server-cartridges` main
+|`2fd1fa3b18fbe613f21397506acf09f7d07b072f`
+|Consumer snapshot referenced by the public migration tracker.
+|`stuff-of-awe/awesome-ssgs` main
+|`2e9ac1af7988638f58ff8c17c9d074a3931f81cb`
+|Existing public starter collection, contribution rules, source map and local
+curation checks.
+|===
+
+Primary records:
+
+* https://github.com/hyperpolymath/poly-ssg/pull/3[Poly SSG PR #3].
+* https://github.com/hyperpolymath/poly-ssg/issues/2[Poly SSG qualification #2].
+* https://github.com/hyperpolymath/polystack/issues/30[Polystack preservation blocker #30].
+* https://github.com/hyperpolymath/polystack/blob/218ccc9b9e458c36a8ff783fd762941abd4a4439/docs/SSG-PRESERVATION-LEDGER.adoc[Merged structural comparison ledger].
+* https://github.com/hyperpolymath/boj-server-cartridges/issues/165[Public BoJ migration tracker #165].
+* https://github.com/stuff-of-awe/awesome-ssgs/blob/2e9ac1af7988638f58ff8c17c9d074a3931f81cb/docs/SOURCE-MAP.md[Public curation source map].
+
+== Three claims, with separate evidence
+
+[cols="2,4,3",options="header"]
+|===
+|Claim |Minimum evidence |What the claim establishes
+|Verified preserved snapshot
+|Original commit and prefix; extracted commit; matching Git tree identity or
+an explicit file/mode/blob comparison; extraction method; retained authorship
+and history; recorded licences and any unresolved notices; a durable ref.
+|The material can be recovered with its provenance. It establishes no runtime
+or integration guarantee.
+|Working successor
+|Named repository and exact commit; supported operations; pinned toolchain;
+executed input-to-output tests; negative cases; output inspection; applicable
+reviews and real CI; consumer ownership and documented limitations.
+|Only the tested functions and environments have a working replacement.
+|Deliberately discontinued function or experiment
+|Explicit disposition and rationale; preserved source ref; dependency and
+consumer review; corrected availability/status documentation; any live caller
+receives a clear unsupported/unavailable result rather than an implied service.
+|The function has been retired intentionally. No implementation is promised
+merely to close the preservation task.
+|===
+
+Every source area receives a preservation state and an operational disposition.
+Public curation is an additional decision. For example, an experiment may be
+fully preserved, deliberately discontinued, and still useful in a historical
+learning section.
+
+== Source-area disposition map
+
+The preferred default is to retain the complete extracted snapshot, then move
+only selected, understood material into maintained destinations. This allows
+unique source to remain recoverable without manufacturing new maintenance
+obligations or forcing incomplete material into an active codebase.
+
+[cols="3,4,4",options="header"]
+|===
+|Source area |Proposed destination and disposition |Evidence needed before retirement
+|`src/`, `lib/`, `public/`, `content/`, `config.ncl`, `deno.lock`, `Justfile`, `Mustfile`
+|Preserve framework, comparison UI, generated artefacts and build configuration
+in the extracted source snapshot. Continue the application only if an actual
+consumer is identified; otherwise record it as historical and discontinued.
+|Inventory authored versus generated files. Record the intended entry point
+and manifest gaps. A successor claiming to run the application needs a real
+build; historical retention does not require repairing the application.
+|`engines/`, root `casket-ssg/`, embedded Casket and Ddraig satellite copies
+|Preserve all copies first. Send selected fixes to the independently maintained
+engine repositories after comparison. Keep unresolved or obsolete variants in
+the historical snapshot, with links to current canonical engines.
+|Compare paths, blob hashes, licences and unique source/tests. Check renames
+and semantic changes before declaring a copy redundant. Test only changes
+adopted by the maintained engine.
+|`satellites/`
+|Preserve all 50 directories. Reconcile selected useful changes with
+`ssg-collection/{implementations,variants,stubs}`. Record unselected ideas as
+historical experiments without a future implementation promise.
+|Use the existing frozen comparison as a starting point. For every changed or
+unique source file selected for migration, record the accepted destination
+commit. Every unselected unique file remains covered by the preserved snapshot.
+|`docs/PHILOSOPHY.adoc`, `docs/DESIGN-SPEC-TEMPLATE.adoc`, `docs/specs/`
+|Retain originals as history. Publish newly written comparison and educational
+notes in Awesome SSGs. Link public implementation evidence where available.
+|Separate design intent from executed capabilities. Correct or omit unsupported
+historical toolchain, proof, maturity and effort claims. Record attribution
+without copying private documents into the public collection.
+|`docs/ADDING-ENGINE.adoc`, `test-corpus/`, `scripts/`
+|Keep the intended build contract and fixtures in source history. Adopt useful
+fixtures into a selected runtime or engine successor; curated notes may explain
+the comparison method using original prose and small synthetic examples.
+|Check stale command/path references, input/output expectations, draft handling,
+exit codes and negative cases. Only adopted fixtures need to become executable
+successor tests; abandoned harnesses can remain explicitly historical.
+|`mcp/`
+|Preserve the original implementation. Track any maintained consumer contract
+in BoJ #165. Select a narrow backend/engine set, or explicitly discontinue
+unprovided operations and correct consumer availability claims.
+|Inventory the historical operations against the actual BoJ adapter. A working
+replacement requires backend ownership and real load/build/output tests.
+Retirement requires an explicit supported/unavailable decision for each
+advertised operation and no hidden dependency on the old source location.
+|`lsp/`
+|Preserve the Elixir implementation and compare it with BoJ's existing source
+archive. Either maintain a narrow, tested LSP successor or mark the LSP effort
+discontinued; scaffold preservation alone is not a functioning port.
+|Check source correspondence and licences. If retained as a service, test
+protocol framing and the selected handlers. If discontinued, remove claims of
+working handlers and record that no replacement service is supplied.
+|`sites-build/`, `poly-ssg.org.zone`, `_headers`, `.well-known/`
+|Retain historical outputs and deployment context privately. Assign any live
+site or domain to its actual maintained owner; retire unneeded deployment
+paths. Do not copy environment-specific configuration into the curated list.
+|Identify live consumers and domain references, intended operators, source
+inputs and generated outputs. Review any configuration that is adopted for
+current use. Record old reports as historical; no live deployment is needed
+to demonstrate archival preservation.
+|`.github/`, `hooks/`, `config/`, `contractiles/`
+|Use the PR #3 repair to establish a small, meaningful preservation and
+documentation gate. Keep old deployment workflows recoverable in history.
+Each maintained successor owns its own applicable CI and contract checks.
+|Execute positive and negative controls on the final PR SHA; inspect workflow
+permissions and triggers; resolve substantive review findings. Documentation
+checks must state their limited scope. Stop obsolete recurring automation as
+part of actual retirement, after the final repair and receipt are recorded.
+|`.gitmodules`, `.editorconfig`, `.gitattributes`, `.gitignore`, `.bot_directives/`, `.claude/`
+|Preserve repository and historical automation context with the source. Adapt
+only genuinely applicable metadata in maintained successors.
+|The inspected extracted tree is untruncated and contains no `160000` gitlinks,
+despite `.gitmodules` listing satellite entries. Record this distinction;
+do not initiate recursive legacy checkouts merely because metadata remains.
+Keep both case-colliding `rats-ssg/Justfile` and `justfile` in the Git snapshot.
+|`license/`, `PALIMPSEST.adoc`, file-level notices and `README.adoc`
+|Preserve original notices and provenance. Put an accurate historical/successor
+notice at the retained repository entry point. New curation text follows
+Awesome SSGs' CC BY-SA 4.0 rules; source code retains its own notices.
+|Record the existing MPL/PMPL notice inconsistency rather than silently
+relicensing material. Check the actual files selected for reuse. Unknown
+redistribution terms keep a copy in private preservation pending resolution.
+|===
+
+The structural ledger records 46 directly matching satellite basenames and four
+unmatched source basenames: `anvil`, `casket`, `ddraig`, `obli`. Its five
+destination-only names are `befunge`, `cloudanvil`, `ephapax`, `shift`,
+`wokelang`. In particular, decide the `anvil`/`cloudanvil` relationship through
+comparison, not name similarity. The ledger's file-count categories are not
+runtime qualification levels.
+
+The historical design index also needs editorial care: its summary advertises
+14 engine proposals and five archive proposals, while the detailed tables
+enumerate 12 and seven respectively. Retain that original document as history;
+use a corrected, dated account for any new public explanation.
+
+== Public curation and private preservation
+
+`stuff-of-awe/awesome-ssgs` already supplies the intended public home. Its scope
+is useful discovery, comparative evidence, unusual-language research and honest
+maturity labels. It has a curation gate, not an SSG runtime qualification gate.
+
+Recommended bounded addition:
+
+. Add `docs/COMPARISON-NOTES.md`, with original guidance on comparing the same
+  publishing task across implementations and recording reproducible results.
+. Link it from the existing "Compare generators usefully" section.
+. Retain the existing starter status and distinction between inspected source,
+  executable examples and verified integrations.
+. Update the public source map only when the underlying disposition changes.
+  Use public tracker #165 for public migration status; keep private source URLs,
+  source excerpts, environment details and private review discussion out of the
+  public article.
+. Run the existing local catalogue validator and tests. A passing curation gate
+  establishes link/notice/status checks within its stated scope; it does not
+  verify the linked generators.
+
+The destination contribution policy and validator were inspected. Every public
+Markdown document needs the CC-BY-SA-4.0 marker. Local links must resolve inside
+the repository, and the validator rejects private Polystack/Poly SSG source
+URLs. Third-party code must remain in its appropriately licensed source home.
+
+== Ordered completion work
+
+=== 1. Finish the bounded workflow and documentation repair
+
+Finish PR #3 on its existing branch. Establish the preservation/documentation
+checks, execute them on the final head, address applicable review findings and
+merge once the required checks genuinely run and pass. Record the resulting
+merge SHA and check-run URLs. This is a completed documentation/CI repair even
+if separate runtime questions remain open.
+
+=== 2. Attach a preservation receipt
+
+Record the original source commit, prefix tree, extracted commit/tree and the
+commands/results of the independent correspondence check. Verify history and
+authorship retention separately from current-tree equality. Preserve the exact
+snapshot using a durable Git ref and, where needed, an independently recoverable
+bundle or mirror; verify its object integrity. Do not create a public release
+of private material as an incidental backup action.
+
+The receipt must distinguish verified results from documented claims. It must
+cover executable file modes and the case-colliding paths, and identify any
+external dependencies or unavailable historical objects. No success field is
+pre-filled by this plan.
+
+=== 3. Record a finite component decision ledger
+
+For each source-area row, record: preservation receipt; proposed canonical
+destination; maintained / discontinued / unresolved operational disposition;
+licence state; current consumers; and evidence or remaining task.
+
+Prioritise live consumers and unique executable source/tests. Select only work
+that is useful enough to maintain. Unselected material can be closed as a
+preserved, discontinued experiment. Avoid creating a new issue for every
+historical sketch. A selected unfinished runtime task belongs in its current
+owner's repository and does not become a false completed-migration claim.
+
+=== 4. Preserve public educational value
+
+Land the focused Awesome SSGs article and index link with the destination's
+existing checks. Add or update individual experimental entries only when their
+canonical source, language, licence and status have been assessed. Keep the
+historical source snapshot intact while this public curation improves.
+
+=== 5. Resolve consumer availability and archival scope
+
+For each claimed BoJ operation, record working replacement or deliberate
+unavailability. A selected working build path needs actual output and negative
+controls. Unsupported deployment, preview, clean or LSP functionality can be
+explicitly retired without being implemented, provided consumers and
+documentation are corrected and the retirement decision is recorded.
+
+Update qualification #2 and public tracker #165 to reflect the adopted scope.
+If an original checklist item has become a deliberate discontinuation, record
+that outcome and its reason rather than ticking it as successfully implemented.
+Keep any actively promised runtime work open in its appropriate tracker.
+
+For Polystack #30, record source preservation and the exact SSG successor or
+discontinuation mapping. Check the separate disposition of other Polystack
+domains before treating that as authorisation or evidence to archive the
+entire parent repository.
+
+=== 6. Retire and verify
+
+Replace active-status claims with an accurate retirement notice, canonical
+successor links, unsupported-function notes and the retained snapshot ref.
+Reconcile open issues and PRs: completed preservation, superseded work,
+deliberately declined experiments, and transferred maintained tasks each need
+their correct outcome. Keep useful review history accessible.
+
+Once the scoped retirement decision is recorded and live dependencies are
+resolved, archive the identified original repository and stop obsolete
+recurring automation. Verify that the repository is archived, the preserved
+ref remains readable, and the public guide and live consumers point to the
+intended destinations. Record these observations in a final closure receipt.
+
+== Completion criteria
+
+* The exact source snapshot and provenance are verified and recoverable.
+* The repaired documentation/workflow PR has real passing checks at its final
+  head and an observed merge result.
+* Each broad source area is assigned a destination or preserved historical
+  disposition; no unique source is discarded because a similarly named repo exists.
+* Public curation retains useful explanations with accurate status and licence
+  notices, without exposing private source material.
+* Each actual consumer has a working successor or a recorded, explicit
+  unavailability/discontinuation decision.
+* Open runtime promises remain tracked honestly; discontinued experiments do
+  not require new implementations to permit preservation closure.
+* The exact repository being retired, its archival result and stopped obsolete
+  automation are recorded separately from preservation and runtime testing.
+
+== Decisions still to record
+
+* Which repository is the final archival target: the extracted historical Poly
+  SSG repository, parent Polystack, or both after their respective dependencies
+  are resolved?
+* Which concrete runtime functions, if any, are selected for continuing
+  maintenance, and which are deliberately discontinued?
+* Who owns the retained source snapshot and the continuing curated collection?
+* What is the resolution of file-level licence ambiguities for any source chosen
+  for redistribution or active reuse?
+
+These decisions refine the already requested preservation-and-retirement work.
+They do not invalidate completed workflow repair, source verification or public
+curation, and they do not authorise deletion or incidental publication of private
+source.

@@ -1,35 +1,21 @@
 # SPDX-License-Identifier: MPL-2.0-or-later
-# Continuous Integration - Strict Mode
-# All warnings treated as errors, all tests must pass
-name: CI
-
+# Preservation gates for the extracted, unqualified source archive.
+name: Preservation CI
 on:
-  push:
-    branches: [main, develop]
   pull_request:
+  push:
     branches: [main]
-
-permissions: read-all
-
-env:
-  OCAML_VERSION: "4.14.x"
-  # Treat warnings as errors
-  OCAML_COLOR: always
-
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: preservation-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
-  # OCaml/ReScript-WASM build and test - STRICT MODE
-  rescript-wasm:
-    name: ReScript WASM-GC Backend
-    runs-on: ${{ matrix.os }}
-    permissions:
-      contents: read
-
-    strategy:
-      fail-fast: true  # Fail immediately on first error
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        ocaml-version: ["4.14.x", "5.1.x"]
-
+  preservation:
+    name: Source history and preservation controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -84,192 +70,24 @@ jobs:
       - name: Upload WAT artifacts
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v4
         with:
-          name: wat-output-${{ matrix.os }}-${{ matrix.ocaml-version }}
-          path: engines/rescript-wasm/*.wat
-
-  # Forth Estate build
-  forth-estate:
-    name: Forth Estate SSG
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-
-      - name: Install Gforth
-        run: sudo apt-get update && sudo apt-get install -y gforth
-
-      - name: Check Forth syntax
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify preserved source identity and ancestry
+        run: bash scripts/verify-preservation.sh
+      - name: Reject corrupt provenance and unrelated history
+        run: bash tests/preservation-controls.sh
+      - name: Verify retired workflow bytes and reject changed archives
         run: |
-          if [ -f forth-estate.fs ]; then
-            gforth forth-estate.fs -e bye
-          fi
-        working-directory: engines/forth-estate
-
-  # Ddraig (Idris 2) build and test
-  ddraig-ssg:
-    name: Ddraig SSG
-    runs-on: ubuntu-latest
-    container: ghcr.io/idris-community/idris2:latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-
-      - name: Build Ddraig executable
+          bash scripts/verify-archived-workflows.sh
+          bash tests/archived-workflow-controls.sh
+      - name: Validate output checker with independent positive and negative inputs
+        run: bash tests/output-validation-controls.sh
+      - name: Record qualification scope
         run: |
-          cd engines/ddraig-ssg
-          idris2 Ddraig.idr -o ddraig
-
-      - name: Run Ddraig parser tests
-        run: |
-          cd engines/ddraig-ssg
-          ./build/exec/ddraig test-markdown
-          ./build/exec/ddraig test-frontmatter
-          ./build/exec/ddraig test-full
-
-      - name: Build site with Ddraig
-        run: |
-          cd engines/ddraig-ssg
-          ./build/exec/ddraig build ../../content ../../_site
-
-  # Strict lint and format checks - ALL MUST PASS
-  lint:
-    name: Lint & Format (Strict)
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-
-      - name: Set up OCaml
-        uses: ocaml/setup-ocaml@7c185f622998a008ba1b296d2d7c64e235629c23 # v3.6.1
-        with:
-          ocaml-compiler: "4.14.x"
-
-      - name: Check for unsafe patterns (MUST PASS)
-        run: |
-          echo "=== Checking for unsafe patterns ==="
-          ERRORS=0
-
-          # Check for Obj.magic (type safety violation)
-          if grep -rn "Obj\.magic" engines/rescript-wasm/lib/; then
-            echo "ERROR: Obj.magic found - this violates type safety"
-            ERRORS=$((ERRORS + 1))
-          fi
-
-          # Check for Marshal (code execution risk)
-          if grep -rn "Marshal\." engines/rescript-wasm/lib/; then
-            echo "ERROR: Marshal found - this is a code execution risk"
-            ERRORS=$((ERRORS + 1))
-          fi
-
-          # Check for shell execution
-          if grep -rn "Unix\.system\|Unix\.open_process\|Sys\.command" engines/rescript-wasm/lib/; then
-            echo "ERROR: Shell execution found - security risk"
-            ERRORS=$((ERRORS + 1))
-          fi
-
-          if [ $ERRORS -gt 0 ]; then
-            echo "Found $ERRORS security issues"
-            exit 1
-          fi
-          echo "No unsafe patterns found"
-
-      - name: Check for catch-all patterns (MUST PASS)
-        run: |
-          echo "=== Checking for dangerous catch-all patterns ==="
-          # Look for standalone _ patterns in match statements (potential bug hiding)
-          # This is a heuristic check - not perfect but catches common issues
-          if grep -En "^\s*\|\s*_\s*->" engines/rescript-wasm/lib/*.ml | grep -v "failwith\|error\|assert\|raise"; then
-            echo "WARNING: Found catch-all patterns without explicit error handling"
-            echo "Consider using explicit pattern matching to avoid hiding bugs"
-          fi
-          echo "Pattern check complete"
-
-      - name: Report TODOs/FIXMEs
-        run: |
-          echo "=== TODOs and FIXMEs (informational) ==="
-          grep -rn "TODO\|FIXME\|XXX\|HACK" engines/rescript-wasm/lib/ || echo "None found"
-
-      - name: Check line lengths (soft limit 100)
-        run: |
-          echo "=== Lines over 100 characters (warnings) ==="
-          LONG_LINES=$(find engines/rescript-wasm/lib -name "*.ml" -exec awk 'length > 100 {count++} END {print count+0}' {} \; | awk '{s+=$1} END {print s}')
-          echo "Found $LONG_LINES lines over 100 characters"
-          if [ "$LONG_LINES" -gt 50 ]; then
-            echo "WARNING: Many long lines found, consider refactoring"
-          fi
-
-  # Security scanning job
-  security:
-    name: Security Checks
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-      contents: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-
-      - name: Set up OCaml
-        uses: ocaml/setup-ocaml@7c185f622998a008ba1b296d2d7c64e235629c23 # v3.6.1
-        with:
-          ocaml-compiler: "4.14.x"
-
-      - name: Check dependencies for known vulnerabilities
-        run: |
-          echo "=== Checking for vulnerable dependencies ==="
-          opam list --installed --safe 2>/dev/null || true
-
-      - name: Scan for hardcoded secrets
-        run: |
-          echo "=== Scanning for hardcoded secrets ==="
-          # Check for common secret patterns
-          if grep -rEn "(password|secret|api_key|apikey|auth_token|private_key)\s*=\s*['\"][^'\"]+['\"]" engines/rescript-wasm/; then
-            echo "ERROR: Potential hardcoded secrets found"
-            exit 1
-          fi
-          echo "No hardcoded secrets found"
-
-      - name: Check .gitignore coverage
-        run: |
-          echo "=== Checking .gitignore coverage ==="
-          # Verify important patterns are ignored
-          if [ -f engines/rescript-wasm/.gitignore ]; then
-            for pattern in "_build/" "*.cmo" "*.cmi" ".env"; do
-              if grep -q "$pattern" engines/rescript-wasm/.gitignore; then
-                echo "OK: $pattern is ignored"
-              else
-                echo "WARNING: $pattern should be in .gitignore"
-              fi
-            done
-          fi
-
-  # Final validation job - runs after all others
-  validate:
-    name: Final Validation
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    needs: [rescript-wasm, forth-estate, ddraig-ssg, lint, security]
-
-    steps:
-      - name: All checks passed
-        run: |
-          echo "========================================="
-          echo "All CI checks passed successfully!"
-          echo "========================================="
-          echo "- ReScript-WASM: Build & Tests PASSED"
-          echo "- Forth Estate: Syntax PASSED"
-          echo "- Ddraig SSG: Build & Tests PASSED"
-          echo "- Lint & Format: PASSED"
-          echo "- Security Checks: PASSED"
-          echo "========================================="
+          printf '%s\n' \
+            '## Preservation receipt' \
+            "Subject: $(git rev-parse HEAD)" \
+            'Source history and output-checker regressions were exercised.' \
+            'Generator builds, BoJ parity, deployment and overall security qualification remain open in issue #2.' \
+            >> "$GITHUB_STEP_SUMMARY"
