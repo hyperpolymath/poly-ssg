@@ -156,13 +156,13 @@ lint:
 security:
     @echo "🔒 Running security checks..."
     @echo "Checking for secrets..."
-    @if grep -rE "(password|secret|api_key|token)\s*=" --include="*.res" --include="*.cow" . 2>/dev/null | grep -v "example" | head -1; then \
+    @if grep -rE "(password|secret|api_key|token)\s*=" --include="*.affine" --include="*.cow" . 2>/dev/null | grep -v "example" | head -1; then \
         echo "⚠ Potential secrets found"; \
     else \
         echo "✓ No obvious secrets"; \
     fi
     @echo "Checking adapter for injection risks..."
-    @if grep -E "execSync\s*\(" adapters/src/MilkAdapter.res | grep -v sanitize; then \
+    @if grep -E "execSync\s*\(" adapters/src/MilkAdapter.affine | grep -v sanitize; then \
         echo "⚠ execSync calls should use sanitized inputs"; \
     else \
         echo "✓ Command execution appears safe"; \
