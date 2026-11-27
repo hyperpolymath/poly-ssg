@@ -24,7 +24,7 @@ for file in $STAGED_FILES; do
     # Check for TypeScript files (forbidden)
     case "$file" in
         *.ts|*.tsx)
-            VIOLATIONS="$VIOLATIONS\n  - $file (TypeScript forbidden - use ReScript)"
+            VIOLATIONS="$VIOLATIONS\n  - $file (TypeScript forbidden - use AffineScript)"
             ;;
     esac
 
