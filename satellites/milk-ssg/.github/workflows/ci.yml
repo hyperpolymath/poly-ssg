@@ -10,9 +10,6 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  NODE_VERSION: '20'
-
 jobs:
   # ==========================================================================
   # Language Enforcement - CRITICAL
@@ -36,12 +33,12 @@ jobs:
           fi
           echo "✅ Language enforcement passed: Only COW files in src/"
 
-      - name: Verify ReScript-only in adapters/
+      - name: Verify AffineScript-only in adapters/
         run: |
-          echo "🔒 Enforcing ReScript-only policy in adapters/src/..."
-          forbidden=$(find adapters/src/ -type f ! -name "*.res" ! -name "*.resi" 2>/dev/null || true)
+          echo "🔒 Enforcing AffineScript-only policy in adapters/src/..."
+          forbidden=$(find adapters/src/ -type f ! -name "*.affine" 2>/dev/null || true)
           if [ -n "$forbidden" ]; then
-            echo "❌ VIOLATION: Non-ReScript files found in adapters/src/:"
+            echo "❌ VIOLATION: Non-AffineScript files found in adapters/src/:"
             echo "$forbidden"
             exit 1
           fi
@@ -88,7 +85,7 @@ jobs:
           echo "📜 Checking SPDX headers..."
           missing=0
 
-          for file in src/*.cow adapters/src/*.res; do
+          for file in src/*.cow adapters/src/*.affine; do
             if [ -f "$file" ]; then
               if ! head -5 "$file" | grep -q "SPDX-License-Identifier"; then
                 echo "❌ Missing SPDX header: $file"
@@ -115,7 +112,7 @@ jobs:
         run: |
           echo "🔐 Scanning for hardcoded secrets..."
           if grep -rE "(password|api_key|secret_key|private_key)\s*=\s*['\"][^'\"]+['\"]" \
-              --include="*.res" --include="*.cow" --include="*.json" . 2>/dev/null | \
+              --include="*.affine" --include="*.cow" --include="*.json" . 2>/dev/null | \
               grep -v "example" | grep -v "placeholder" | grep -v "node_modules"; then
             echo "❌ Potential hardcoded secrets found"
             exit 1
@@ -125,7 +122,7 @@ jobs:
       - name: Verify adapter input sanitization
         run: |
           echo "🛡️ Checking adapter security..."
-          if ! grep -q "sanitizePath" adapters/src/MilkAdapter.res; then
+          if ! grep -q "sanitizePath" adapters/src/MilkAdapter.affine; then
             echo "❌ Missing input sanitization in adapter"
             echo "All user inputs MUST be validated before shell execution"
             exit 1
@@ -136,42 +133,30 @@ jobs:
         run: |
           echo "🔍 Checking for command injection patterns..."
           # Look for unsanitized template literals with execSync
-          if grep -E "execSync\s*\(\s*\`[^}]*\$\{[^}]*\}" adapters/src/MilkAdapter.res | \
+          if grep -E "execSync\s*\(\s*\`[^}]*\$\{[^}]*\}" adapters/src/MilkAdapter.affine | \
              grep -v "sanitize"; then
             echo "⚠️ Warning: Template literals in execSync - verify sanitization"
           fi
           echo "✅ Command injection check complete"
 
   # ==========================================================================
-  # Adapter Build
+  # Adapter Check
   # ==========================================================================
-  adapter-build:
-    name: Build Adapter
+  # The adapter is AffineScript (adapters/src/*.affine). There is no
+  # adapters/bun.lock yet, so no `bun install --frozen-lockfile` or build
+  # step runs here; add one once a lockfile is committed.
+  adapter-check:
+    name: Adapter Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: adapters/package-lock.json
-
-      - name: Install dependencies
-        working-directory: adapters
-        run: npm ci || npm install
-
-      - name: Build ReScript adapter
-        working-directory: adapters
-        run: npm run build
-
-      - name: Verify build output
+      - name: Verify AffineScript adapter source
         run: |
-          if [ -f adapters/src/MilkAdapter.mjs ]; then
-            echo "✅ Adapter built successfully"
+          if [ -f adapters/src/MilkAdapter.affine ]; then
+            echo "✅ AffineScript adapter source present"
           else
-            echo "❌ Adapter build output not found"
+            echo "❌ adapters/src/MilkAdapter.affine not found"
             exit 1
           fi
 
@@ -222,7 +207,7 @@ jobs:
   ci-complete:
     name: CI Complete
     runs-on: ubuntu-latest
-    needs: [language-enforcement, syntax-check, spdx-check, security-check, adapter-build, e2e-test]
+    needs: [language-enforcement, syntax-check, spdx-check, security-check, adapter-check, e2e-test]
     steps:
       - name: All checks passed
         run: |
@@ -232,5 +217,5 @@ jobs:
           echo "✅ Syntax check: Valid COW commands"
           echo "✅ SPDX headers: Present"
           echo "✅ Security: No vulnerabilities detected"
-          echo "✅ Adapter: Built successfully"
+          echo "✅ Adapter: AffineScript source present"
           echo "✅ E2E: Validation complete"
