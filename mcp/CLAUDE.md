@@ -68,7 +68,7 @@ src/              — ReScript source
 
 - **License**: MIT with SPDX headers
 - **Primary Language**: ReScript (compiled to ES6)
-- **No TypeScript**: Use ReScript instead
+- **No TypeScript**: Use AffineScript instead
 - **No JavaScript adapters**: All adapters must be ReScript
 - **main.js exception**: Entry shim only (imports ReScript modules)
 

@@ -61,7 +61,7 @@ cat << HTML
                 <li><strong>Hosting:</strong> Cloudflare Pages (edge delivery)</li>
                 <li><strong>Security:</strong> HTTP 430 + consent-aware-http protocol</li>
                 <li><strong>License:</strong> PMPL-1.0-or-later (Palimpsest License)</li>
-                <li><strong>Development:</strong> ReScript, Rust, Idris2, Elixir, Gleam</li>
+                <li><strong>Development:</strong> AffineScript, Rust, Idris2, Elixir, Gleam</li>
                 <li><strong>Verification:</strong> Formal methods, dependent types, property testing</li>
             </ul>
         </div>

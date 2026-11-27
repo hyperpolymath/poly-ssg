@@ -3,14 +3,14 @@
 // Language Policy Enforcement Script
 //
 // This script enforces the Hyperpolymath Language Policy:
-// - TypeScript is BANNED (use ReScript instead)
+// - TypeScript is BANNED (use AffineScript instead)
 // - Node.js/npm is BANNED (use Deno instead)
 // - Go is BANNED (use Rust instead)
 // - Python is BANNED except for SaltStack
 
 const BANNED_EXTENSIONS = [
-  ".ts",   // TypeScript - use ReScript
-  ".tsx",  // TypeScript JSX - use ReScript
+  ".ts",   // TypeScript - use AffineScript
+  ".tsx",  // TypeScript JSX - use AffineScript
   ".go",   // Go - use Rust
 ];
 
@@ -67,7 +67,7 @@ async function checkPolicy() {
         }
 
         const replacement = ext === ".ts" || ext === ".tsx"
-          ? "ReScript (.res)"
+          ? "AffineScript (.affine)"
           : ext === ".go"
             ? "Rust (.rs)"
             : "approved language";
@@ -95,7 +95,7 @@ async function checkPolicy() {
       if (!isAllowed) {
         violations.push({
           file: relPath,
-          reason: "Python is only allowed for SaltStack - use ReScript or Rust instead",
+          reason: "Python is only allowed for SaltStack - use AffineScript or Rust instead",
         });
       }
     }
