@@ -34,9 +34,17 @@ prohibited-language objects were:
 |`engines/terrapin-ssg/terrapin-ssg.py` |`100755` |`b6ee989e6176c775c7b95aa56f2fa32df800a8e6`
 |===
 
-They remain unsupported historical experiments. This is not permission to
-introduce or develop Python runtime code, and neither file is deleted to
-make a language check pass.
+Both objects were retired on the owner's ruling of 2026-11-26 ("do them in
+cow and logo, get rid of python entirely") and are deleted from the tree. They
+remain in source history through the preserved import above. The milk-ssg
+engine is the COW source `satellites/milk-ssg/src/milk-ssg.cow` and the
+terrapin-ssg engine is the Logo source
+`satellites/terrapin-ssg/src/terrapin-ssg.logo`. The engine-level workflows
+under `engines/milk-ssg/` and `engines/terrapin-ssg/` no longer call Python;
+they validate those COW and Logo sources. After the retirement the gate
+expects no retained prohibited-language objects, so any `.py` file reappearing
+at either path is a violation. This is not permission to introduce or develop
+Python runtime code.
 
 This gate checks a *source-object delta*, not execution or activation. An added
 shell wrapper could invoke an unchanged historical file while the exact
