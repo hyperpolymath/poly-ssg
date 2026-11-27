@@ -80,7 +80,7 @@ jobs:
     name: Security Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbwhat else do you have on your roadmap going forward?e5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Check for secrets
         run: |
@@ -107,8 +107,8 @@ jobs:
       - name: Check adapter security
         run: |
           echo "🛡️ Checking adapter security..."
-          if [ -f adapters/src/TerrapinAdapter.res ]; then
-            if grep -q "allowedPatterns" adapters/src/TerrapinAdapter.res; then
+          if [ -f adapters/src/TerrapinAdapter.affine ]; then
+            if grep -q "allowedPatterns" adapters/src/TerrapinAdapter.affine; then
               echo "✓ Pattern whitelist found in adapter"
             else
               echo "⚠ No pattern whitelist in adapter"
@@ -171,24 +171,12 @@ jobs:
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
-        with:
-          node-version: '20'
-
-      - name: Check adapter dependencies
+      # No adapters/bun.lock exists yet, so no `bun install --frozen-lockfile`
+      # step runs here; add one once a lockfile is committed.
+      - name: Verify AffineScript adapter
         run: |
-          if [ -f adapters/package.json ]; then
-            echo "📦 Checking adapter dependencies..."
-            cd adapters
-            npm install --ignore-scripts
-            echo "✓ Adapter dependencies installed"
-          fi
-
-      - name: Verify ReScript files
-        run: |
-          if [ -f adapters/src/TerrapinAdapter.res ]; then
-            echo "✓ ReScript adapter exists"
+          if [ -f adapters/src/TerrapinAdapter.affine ]; then
+            echo "✓ AffineScript adapter exists"
           else
-            echo "⚠ ReScript adapter missing"
+            echo "⚠ AffineScript adapter missing"
           fi
